@@ -449,6 +449,49 @@ body{margin:0;background:radial-gradient(circle at top,#10233b 0,#050b12 45%,#02
   display:none!important;
 }
 
+
+/* ESCOLHA DE EDIÇÃO FIXA / PARCELADA */
+.scopeOverlay{position:fixed;inset:0;background:#000c;z-index:130;display:none;align-items:center;justify-content:center;padding:18px}
+.scopeOverlay.show{display:flex}
+.scopeBox{width:100%;max-width:430px;background:linear-gradient(145deg,#0e1826,#050b12);border:2px solid var(--gold);border-radius:24px;padding:18px;text-align:center;box-shadow:0 0 24px #f2b63277}
+.scopeBox h2{margin:0 0 8px;color:#ffdf8a;font-size:18px}
+.scopeBox p{color:#dbeafe;font-size:13px;line-height:1.35;margin:8px 0 14px}
+.scopeBtns{display:grid;gap:9px}
+.scopeBtns button{border:0;border-radius:15px;padding:14px 10px;color:#fff;font-weight:900;font-size:13px;box-shadow:0 0 12px #0008}
+.scopeOne{background:linear-gradient(145deg,#1f7aff,#06459e)}
+.scopePending{background:linear-gradient(145deg,#f2b632,#a86500)}
+.scopeAll{background:linear-gradient(145deg,#ff453a,#9e1010)}
+.scopeCancel{background:linear-gradient(145deg,#374151,#111827)}
+
+
+
+[data-icon-conta]:active,[data-icon-cartao]:active,[data-icon-categoria]:active,#iconeCardCartoes:active{
+  transform:scale(.90)!important;
+}
+
+
+/* ÍCONES CLICÁVEIS */
+.ico.clickIcon,.cardIconBig,#iconeCardCartoes,.iconChoice{
+  cursor:pointer!important;
+  user-select:none!important;
+}
+.ico.clickIcon:active,.cardIconBig:active,#iconeCardCartoes:active,.iconChoice:active{
+  transform:scale(.9)!important;
+}
+
+
+/* DIGITAR ÍCONE PELO TECLADO */
+.iconKeyboardOverlay{position:fixed;inset:0;background:#000c;z-index:160;display:none;align-items:flex-end}
+.iconKeyboardOverlay.show{display:flex}
+.iconKeyboardBox{width:100%;max-width:480px;margin:auto;background:linear-gradient(180deg,#091827,#050b12);border:2px solid var(--blue);border-radius:26px 26px 0 0;padding:18px;box-shadow:0 -8px 28px #1f7aff66}
+.iconKeyboardBox h2{margin:0 0 8px;text-align:center;color:#fff;font-size:18px}
+.iconKeyboardBox p{margin:0 0 12px;text-align:center;color:var(--muted);font-size:12px}
+.iconKeyboardInput{width:100%;height:70px;border-radius:20px;border:2px solid var(--gold);background:#07111d;color:#fff;text-align:center;font-size:34px;font-weight:900;box-shadow:0 0 18px #f2b63266;outline:none}
+.iconKeyboardBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.iconKeyboardBtns button{border:0;border-radius:16px;padding:14px;color:#fff;font-weight:900}
+.iconKeyboardSave{background:linear-gradient(145deg,#31d158,#0f7a2b)}
+.iconKeyboardCancel{background:linear-gradient(145deg,#ff453a,#9e1010)}
+
 </style>
 </head>
 <body>
@@ -526,6 +569,33 @@ body{margin:0;background:radial-gradient(circle at top,#10233b 0,#050b12 45%,#02
   </section>
 </div>
 
+
+
+<div id="scopeOverlay" class="scopeOverlay">
+  <div class="scopeBox">
+    <h2>ATENÇÃO!</h2>
+    <p>ESTA É UMA TRANSAÇÃO FIXA OU PARCELADA.<br>VOCÊ DESEJA:</p>
+    <div class="scopeBtns">
+      <button class="scopeOne" onclick="responderEscopoEdicao('esta')">ALTERAR SOMENTE ESTA</button>
+      <button class="scopePending" onclick="responderEscopoEdicao('pendentes')">ALTERAR TODAS PENDENTES</button>
+      <button class="scopeAll" onclick="responderEscopoEdicao('todas')">ALTERAR TODAS, INCLUINDO EFETIVADAS</button>
+      <button class="scopeCancel" onclick="responderEscopoEdicao(null)">CANCELAR</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="iconKeyboardOverlay" class="iconKeyboardOverlay">
+  <div class="iconKeyboardBox">
+    <h2>DIGITAR ÍCONE</h2>
+    <p>USE O TECLADO PARA COLOCAR LETRAS, NÚMEROS OU EMOJIS.</p>
+    <input id="iconKeyboardInput" class="iconKeyboardInput" type="text" maxlength="4" placeholder="💳">
+    <div class="iconKeyboardBtns">
+      <button class="iconKeyboardCancel" onclick="fecharTecladoIcone()">CANCELAR</button>
+      <button class="iconKeyboardSave" onclick="salvarIconeDigitado()">SALVAR</button>
+    </div>
+  </div>
+</div>
 
 <div id="modal" class="modal"><div class="box"><button class="close" onclick="closeModal()">X</button><div id="modalBody"></div></div></div>
 <div id="confirmOverlay" class="confirmOverlay"><div class="confirmBox"><h2 id="confirmTitle">Confirmar</h2><p id="confirmText">Tem certeza?</p><div class="confirmBtns"><button class="confirmYes" onclick="responderConfirmacao(true)">SIM</button><button class="confirmNo" onclick="responderConfirmacao(false)">NÃO</button></div></div></div>
@@ -879,14 +949,18 @@ function editorMovs(tipo,titulo){let arr=db.movs.filter(m=>m.tipo==tipo);return 
 function editorCartoes(){return `<h2>Editar Cartões</h2><button class="btn goldBg" onclick="openModal('cartao')">+ NOVO CARTÃO</button><div class="editList">${db.cartoes.map(c=>`<div class="item"><div><b>${c.nome}</b><small>Final ${c.final} • Limite ${fmt(c.limite)}</small></div><div class="actions"><button onclick="openModal('cartao','${c.id}')">✏️</button><button onclick="excluirCartao('${c.id}');openModal('editorCartoes')">🗑️</button></div></div>`).join('')||'<div class="empty">Nenhum cartão.</div>'}</div>`}
 function editorContas(){return `<h2>Editar Contas</h2><button class="btn" onclick="openModal('conta')">+ NOVA CONTA</button><div class="editList">${db.contas.map(c=>`<div class="item"><div><b>${c.nome}</b><small>${c.tipo} • ${fmt(c.saldo)}</small></div><div class="actions"><button onclick="openModal('conta','${c.id}')">✏️</button><button onclick="excluirConta('${c.id}');openModal('editorContas')">🗑️</button></div></div>`).join('')||'<div class="empty">Nenhuma conta.</div>'}</div>`}
 function editorCategorias(){return `<h2>Editar Categorias</h2>
-<div class="editorGroup"><h3>💰 Categorias de Receitas</h3><button class="btn greenBg" onclick="openModal('categoriaReceita')">+ NOVA CATEGORIA DE RECEITA</button><div class="editList">${db.categoriasReceitas.map((c,i)=>`<div class="item"><div class="itemLeft"><div class="ico clickIcon" onclick="abrirIcones('categoria','${String(c).replace(/'/g,"\'")}')">${iconeCategoria(c,'receita')}</div><div><b>${c}</b><small>Receita • clique no ícone para trocar</small></div></div><div class="actions"><button onclick="openModal('categoriaReceita','${i}')">✏️</button><button onclick="excluirCategoria('receita',${i});openModal('editorCategorias')">🗑️</button></div></div>`).join('')||'<div class="empty">Nenhuma categoria de receita.</div>'}</div></div>
-<div class="editorGroup"><h3>💸 Categorias de Despesas</h3><button class="btn redBg" onclick="openModal('categoriaDespesa')">+ NOVA CATEGORIA DE DESPESA</button><div class="editList">${db.categoriasDespesas.map((c,i)=>`<div class="item"><div class="itemLeft"><div class="ico clickIcon" onclick="abrirIcones('categoria','${String(c).replace(/'/g,"\'")}')">${iconeCategoria(c,'despesa')}</div><div><b>${c}</b><small>Despesa • clique no ícone para trocar</small></div></div><div class="actions"><button onclick="openModal('categoriaDespesa','${i}')">✏️</button><button onclick="excluirCategoria('despesa',${i});openModal('editorCategorias')">🗑️</button></div></div>`).join('')||'<div class="empty">Nenhuma categoria de despesa.</div>'}</div></div>`}
+<div class="editorGroup"><h3>💰 Categorias de Receitas</h3><button class="btn greenBg" onclick="openModal('categoriaReceita')">+ NOVA CATEGORIA DE RECEITA</button><div class="editList">${db.categoriasReceitas.map((c,i)=>`<div class="item"><div class="itemLeft"><div class="ico clickIcon" onclick="abrirIcones('categoria','${String(c).replace(/'/g,"\'")}')">${iconeCategoria(c,'receita')}</div><div><b>${c}</b><small></small></div></div><div class="actions"><button onclick="openModal('categoriaReceita','${i}')">✏️</button><button onclick="excluirCategoria('receita',${i});openModal('editorCategorias')">🗑️</button></div></div>`).join('')||'<div class="empty">Nenhuma categoria de receita.</div>'}</div></div>
+<div class="editorGroup"><h3>💸 Categorias de Despesas</h3><button class="btn redBg" onclick="openModal('categoriaDespesa')">+ NOVA CATEGORIA DE DESPESA</button><div class="editList">${db.categoriasDespesas.map((c,i)=>`<div class="item"><div class="itemLeft"><div class="ico clickIcon" onclick="abrirIcones('categoria','${String(c).replace(/'/g,"\'")}')">${iconeCategoria(c,'despesa')}</div><div><b>${c}</b><small></small></div></div><div class="actions"><button onclick="openModal('categoriaDespesa','${i}')">✏️</button><button onclick="excluirCategoria('despesa',${i});openModal('editorCategorias')">🗑️</button></div></div>`).join('')||'<div class="empty">Nenhuma categoria de despesa.</div>'}</div></div>`}
 function salvarMov(tipo){
   let old=db.movs.find(x=>x.id==editId);
   let pagoCheck=document.getElementById('pagoCheck');
   let ignorar=document.getElementById('ignorarCheck')?.checked||false;
+  let isFixa=document.getElementById('fixaCheck')?.checked||false;
+  let isRepetir=document.getElementById('repetirCheck')?.checked||false;
   let base={
     id:editId||uid(),
+    grupo:(old&&old.grupo)||uid(),
+    origemTipo:isFixa?'fixa':(isRepetir?'parcelada':((old&&old.origemTipo)||'normal')),
     tipo:tipo,
     desc:desc.value||'Sem descrição',
     valor:+valor.value||0,
@@ -896,27 +970,89 @@ function salvarMov(tipo){
     obs:obs.value||'',
     pago:pagoCheck?pagoCheck.checked:true,
     venc:document.getElementById('venc')?.value||'',
-    fixa:document.getElementById('fixaCheck')?.checked||false,
-    repetir:document.getElementById('repetirCheck')?.checked||false,
+    fixa:isFixa,
+    repetir:isRepetir,
     repQtd:+(document.getElementById('repQtd')?.value||1),
     repPeriodo:document.getElementById('repPeriodo')?.value||'',
     ignorado:ignorar,
     icone:document.getElementById('iconeMov')?.value||(tipo=='receita'?'💰':'🛒')
   };
   if(!base.valor)return alert('Digite um valor');
-  if(old){db.movs=db.movs.map(x=>x.id==editId?base:x)}
-  else if(base.fixa){
-    let qtd=base.repetir?Math.max(1,base.repQtd||1):12;
-    for(let i=0;i<qtd;i++){db.movs.push({...base,id:uid(),data:addMonthsISO(base.data,i),desc:i?`${base.desc} (${i+1}/${qtd})`:base.desc})}
-  } else db.movs.push(base);
-  closeModal(); save();
+
+  if(old && movimentoTemGrupo(old)){
+    pedirEscopoEdicao((escopo)=>{
+      if(!escopo)return;
+      aplicarAlteracaoGrupo(base,old,escopo);
+      closeModal();
+      save();
+    });
+    return;
+  }
+
+  if(old){
+    db.movs=db.movs.map(x=>x.id==editId?base:x);
+  } else if(base.fixa || base.repetir){
+    let qtd=base.fixa ? (base.repetir?Math.max(1,base.repQtd||1):12) : Math.max(1,base.repQtd||1);
+    let grupoNovo=uid();
+    for(let i=0;i<qtd;i++){
+      db.movs.push({...base,id:uid(),grupo:grupoNovo,origemTipo:base.fixa?'fixa':'parcelada',data:addMonthsISO(base.data,i),desc:i?`${base.desc} (${i+1}/${qtd})`:base.desc});
+    }
+  } else {
+    db.movs.push(base);
+  }
+  closeModal();
+  save();
 }
 function salvarMovConta(tipo,contaId){let mov={id:uid(),tipo,desc:desc.value||'Sem descrição',valor:+valor.value||0,cat:cat.value,data:data.value,conta:contaId,obs:obs.value||'',pago:true,venc:''}; if(!mov.valor)return alert('Digite um valor'); db.movs.push(mov); closeModal(); save()}
 function salvarConta(){let obj={id:editId||uid(),nome:nome.value||'Conta',tipo:tipo.value,saldo:+saldo.value||0,icone:document.getElementById('iconeConta')?.value||'🏦'}; if(editId) db.contas=db.contas.map(x=>x.id==editId?obj:x); else db.contas.push(obj); closeModal(); save()}
-function salvarCategoria(){if(!nome.value)return; let lista=catTipo=='receita'?db.categoriasReceitas:db.categoriasDespesas; let ic=document.getElementById('iconeCat')?.value||iconeCategoria(nome.value,catTipo); if(editId!==null){let antigo=lista[editId]; lista[editId]=nome.value; if(antigo&&antigo!==nome.value&&db.categoriaIcones[antigo]){db.categoriaIcones[nome.value]=db.categoriaIcones[antigo]; delete db.categoriaIcones[antigo];}} else if(!lista.includes(nome.value))lista.push(nome.value); db.categoriaIcones[nome.value]=ic; closeModal(); save()}
+function salvarCategoria(){
+  if(!nome.value)return;
+  let lista=catTipo=='receita'?db.categoriasReceitas:db.categoriasDespesas;
+  let ic=document.getElementById('iconeCat')?.value||iconeCategoria(nome.value,catTipo);
+  if(editId!==null){
+    let antigo=lista[editId];
+    lista[editId]=nome.value;
+    if(antigo&&antigo!==nome.value&&db.categoriaIcones[antigo]){
+      db.categoriaIcones[nome.value]=db.categoriaIcones[antigo];
+      delete db.categoriaIcones[antigo];
+    }
+  } else if(!lista.includes(nome.value)){
+    lista.push(nome.value);
+  }
+  db.categoriaIcones[nome.value]=ic;
+  editId=null;
+  localStorage.setItem('financeiroPremium',JSON.stringify(db));
+  applyTheme();
+  openModal('editorCategorias');
+  render();
+}
 function salvarCartao(){let obj={id:editId||uid(),nome:nome.value||'Cartão',final:final.value||'0000',limite:+limite.value||0,fech:fech.value||1,venc:venc.value||10,icone:document.getElementById('iconeCartao')?.value||'💳'}; if(editId) db.cartoes=db.cartoes.map(x=>x.id==editId?obj:x); else db.cartoes.push(obj); closeModal(); save()}
-function salvarCompraEditada(){let mov={id:editId,tipo:'cartao',cartao:cartao.value,desc:desc.value||'Compra',valor:+valor.value||0,cat:cat.value,data:data.value,pago:false,obs:obs.value||'Compra no cartão'}; db.movs=db.movs.map(x=>x.id==editId?mov:x); closeModal(); save()}
-function salvarCompraCartao(){if(!cartao.value)return alert('Cadastre um cartão primeiro'); let parc=Math.max(1,+parcelas.value||1), total=+valor.value||0; for(let i=1;i<=parc;i++){db.movs.push({id:uid(),tipo:'cartao',cartao:cartao.value,desc:`${desc.value||'Compra'} ${parc>1?i+'/'+parc:''}`,valor:total/parc,cat:cat.value,data:data.value,pago:false,obs:'Compra parcelada no cartão'})} closeModal(); save()}
+function salvarCompraEditada(){
+  let old=db.movs.find(x=>x.id==editId)||{};
+  let mov={id:editId,grupo:old.grupo||editId,origemTipo:old.origemTipo||'normal',tipo:'cartao',cartao:cartao.value,desc:desc.value||'Compra',valor:+valor.value||0,cat:cat.value,data:data.value,pago:old.pago===undefined?false:old.pago,obs:obs.value||'Compra no cartão'};
+  if(old && movimentoTemGrupo(old)){
+    pedirEscopoEdicao((escopo)=>{
+      if(!escopo)return;
+      aplicarAlteracaoGrupo(mov,old,escopo);
+      closeModal();
+      save();
+    });
+    return;
+  }
+  db.movs=db.movs.map(x=>x.id==editId?mov:x);
+  closeModal();
+  save();
+}
+function salvarCompraCartao(){
+  if(!cartao.value)return alert('Cadastre um cartão primeiro');
+  let parc=Math.max(1,+parcelas.value||1), total=+valor.value||0;
+  let grupoCartao=uid();
+  for(let i=1;i<=parc;i++){
+    db.movs.push({id:uid(),grupo:grupoCartao,origemTipo:parc>1?'parcelada':'normal',tipo:'cartao',cartao:cartao.value,desc:`${desc.value||'Compra'} ${parc>1?i+'/'+parc:''}`,valor:total/parc,cat:cat.value,data:data.value,pago:false,obs:'Compra parcelada no cartão'});
+  }
+  closeModal();
+  save();
+}
 function excluir(id){
   pedirConfirmacao('ENVIAR PARA LIXEIRA','DESEJA ENVIAR ESTE LANÇAMENTO PARA A LIXEIRA?',()=>{
     db.lixeira=db.lixeira||[];
@@ -966,8 +1102,8 @@ function excluirDefinitivoLixeira(id){
 function render(){const icHome=document.getElementById('iconeCardCartoes'); if(icHome&&db.iconesHome&&db.iconesHome.cartoes)icHome.innerText=db.iconesHome.cartoes;let t=totais(); saldoGeral.innerText=fmt(t.saldo); saldoGeral.className='value '+(t.saldo>=0?'green':'red'); saldoStatus.innerText=t.saldo>=0?'↗ Positivo':'↘ Negativo'; saldoStatus.className=t.saldo>=0?'green':'red'; totalReceitas.innerText=fmt(t.rec); totalDespesas.innerText=fmt(t.desp); totalCartoes.innerText=fmt(t.cart); totalContas.innerText=fmt(t.contas); if(typeof receitasPendentes!='undefined')receitasPendentes.innerText=fmt(t.recPend); if(typeof despesasPendentes!='undefined')despesasPendentes.innerText=fmt(t.despPend); renderContas(); renderMovs(); renderCartoes(); renderRelatorios()}
 function movHTML(m){let sign=m.tipo=='receita'?'+':'-';let color=m.tipo=='receita'?'green':'red';let icon=m.icone||(m.tipo=='cartao'?'💳':iconeCategoria(m.cat,m.tipo));let form=m.tipo=='receita'?'receita':(m.tipo=='cartao'?'editCompraCartao':'despesa');let status=m.ignorado?' • Ignorado':(m.pago===false?' • Pendente':'');let pendBtn=''; if(m.pago===false&&!m.ignorado&&m.tipo=='despesa')pendBtn=`<button class="payBtn redPay" onclick="pagarMov('${m.id}')">PAGAR</button>`; if(m.pago===false&&!m.ignorado&&m.tipo=='receita')pendBtn=`<button class="payBtn greenPay" onclick="pagarMov('${m.id}')">RECEBER</button>`; let ignoreTxt=m.ignorado?'IGNORADO':'IGNORAR'; return `<div class="item ${m.ignorado?'ignoredItem':''}"><div class="itemLeft"><div class="ico">${icon}</div><div><b>${m.desc}</b><small>${m.cat||''} • ${new Date(m.data+'T00:00').toLocaleDateString('pt-BR')}${status}</small></div></div><div style="text-align:right"><b class="${m.ignorado?'muted':color}">${sign} ${fmt(m.valor)}</b><div class="actions">${pendBtn}<button class="ignoreBtn ${m.ignorado?'activeIgnore':''}" onclick="ignorarMov('${m.id}')">${ignoreTxt}</button><button onclick="openModal('${form}','${m.id}')">✏️ EDITAR</button><button onclick="excluir('${m.id}')">🗑️</button></div></div></div>`}
 function saldoConta(c){let rec=0,des=0; db.movs.filter(dentroFiltroData).forEach(m=>{if(m.conta==c.id&&!m.ignorado){if(m.tipo=='receita'&&m.pago!==false)rec+=m.valor; if(m.tipo=='despesa'&&m.pago!==false)des+=m.valor;}}); return (+c.saldo||0)+rec-des}
-function contaResumoHTML(c){let saldo=saldoConta(c);return `<div class="item accountCard accountCardCompact"><div class="accountMainLine"><div class="ico clickIcon" onclick="abrirIcones('conta','${c.id}')">${c.icone||'🏦'}</div><div class="accountTextLine"><div class="accountCardName">${c.nome}</div><div class="accountCardType">${c.tipo}</div></div></div><div><div class="accountValueSide ${saldo>=0?'blue':'red'}">${fmt(saldo)}</div><div class="accountBtns accountMiniBtns"><button class="plus" onclick="openModal('entradaConta','${c.id}')">+</button><button class="minus" onclick="openModal('saidaConta','${c.id}')">-</button></div></div></div>`}
-function contaHTML(c){let saldo=saldoConta(c);return `<div class="item"><div class="itemLeft"><div class="ico clickIcon" onclick="abrirIcones('conta','${c.id}')">${c.icone||'🏦'}</div><div><b>${c.nome}</b><small>${c.tipo} • Inicial ${fmt(c.saldo)}</small></div></div><div style="text-align:right"><b class="${saldo>=0?'blue':'red'}">${fmt(saldo)}</b><div class="actions"><button onclick="openModal('conta','${c.id}')">✏️ EDITAR</button><button onclick="excluirConta('${c.id}')">🗑️</button></div></div></div>`}
+function contaResumoHTML(c){let saldo=saldoConta(c);return `<div class="item accountCard accountCardCompact"><div class="accountMainLine"><div class="ico clickIcon" onclick="abrirIconeConta('${c.id}',event)">${c.icone||'🏦'}</div><div class="accountTextLine"><div class="accountCardName">${c.nome}</div><div class="accountCardType">${c.tipo}</div></div></div><div><div class="accountValueSide ${saldo>=0?'blue':'red'}">${fmt(saldo)}</div><div class="accountBtns accountMiniBtns"><button class="plus" onclick="openModal('entradaConta','${c.id}')">+</button><button class="minus" onclick="openModal('saidaConta','${c.id}')">-</button></div></div></div>`}
+function contaHTML(c){let saldo=saldoConta(c);return `<div class="item"><div class="itemLeft"><div class="ico clickIcon" onclick="abrirIconeConta('${c.id}',event)">${c.icone||'🏦'}</div><div><b>${c.nome}</b><small>${c.tipo} • Inicial ${fmt(c.saldo)}</small></div></div><div style="text-align:right"><b class="${saldo>=0?'blue':'red'}">${fmt(saldo)}</b><div class="actions"><button onclick="openModal('conta','${c.id}')">✏️ EDITAR</button><button onclick="excluirConta('${c.id}')">🗑️</button></div></div></div>`}
 function renderContas(){let htmlEdit=db.contas.map(contaHTML).join('')||'<div class="empty">Nenhuma conta cadastrada.</div>'; let htmlResumo=db.contas.map(contaResumoHTML).join('')||'<div class="empty">Nenhuma conta cadastrada.</div>'; if(typeof listaContas!='undefined')listaContas.innerHTML=htmlEdit; if(typeof contasInicio!='undefined')contasInicio.innerHTML=htmlResumo}
 function passaFiltroCategoria(m){
   if(filtro=='ignorados')return !!m.ignorado;
@@ -1101,7 +1237,7 @@ function renderMovs(){
     }
   }
 }
-function renderCartoes(){let limiteTotal=db.cartoes.reduce((a,c)=>a+(+c.limite||0),0);let usadoTotal=db.movs.filter(m=>m.tipo=='cartao'&&dentroFiltroData(m)).reduce((a,m)=>a+(+m.valor||0),0); if(typeof limiteTotalCartoes!='undefined')limiteTotalCartoes.innerText=fmt(limiteTotal); if(typeof usadoTotalCartoes!='undefined')usadoTotalCartoes.innerText=fmt(usadoTotal); listaCartoes.innerHTML=db.cartoes.map(c=>{let usado=db.movs.filter(m=>m.tipo=='cartao'&&m.cartao==c.id&&dentroFiltroData(m)).reduce((a,m)=>a+m.valor,0), pct=c.limite?Math.min(100,usado/c.limite*100):0;let cor=c.cor||'#4c1d95';return `<div class="cardCredit cardCompact" style="--cartaoCor:${cor}"><input class="cardColorTiny" type="color" value="${cor}" onchange="mudarCorCartao('${c.id}',this.value)" title="Mudar cor"><div class="cardCompactTop"><div class="cardIconBig" onclick="abrirIcones('cartao','${c.id}')">${c.icone||'💳'}</div><div class="cardCompactName">${c.nome}</div></div><div class="cardCompactValues"><div><small>LIMITE</small><b class="gold">${fmt(c.limite)}</b></div><div><small>GASTOU</small><b class="red">${fmt(usado)}</b></div><div><small>LIVRE</small><b class="green">${fmt(c.limite-usado)}</b></div></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div><div class="cardCompactFoot">${pct.toFixed(0)}% UTILIZADO • FECHA ${c.fech} • VENCE ${c.venc}</div></div>`}).join('')||'<div class="empty">Nenhum cartão cadastrado.</div>'}
+function renderCartoes(){let limiteTotal=db.cartoes.reduce((a,c)=>a+(+c.limite||0),0);let usadoTotal=db.movs.filter(m=>m.tipo=='cartao'&&dentroFiltroData(m)).reduce((a,m)=>a+(+m.valor||0),0); if(typeof limiteTotalCartoes!='undefined')limiteTotalCartoes.innerText=fmt(limiteTotal); if(typeof usadoTotalCartoes!='undefined')usadoTotalCartoes.innerText=fmt(usadoTotal); listaCartoes.innerHTML=db.cartoes.map(c=>{let usado=db.movs.filter(m=>m.tipo=='cartao'&&m.cartao==c.id&&dentroFiltroData(m)).reduce((a,m)=>a+m.valor,0), pct=c.limite?Math.min(100,usado/c.limite*100):0;let cor=c.cor||'#4c1d95';return `<div class="cardCredit cardCompact" style="--cartaoCor:${cor}"><input class="cardColorTiny" type="color" value="${cor}" onchange="mudarCorCartao('${c.id}',this.value)" title="Mudar cor"><div class="cardCompactTop"><div class="cardIconBig" onclick="abrirIconeCartao('${c.id}',event)">${c.icone||'💳'}</div><div class="cardCompactName">${c.nome}</div></div><div class="cardCompactValues"><div><small>LIMITE</small><b class="gold">${fmt(c.limite)}</b></div><div><small>GASTOU</small><b class="red">${fmt(usado)}</b></div><div><small>LIVRE</small><b class="green">${fmt(c.limite-usado)}</b></div></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div><div class="cardCompactFoot">${pct.toFixed(0)}% UTILIZADO • FECHA ${c.fech} • VENCE ${c.venc}</div></div>`}).join('')||'<div class="empty">Nenhum cartão cadastrado.</div>'}
 function mudarCorCartao(id,cor){let c=db.cartoes.find(x=>x.id==id); if(c){c.cor=cor; save()}}
 function renderRelatorios(){let t=totais(); if(typeof relResumo!='undefined')relResumo.innerHTML=`<div class="grid"><div class="mini"><b>Total receitas</b><span class="green">${fmt(t.rec)}</span></div><div class="mini"><b>Total despesas</b><span class="red">${fmt(t.desp+t.cart)}</span></div><div class="mini"><b>Saldo</b><span class="blue">${fmt(t.saldo)}</span></div><div class="mini"><b>Cartão</b><span class="gold">${fmt(t.cart)}</span></div></div>`}
 function limparDatasHistorico(){if(document.getElementById('dataInicio'))dataInicio.value=''; if(document.getElementById('dataFim'))dataFim.value=''; atualizarMesAnoTela(); render()}
@@ -1419,6 +1555,124 @@ function abrirCategoria(tipo,pendente=false){
   render();
 }
 /* ===== FIM FINAL REAL ===== */
+
+
+
+/* ESCOPO FIXAS/PARCELADAS CORRIGIDO */
+let escopoCallback=null;
+function pedirEscopoEdicao(callback){
+  escopoCallback=callback;
+  const el=document.getElementById('scopeOverlay');
+  if(el)el.classList.add('show');
+}
+function responderEscopoEdicao(escopo){
+  const el=document.getElementById('scopeOverlay');
+  if(el)el.classList.remove('show');
+  const cb=escopoCallback;
+  escopoCallback=null;
+  if(cb)cb(escopo);
+}
+function movimentoTemGrupo(m){
+  if(!m)return false;
+  const txt=(m.obs||'')+' '+(m.desc||'');
+  return !!(m.grupo || m.fixa || m.repetir || m.origemTipo==='fixa' || m.origemTipo==='parcelada' || txt.toLowerCase().includes('parcelada'));
+}
+function mesmoGrupoMov(x,old){
+  if(old.grupo)return x.grupo===old.grupo;
+  return x.id===old.id;
+}
+function aplicarAlteracaoGrupo(base,old,escopo){
+  if(escopo==='esta'){
+    db.movs=db.movs.map(x=>x.id===old.id?base:x);
+    return;
+  }
+  db.movs=db.movs.map(x=>{
+    if(!mesmoGrupoMov(x,old))return x;
+    if(escopo==='pendentes' && x.pago!==false)return x;
+    return {...x,
+      tipo:base.tipo,
+      desc:base.desc,
+      valor:base.valor,
+      cat:base.cat,
+      conta:base.conta,
+      obs:base.obs,
+      ignorado:base.ignorado,
+      icone:base.icone,
+      fixa:base.fixa,
+      repetir:base.repetir,
+      origemTipo:base.origemTipo||x.origemTipo,
+      cartao:base.cartao||x.cartao
+    };
+  });
+}
+/* FIM ESCOPO FIXAS/PARCELADAS CORRIGIDO */
+
+
+
+
+
+
+
+
+/* ===== ÍCONES PELO TECLADO ===== */
+let iconKeyboardTarget=null;
+function abrirTecladoIcone(alvo=null,valorAtual=''){
+  iconKeyboardTarget=alvo;
+  const ov=document.getElementById('iconKeyboardOverlay');
+  const inp=document.getElementById('iconKeyboardInput');
+  if(inp){
+    inp.value=valorAtual||'';
+    inp.placeholder=valorAtual||'💳';
+  }
+  if(ov)ov.classList.add('show');
+  setTimeout(()=>{if(inp){inp.focus();try{inp.select()}catch(e){}}},100);
+}
+function fecharTecladoIcone(){
+  document.getElementById('iconKeyboardOverlay')?.classList.remove('show');
+  iconKeyboardTarget=null;
+}
+function salvarIconeDigitado(){
+  const inp=document.getElementById('iconKeyboardInput');
+  let valor=(inp?.value||'').trim();
+  if(!valor)return alert('DIGITE UM ÍCONE, LETRA OU NÚMERO');
+  db.iconesHome=db.iconesHome||{cartoes:'💳'};
+  db.categoriaIcones=db.categoriaIcones||{};
+  const t=iconKeyboardTarget||iconPickerTarget;
+  if(t==='homeCartoes'){
+    db.iconesHome.cartoes=valor;
+  }else if(t && t.tipo==='conta'){
+    let c=db.contas.find(x=>x.id==t.id);
+    if(c)c.icone=valor;
+  }else if(t && t.tipo==='cartao'){
+    let c=db.cartoes.find(x=>x.id==t.id);
+    if(c)c.icone=valor;
+  }else if(t && t.tipo==='categoria'){
+    db.categoriaIcones[t.nome]=valor;
+  }
+  localStorage.setItem('financeiroPremium',JSON.stringify(db));
+  fecharTecladoIcone();
+  render();
+}
+function abrirIcones(alvo=null){
+  let valorAtual='';
+  if(alvo==='homeCartoes')valorAtual=(db.iconesHome&&db.iconesHome.cartoes)||'💳';
+  if(alvo&&alvo.tipo==='conta'){
+    let c=db.contas.find(x=>x.id==alvo.id); valorAtual=(c&&c.icone)||'🏦';
+  }
+  if(alvo&&alvo.tipo==='cartao'){
+    let c=db.cartoes.find(x=>x.id==alvo.id); valorAtual=(c&&c.icone)||'💳';
+  }
+  if(alvo&&alvo.tipo==='categoria'){
+    valorAtual=(db.categoriaIcones&&db.categoriaIcones[alvo.nome])||'⭐';
+  }
+  abrirTecladoIcone(alvo,valorAtual);
+}
+function selecionarIcone(i){ /* removido: agora usa teclado */ }
+function fecharIcones(){ fecharTecladoIcone(); }
+function abrirIconeConta(id,event){if(event){event.stopPropagation();event.preventDefault();} abrirIcones({tipo:'conta',id:id});}
+function abrirIconeCartao(id,event){if(event){event.stopPropagation();event.preventDefault();} abrirIcones({tipo:'cartao',id:id});}
+function abrirIconeCategoria(nome,event){if(event){event.stopPropagation();event.preventDefault();} abrirIcones({tipo:'categoria',nome:nome});}
+/* ===== FIM ÍCONES PELO TECLADO ===== */
 
 </script>
 </body>
