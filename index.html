@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>SL Financeiro Premium</title>
+<style>
+:root{
+  --bg:#050b12;--card:#0d1724;--card2:#111d2d;--blue:#1f7aff;--gold:#f2b632;--green:#31d158;--red:#ff453a;--text:#f7f7f7;--muted:#94a3b8;--line:#24405f;--appFontSize:15px;--appFontFamily:Arial,Helvetica,sans-serif;
+}
+*{box-sizing:border-box;font-family:var(--appFontFamily);-webkit-tap-highlight-color:transparent;text-transform:uppercase;font-weight:800}
+body{margin:0;background:radial-gradient(circle at top,#10233b 0,#050b12 45%,#02050a 100%);color:var(--text);padding-bottom:18px}
+.app{max-width:480px;margin:auto;min-height:100vh;padding:14px}
+.header{display:flex;align-items:center;justify-content:space-between;margin:4px 0 10px}.topActions{display:flex;gap:8px}.colorRow{display:grid;grid-template-columns:1fr 54px;gap:10px;align-items:center}.colorRow input{height:44px;padding:4px}.editList .item{align-items:flex-start}
+.header h1{font-size:20px;margin:0;color:#fff}.header span{font-size:12px;color:var(--muted)}
+.iconBtn{background:#0b1522;border:1px solid var(--line);color:#fff;border-radius:10px;padding:7px 9px;font-weight:bold;font-size:14px;min-width:38px}
+.card{background:linear-gradient(145deg,#0e1826,#08111d);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 0 18px #0008;margin-bottom:12px}
+
+.editorGroup{border:1px solid var(--blue);background:#07111d;border-radius:16px;padding:12px;margin:10px 0}.editorGroup h3{margin:0 0 8px;color:var(--gold);font-size:15px}.editorBtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.smallBtn{padding:12px;border:1px solid #29435f;border-radius:12px;background:#0c1928;color:#fff;font-weight:800}
+.balance{border-color:var(--blue);box-shadow:0 0 18px #1f7aff33}.balance .label{color:var(--muted);font-size:12px}.balance .value{font-size:32px;font-weight:900;color:var(--green);margin:8px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mini{padding:13px;border-radius:15px;background:var(--card2);border:1px solid #1c314a}.mini.click{cursor:pointer;transition:.15s;box-shadow:0 0 0 transparent}.mini.click:active{transform:scale(.97);border-color:var(--blue)}.mini b{display:block;font-size:12px;color:var(--muted)}.mini span{font-weight:900;font-size:17px}.green{color:var(--green)!important}.red{color:var(--red)!important}.blue{color:#33a0ff!important}.gold{color:var(--gold)!important}
+.sectionTitle{display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px}.sectionTitle h2{font-size:16px;margin:0}.sectionTitle button{font-size:12px;color:var(--blue);background:none;border:0}
+.item{display:flex;align-items:center;justify-content:space-between;background:#0b1522;border:1px solid #182b42;border-radius:14px;padding:11px;margin-bottom:8px}.itemLeft{display:flex;gap:10px;align-items:center}.ico{width:35px;height:35px;border-radius:10px;display:grid;place-items:center;background:#123;flex:none}.item small{display:block;color:var(--muted);margin-top:2px}.actions button{margin-left:5px;background:#16263a;border:1px solid #27425f;color:#fff;border-radius:8px;padding:6px}.accountBtns{display:flex;gap:6px;justify-content:flex-end;margin-top:6px}.accountBtns button{width:34px;height:30px;border:0;border-radius:9px;color:#fff;font-weight:900;font-size:18px}.accountBtns .plus{background:var(--green)}.accountBtns .minus{background:var(--red)}
+.tabs{position:fixed;bottom:0;left:0;right:0;background:#07111d;border-top:1px solid var(--line);display:flex;justify-content:center;z-index:10}.tabsInner{max-width:480px;width:100%;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;padding:7px}.tab{background:transparent;color:var(--muted);border:0;border-radius:12px;padding:7px 2px;font-size:10px}.tab .emoji{display:block;font-size:20px}.tab.active{color:#fff;background:#0d233d;border:1px solid var(--blue)}
+.fab{position:fixed;right:22px;bottom:86px;width:62px;height:62px;border-radius:22px;border:0;background:linear-gradient(145deg,#2388ff,#0555d8);color:white;font-size:34px;box-shadow:0 0 20px #1f7aff88;z-index:9}
+.screen{display:none}.screen.active{display:block}.form label{font-size:12px;color:var(--muted);display:block;margin:12px 0 6px}.form input,.form select,.form textarea{width:100%;padding:14px;background:#0a1420;border:1px solid #203751;border-radius:12px;color:#fff;font-size:15px}.form textarea{min-height:70px;resize:none}.btn{width:100%;padding:15px;border:0;border-radius:13px;color:#fff;font-weight:900;margin-top:14px;background:var(--blue)}.btn.greenBg{background:linear-gradient(145deg,#32d74b,#148a30)}.btn.redBg{background:linear-gradient(145deg,#ff453a,#b91c1c)}.btn.goldBg{background:linear-gradient(145deg,#f2b632,#b77900)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pillBtns{display:flex;gap:7px;overflow:auto;margin-bottom:12px}.pillBtns button{white-space:nowrap;background:#0b1522;border:1px solid #203751;color:#fff;border-radius:12px;padding:10px}.pillBtns button.active{background:#0f4fb8;border-color:#1f7aff}
+.cardCredit{background:linear-gradient(135deg,#4c1d95,#111827);border:1px solid #683bc1;border-radius:18px;padding:18px;margin-bottom:12px}.cardCredit h3{margin:0 0 20px;font-size:22px}.progress{height:8px;background:#26364b;border-radius:10px;overflow:hidden;margin:10px 0}.bar{height:100%;background:var(--green);width:0%}.muted{color:var(--muted)}.empty{text-align:center;color:var(--muted);padding:30px 10px}.modal{position:fixed;inset:0;background:#0009;display:none;align-items:flex-end;z-index:20}.modal.show{display:flex}.box{width:100%;max-width:480px;margin:auto;background:#08111d;border:1px solid var(--line);border-radius:24px 24px 0 0;padding:16px;max-height:90vh;overflow:auto}.close{float:right;background:#17263a;color:#fff;border:1px solid #29435f;border-radius:10px;padding:8px 12px}.danger{border-color:#5b1f1a!important}.chartLine{height:14px;background:#16263a;border-radius:20px;overflow:hidden}.chartLine div{height:100%;background:linear-gradient(90deg,#1f7aff,#31d158)}
+
+.cartoesResumo{margin-bottom:14px}
+.destaqueCartao{min-height:86px;align-items:flex-start;justify-content:center;border:1px solid rgba(242,191,71,.35)}
+.destaqueCartao span{font-size:24px;margin-top:8px}
+
+/* Formulário estilo Mobills */
+.moneyHeader{padding:10px 4px 20px}.backTitle{display:flex;gap:16px;align-items:center;font-size:22px;font-weight:800;margin-bottom:28px}.backTitle button{background:transparent;border:0;color:#fff;font-size:30px}.moneyLabel{color:#c9c9d2;font-size:15px}.moneyInputWrap{display:flex;align-items:center;gap:10px}.moneyPrefix{font-size:44px;font-weight:300;color:#fff}.moneyBig{flex:1;background:transparent!important;border:0!important;border-radius:0!important;font-size:48px!important;padding:0!important;color:#fff!important;outline:none}.currency{font-size:22px;color:#c9c9d2;font-weight:800}.mobForm{background:#3b3b45;border-radius:24px 24px 0 0;margin:0 -16px -16px;padding:18px 24px 28px}.mobRow{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:14px;border-bottom:1px solid #555560;padding:13px 0;min-height:66px}.mobIcon{color:#b7b7c0;font-size:24px;text-align:center}.mobRow input,.mobRow select,.mobRow textarea{background:transparent;border:0;color:#fff;width:100%;font-size:18px;outline:none;padding:6px 0}.mobRow textarea{min-height:42px;resize:none}.mobRow input::placeholder,.mobRow textarea::placeholder{color:#bfc0c8}.chipRow{display:flex;gap:10px;flex-wrap:wrap}.chip{border:0;border-radius:22px;padding:12px 18px;color:#fff;background:#51515b;font-weight:800}.chip.green{background:#65bd68;color:#fff!important}.chip.red{background:#b54646;color:#fff!important}.selectPill{border:1px solid #33a0ff;border-radius:22px;padding:10px 14px;color:#fff;display:inline-flex;gap:8px;align-items:center;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.switch{position:relative;width:58px;height:32px;display:inline-block}.switch input{display:none}.slider{position:absolute;cursor:pointer;inset:0;background:#bbb;border-radius:20px;transition:.2s}.slider:before{content:"";position:absolute;width:28px;height:28px;left:2px;top:2px;background:#ddd;border-radius:50%;transition:.2s;box-shadow:0 2px 8px #0008}.switch input:checked+.slider{background:#2fbf55}.switch input:checked+.slider:before{transform:translateX(26px);background:#55d86a}.saveRound{width:78px;height:78px;border-radius:50%;border:0;background:#52c75a;color:#fff;font-size:40px;box-shadow:0 8px 20px #0009;display:block;margin:22px auto 0}.saveContinue{text-align:center;color:#69d46e;font-weight:900;letter-spacing:4px;margin-top:24px}.repeatSheet{position:fixed;left:0;right:0;bottom:0;background:#56565f;border-radius:28px 28px 0 0;padding:24px;z-index:40;display:none;max-width:480px;margin:auto}.repeatSheet.show{display:block}.sheetLine{display:grid;grid-template-columns:34px 1fr 100px;align-items:center;gap:14px;border-bottom:1px solid #696973;padding:16px 0;font-size:18px}.sheetLine input,.sheetLine select{background:transparent;border:0;color:#fff;font-size:18px;outline:none}.sheetDone{background:#e85852;border:0;color:#fff;width:100%;border-radius:26px;padding:18px;margin-top:28px;font-weight:900;letter-spacing:3px;font-size:17px}
+
+.mesAnoBox{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}.mesAnoControl{display:grid;grid-template-columns:42px 1fr 42px;align-items:center;gap:6px;background:#0b1522;border:1px solid var(--line);border-radius:14px;padding:8px;text-align:center}.mesAnoControl button{height:36px;border:0;border-radius:10px;background:#16263a;color:#fff;font-weight:900;font-size:18px}.mesAnoControl strong{font-size:14px;color:#fff;text-transform:uppercase}.dateFilterBox{background:#07111d;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px}.homeDateFilter{margin-top:-4px;margin-bottom:12px;border-color:#f2b632!important;box-shadow:0 0 14px #f2b63244!important}
+
+.selectSheet,.iconSheet{position:fixed;inset:0;background:#0009;z-index:60;display:none;align-items:flex-end}.selectSheet.show,.iconSheet.show{display:flex}.selectBox,.iconBox{width:100%;max-width:480px;margin:auto;background:#3b3b45;border-radius:26px 26px 0 0;padding:18px;max-height:72vh;overflow:auto}.selectOption{width:100%;display:flex;align-items:center;gap:12px;padding:15px;border:0;border-bottom:1px solid #555560;background:transparent;color:#fff;text-align:left;font-size:18px}.selectOption b{font-size:18px}.selectOption small{display:block;color:#cfd0d6;margin-top:3px}.iconGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}.ico.clickIcon,.cardIconBig{cursor:pointer;transition:.15s}.ico.clickIcon:active,.cardIconBig:active{transform:scale(.92)}.cardTitleLine{display:flex;align-items:center;gap:10px;margin-bottom:14px}.cardIconBig{width:44px;height:44px;border-radius:14px;background:#0007;border:1px solid #ffffff33;display:grid;place-items:center;font-size:25px;box-shadow:0 0 12px #0008}.catIconBtn{width:62px;height:52px;border-radius:16px;border:1px solid var(--line);background:#0b1522;color:#fff;font-size:28px}.iconChoice{height:46px;border-radius:14px;border:1px solid #696973;background:#4b4b55;color:#fff;font-size:24px}.mobIcon.pickable{cursor:pointer;background:#4b4b55;border-radius:12px;padding:5px}
+
+
+.item.ignoredItem{border:1px solid var(--red)!important;box-shadow:0 0 14px #ff453aaa, inset 0 0 10px #ff453a22;background:#180b10!important}
+.payBtn{border:0!important;color:#fff!important;font-weight:900!important;padding:7px 10px!important;border-radius:9px!important}
+.payBtn.redPay{background:linear-gradient(145deg,#ff453a,#b91c1c)!important}
+.payBtn.greenPay{background:linear-gradient(145deg,#31d158,#148a30)!important}
+.ignoreBtn.activeIgnore{background:#3a1010!important;border-color:#ff453a!important;color:#ffb4ae!important;box-shadow:0 0 10px #ff453a88!important}
+.logoTop{margin:6px 0 12px;display:grid;gap:8px}
+.logoBox{height:92px;border:2px dashed var(--blue);border-radius:18px;background:#07111d;display:grid;place-items:center;overflow:hidden;position:relative;box-shadow:0 0 18px #1f7aff44;cursor:pointer}
+.logoBox img{max-width:100%;max-height:100%;object-fit:contain;transition:.15s;pointer-events:none}
+.logoPlaceholder{text-align:center;color:var(--muted);font-weight:900}
+.topButtons{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.logoControls{display:none;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.topButtons button,.logoControls button,.menuHomeBtn{background:#0b1522;border:1px solid var(--line);color:#fff;border-radius:12px;padding:11px;font-weight:900}
+.menuHomeBtn{width:100%;margin-bottom:12px;font-size:15px;background:linear-gradient(145deg,#0c2340,#07111d)}
+.menuGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.menuGrid .smallBtn{min-height:58px;font-size:15px}
+.appTitle{cursor:pointer;user-select:none;text-align:center;font-size:20px;font-weight:900;color:#fff;margin:8px 0 14px;letter-spacing:.3px;text-shadow:0 0 12px #1f7aff88}
+.balanceTop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.balanceTop .label{margin:0}
+.gearInside{width:42px;height:42px;border-radius:14px;border:1px solid var(--line);background:#0b1522;color:#fff;font-size:21px;font-weight:900}
+
+
+/* Contornos neon coloridos dos cards e quadrados */
+.card{border:1.5px solid #1f7aff!important;box-shadow:0 0 14px #1f7aff55, inset 0 0 12px #ffffff08!important}
+.balance{border:2px solid #f2b632!important;box-shadow:0 0 18px #f2b63266, inset 0 0 12px #f2b63218!important}
+.mini{border:1.8px solid #33a0ff!important;box-shadow:0 0 13px #33a0ff55, inset 0 0 10px #33a0ff12!important}
+.grid .mini:nth-child(1){border-color:#f2b632!important;box-shadow:0 0 15px #f2b63266!important}
+.grid .mini:nth-child(2){border-color:#ff453a!important;box-shadow:0 0 15px #ff453a66!important}
+.grid .mini:nth-child(3){border-color:#31d158!important;box-shadow:0 0 15px #31d15866!important}
+.grid .mini:nth-child(4){border-color:#ff453a!important;box-shadow:0 0 15px #ff453a66!important}
+.grid .mini:nth-child(5){border-color:#9b5cff!important;box-shadow:0 0 15px #9b5cff66!important}
+.grid .mini:nth-child(6){border-color:#00e5ff!important;box-shadow:0 0 15px #00e5ff66!important}
+.item,.mobRow,.editorGroup,.box,.cardCredit{border:1.5px solid #00e5ff!important;box-shadow:0 0 12px #00e5ff44, inset 0 0 10px #00e5ff10!important}
+.btn,.smallBtn,.gearInside{box-shadow:0 0 12px #1f7aff66!important}
+
+.eyeInside{width:42px;height:42px;border-radius:14px;border:1px solid var(--gold);background:#0b1522;color:#fff;font-size:20px;font-weight:900;box-shadow:0 0 12px #f2b63266!important}
+.confirmOverlay{position:fixed;inset:0;background:#000b;z-index:100;display:none;align-items:center;justify-content:center;padding:18px}.confirmOverlay.show{display:flex}.confirmBox{width:100%;max-width:420px;background:linear-gradient(145deg,#0e1826,#050b12);border:2px solid var(--blue);border-radius:24px;padding:18px;box-shadow:0 0 25px #1f7aff88;text-align:center}.confirmBox h2{margin:0 0 8px;color:#fff}.confirmBox p{color:var(--muted);font-weight:700}.confirmBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.confirmYes{background:linear-gradient(145deg,#ff453a,#a30d0d);color:#fff;border:0;border-radius:16px;padding:16px;font-weight:900;font-size:17px}.confirmNo{background:linear-gradient(145deg,#31d158,#13852c);color:#fff;border:0;border-radius:16px;padding:16px;font-weight:900;font-size:17px}
+.balanceControls{display:flex;gap:8px;align-items:center}
+
+.histAlertRow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.alertBtn{background:linear-gradient(145deg,#ffb020,#ff453a)!important;color:#fff!important;border:0!important;box-shadow:0 0 14px #ff453a88!important}
+.alertTotalBox{border:2px solid #ff453a!important;box-shadow:0 0 18px #ff453a66!important;background:linear-gradient(145deg,#1a0b0b,#07111d)!important;text-align:center}
+.alertTotalBox b{display:block;color:#ffb4ae;font-size:13px;margin-bottom:6px}.alertTotalBox span{font-size:26px;font-weight:900;color:#ff453a}
+
+
+
+/* Galeria de 30 temas premium */
+.themeToolbar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 12px}
+.themeGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
+.themeCard{border:2px solid #27425f;border-radius:18px;padding:10px;background:#0b1522;color:#fff;text-align:left;box-shadow:0 0 12px #0008;min-height:118px;position:relative;overflow:hidden}
+.themeCard.activeTheme{border-color:var(--gold)!important;box-shadow:0 0 18px var(--gold)!important}
+.themePreview{height:54px;border-radius:14px;border:1px solid #ffffff33;margin-bottom:8px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;padding:8px}
+.themePreview i{border-radius:8px;display:block}
+.themeName{font-weight:900;font-size:13px;display:block;margin-bottom:3px}
+.themeSmall{font-size:11px;color:#cbd5e1;display:block}
+.themeCheck{position:absolute;right:10px;top:10px;background:#0009;border:1px solid #ffffff33;border-radius:99px;width:28px;height:28px;display:grid;place-items:center;font-size:14px}
+.themeActions{position:sticky;bottom:-16px;background:linear-gradient(0deg,#08111d 75%,#08111d00);padding:18px 0 2px;margin-top:8px;z-index:3}
+
+
+/* Layout moderno somente para Nova Receita / Nova Despesa */
+.box{background:linear-gradient(180deg,#091827,#050b12)!important;border-radius:28px 28px 0 0!important}
+.modal.moneyModal .close{display:none!important}
+.moneyHeader{position:relative;margin:0 0 0;padding:12px 0 18px;border-radius:24px;background:linear-gradient(145deg,rgba(31,122,255,.28),rgba(3,8,16,.65));border:1px solid rgba(0,229,255,.28);box-shadow:0 0 22px rgba(31,122,255,.28)!important;overflow:hidden}
+.moneyHeader:before{content:"";position:absolute;inset:-60px -40px auto auto;width:160px;height:160px;background:radial-gradient(circle,rgba(0,229,255,.38),transparent 65%);pointer-events:none}
+.backTitle{position:relative;display:grid;grid-template-columns:44px 1fr 44px;gap:10px;align-items:center;margin-bottom:18px;font-size:20px;font-weight:900}
+.backTitle button{width:44px;height:44px;border-radius:16px!important;background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.15)!important;color:#fff!important;font-size:30px!important;line-height:1}
+.backTitle span{text-align:center;letter-spacing:.4px;text-transform:uppercase}.formBadge{width:44px;height:44px;border-radius:16px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);display:grid;place-items:center;font-size:24px;box-shadow:0 0 14px rgba(255,255,255,.08)}
+.moneyLabel{text-transform:uppercase;letter-spacing:1.5px;color:#b8d7ff!important;font-size:11px!important;font-weight:900;margin-bottom:8px}
+.moneyInputWrap{position:relative;min-height:92px;background:linear-gradient(145deg,rgba(2,6,16,.82),rgba(8,20,34,.96));border:2px solid rgba(0,229,255,.58);border-radius:24px;padding:22px 56px 18px 16px;width:100%;box-shadow:0 0 20px rgba(0,229,255,.25),inset 0 0 18px rgba(0,0,0,.45);display:flex;align-items:center;gap:10px}
+.moneyClose{position:absolute;right:8px;top:8px;width:38px;height:38px;border-radius:14px;border:1px solid rgba(255,69,58,.75);background:linear-gradient(145deg,#ff453a,#8f1212);color:#fff;font-size:20px;font-weight:900;display:grid;place-items:center;box-shadow:0 0 14px rgba(255,69,58,.7);z-index:3}
+.moneyPrefix{font-size:30px!important;color:#d8ecff!important;font-weight:900!important}.moneyBig{font-size:56px!important;font-weight:900!important;text-align:left;line-height:1!important;min-width:0}.currency{font-size:13px!important;background:rgba(255,255,255,.10);padding:8px 10px;border-radius:14px;color:#dbeafe!important}
+.mobForm{background:transparent!important;border-radius:0!important;margin:12px -4px -4px!important;padding:0 0 12px!important}.modernGroup{display:grid;gap:10px;margin-bottom:12px}.modernGroup.two{grid-template-columns:1fr 1fr}.modernCard{background:linear-gradient(145deg,rgba(13,23,36,.94),rgba(6,15,26,.98));border:1.5px solid rgba(0,229,255,.32);border-radius:20px;padding:12px;box-shadow:0 0 13px rgba(0,229,255,.18),inset 0 0 12px rgba(255,255,255,.04)}
+.mobRow.modernCard{display:grid;grid-template-columns:42px 1fr auto;min-height:64px;border-bottom:0!important;gap:12px}.mobRow.modernCard.full{grid-template-columns:42px 1fr}.mobIcon{width:42px;height:42px;border-radius:15px;background:rgba(255,255,255,.08);display:grid;place-items:center;color:#fff!important;font-size:23px!important}.mobIcon.pickable{border:1px solid rgba(255,255,255,.18);box-shadow:0 0 12px rgba(31,122,255,.28)}
+.modernCard b{font-size:15px}.modernCard small{color:#9fb3c8!important}.mobRow input,.mobRow textarea{font-size:16px!important}.mobRow input::placeholder,.mobRow textarea::placeholder{color:#9fb3c8!important}.chipRow{gap:8px}.chip{flex:1;min-width:82px;border-radius:16px!important;background:#111d2d!important;border:1px solid rgba(255,255,255,.13)!important;padding:11px 10px!important}.chip.green{background:linear-gradient(145deg,#31d158,#15803d)!important}.chip.red{background:linear-gradient(145deg,#ff453a,#991b1b)!important}.arrowModern{font-size:26px;color:#8fb8ff;font-weight:900}
+.optionsGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.optionCard{background:linear-gradient(145deg,rgba(13,23,36,.94),rgba(6,15,26,.98));border:1.5px solid rgba(31,122,255,.28);border-radius:20px;padding:12px;display:grid;grid-template-columns:36px 1fr auto;align-items:center;gap:10px;box-shadow:0 0 12px rgba(31,122,255,.16)}.optionCard .mobIcon{width:36px;height:36px;font-size:19px!important;border-radius:13px}.optionCard b{font-size:13px}.optionCard small{font-size:10px;color:#9fb3c8!important}.optionCard .switch{transform:scale(.82);transform-origin:right center}.obsModern textarea{min-height:66px!important}.saveContinue{display:none}.saveRound{width:100%!important;height:58px!important;border-radius:19px!important;margin:12px 0 0!important;background:linear-gradient(145deg,#31d158,#0f7a2b)!important;font-size:18px!important;font-weight:900;letter-spacing:1px}.saveRound:before{content:"SALVAR  ";font-size:16px}.repeatSheet{background:linear-gradient(180deg,#26364b,#111827)!important;border:1px solid rgba(0,229,255,.35);box-shadow:0 -8px 28px #0009}
+@media(max-width:380px){.modernGroup.two,.optionsGrid{grid-template-columns:1fr}.moneyBig{font-size:44px!important}.moneyInputWrap{min-height:84px;padding-right:52px}.chip{min-width:auto}}
+
+
+.cardRedMini{border-color:var(--red)!important;box-shadow:0 0 15px #ff453a77!important}
+.fontPreviewBox{border:1.5px solid var(--line);border-radius:18px;padding:14px;background:#0b1522;margin:12px 0;text-align:center}
+.fontControls{display:grid;grid-template-columns:54px 1fr 54px;gap:8px;align-items:center;margin:10px 0}.fontControls button{height:48px;border:0;border-radius:14px;background:#16263a;color:#fff;font-size:24px;font-weight:900}.fontControls strong{font-size:20px;color:var(--gold);text-align:center}.fontSelectGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.fontChoice{border:1px solid #29435f;border-radius:14px;background:#0c1928;color:#fff;padding:12px;font-weight:900}.fontChoice.activeFont{border-color:var(--gold)!important;box-shadow:0 0 14px var(--gold)!important}
+
+/* CORREÇÃO FINAL: esconder totalmente o X cinza padrão nas telas de nova receita/despesa */
+#modal.moneyModal > .box > button.close,
+.modal.moneyModal .box > button.close{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important;width:0!important;height:0!important;padding:0!important;margin:0!important;border:0!important;overflow:hidden!important;}
+#modal.moneyModal .box{padding-top:16px!important;}
+#modal.moneyModal .moneyHeader{width:100%!important;margin:0!important;}
+#modal.moneyModal .moneyInputWrap{position:relative;width:100%!important;min-height:92px!important;border:2px solid var(--blue)!important;border-radius:20px!important;background:#07111d!important;box-shadow:0 0 18px #1f7aff66!important;padding:22px 48px 12px 16px!important;}
+#modal.moneyModal .moneyClose{position:absolute!important;right:8px!important;top:6px!important;width:36px!important;height:36px!important;border-radius:12px!important;border:1px solid #ff453a!important;background:#2a0707!important;color:#ff453a!important;font-size:28px!important;font-weight:900!important;line-height:30px!important;display:grid!important;place-items:center!important;z-index:5!important;}
+
+/* Cards de contas modernos */
+.accountCard{
+  display:block!important;
+  background:linear-gradient(145deg,rgba(13,23,36,.98),rgba(6,14,25,.98))!important;
+  border:2px solid #00e5ff!important;
+  border-radius:22px!important;
+  padding:16px!important;
+  margin-bottom:12px!important;
+  box-shadow:0 0 18px #00e5ff55, inset 0 0 16px #ffffff0a!important;
+}
+.accountCardTop{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.accountCardTop .ico{width:44px;height:44px;border-radius:15px;font-size:24px}
+.accountCardName{font-size:17px;font-weight:900;color:#fff;letter-spacing:.4px;text-transform:uppercase}
+.accountCardType{font-size:11px;color:var(--muted);font-weight:900;text-transform:uppercase;margin-top:3px}
+.accountCardValue{text-align:center;font-size:32px!important;font-weight:900;margin:12px 0 14px;line-height:1.05;text-shadow:0 0 12px currentColor}
+.accountCardBtns{display:grid!important;grid-template-columns:1fr 1fr;gap:14px;justify-content:stretch;margin-top:8px}
+.accountCardBtns button{width:100%!important;height:54px!important;border:0!important;border-radius:18px!important;color:#fff!important;font-weight:900!important;font-size:30px!important;box-shadow:0 0 16px #0008!important}
+.accountCardBtns .plus{background:linear-gradient(145deg,#31d158,#118b32)!important}
+.accountCardBtns .minus{background:linear-gradient(145deg,#ff453a,#a71515)!important}
+
+
+
+/* AJUSTE: CONTAS E CARTÕES CADASTRADOS MAIS COMPACTOS E MODERNOS */
+.accountCard.accountCardCompact{
+  display:grid!important;
+  grid-template-columns:1fr auto!important;
+  align-items:center!important;
+  gap:8px!important;
+  min-height:72px!important;
+  padding:10px 12px!important;
+  border-radius:18px!important;
+  margin-bottom:9px!important;
+  background:linear-gradient(135deg,rgba(7,17,29,.98),rgba(13,23,36,.98))!important;
+}
+.accountMainLine{display:flex!important;align-items:center!important;gap:10px!important;min-width:0!important}
+.accountMainLine .ico{width:38px!important;height:38px!important;border-radius:13px!important;font-size:22px!important}
+.accountTextLine{min-width:0!important}
+.accountCardName{font-size:15px!important;line-height:1.05!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.accountCardType{font-size:10px!important;margin-top:2px!important}
+.accountValueSide{text-align:right!important;font-size:22px!important;font-weight:900!important;line-height:1!important;text-shadow:0 0 10px currentColor!important;white-space:nowrap!important;margin:0!important}
+.accountMiniBtns{display:flex!important;gap:6px!important;justify-content:flex-end!important;margin-top:7px!important}
+.accountMiniBtns button{width:38px!important;height:32px!important;border:0!important;border-radius:12px!important;color:#fff!important;font-size:22px!important;font-weight:900!important;line-height:1!important;box-shadow:0 0 12px #0008!important}
+.accountMiniBtns .plus{background:linear-gradient(145deg,#31d158,#118b32)!important}
+.accountMiniBtns .minus{background:linear-gradient(145deg,#ff453a,#a71515)!important}
+.cardCredit.cardCompact{
+  position:relative!important;
+  min-height:86px!important;
+  padding:12px 44px 12px 12px!important;
+  border-radius:18px!important;
+  margin-bottom:10px!important;
+  background:linear-gradient(135deg,var(--cartaoCor,#4c1d95),#0b1220)!important;
+  overflow:hidden!important;
+}
+.cardCredit.cardCompact::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at right top,#ffffff22,transparent 42%);pointer-events:none}
+.cardCompactTop{display:flex!important;align-items:center!important;gap:10px!important;min-width:0!important;position:relative;z-index:1}
+.cardCompactTop .cardIconBig{width:38px!important;height:38px!important;border-radius:13px!important;font-size:22px!important;flex:none!important}
+.cardCompactName{font-size:15px!important;font-weight:900!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;line-height:1.05!important}
+.cardCompactValues{display:grid!important;grid-template-columns:1fr 1fr 1fr!important;gap:6px!important;margin-top:9px!important;position:relative;z-index:1}
+.cardCompactValues small{font-size:8.5px!important;color:#dbeafe!important;display:block!important;line-height:1.05!important}
+.cardCompactValues b{font-size:13px!important;display:block!important;line-height:1.1!important;white-space:nowrap!important}
+.cardColorTiny{position:absolute!important;right:10px!important;top:10px!important;width:24px!important;height:24px!important;border-radius:50%!important;border:2px solid #fff!important;padding:0!important;background:transparent!important;overflow:hidden!important;z-index:2!important;box-shadow:0 0 10px #000!important}
+.cardColorTiny::-webkit-color-swatch-wrapper{padding:0!important}.cardColorTiny::-webkit-color-swatch{border:0!important;border-radius:50%!important}.cardColorTiny::-moz-color-swatch{border:0!important;border-radius:50%!important}
+.cardCompactFoot{margin-top:7px!important;font-size:9px!important;color:#e5e7eb!important;position:relative;z-index:1}.cardCompact .progress{height:5px!important;margin:6px 0 0!important;position:relative;z-index:1}
+
+
+
+/* CORREÇÃO VISUAL: BOTÕES CONTA +/-, CARTÃO VERMELHO E CONFIG DOURADO */
+.accountMiniBtns{
+  gap:10px!important;
+}
+.accountMiniBtns button{
+  width:48px!important;
+  height:39px!important;
+  min-width:48px!important;
+  border-radius:15px!important;
+  font-size:27px!important;
+  box-shadow:0 0 14px #0009!important;
+}
+.accountMiniBtns .plus{
+  background:linear-gradient(145deg,#31d158,#0f8f32)!important;
+}
+.accountMiniBtns .minus{
+  background:linear-gradient(145deg,#ff453a,#b41212)!important;
+}
+.cardCredit.cardCompact{
+  border:2px solid var(--blue)!important;
+  box-shadow:0 0 16px #1f7aff88, inset 0 0 12px #1f7aff22!important;
+}
+.gearInside{
+  border:2px solid var(--gold)!important;
+  box-shadow:0 0 15px #f2b632aa, inset 0 0 10px #f2b63222!important;
+  color:var(--gold)!important;
+}
+
+
+/* CORREÇÃO FINAL: CARD CARTÕES DA PÁGINA PRINCIPAL EM VERMELHO */
+#inicio .grid .mini.cardRedMini,
+#inicio .grid .mini.click.cardRedMini,
+#inicio .grid .mini:nth-child(6).cardRedMini{
+  border:2px solid #ff453a !important;
+  box-shadow:0 0 18px #ff453aaa, inset 0 0 12px #ff453a33 !important;
+}
+#inicio .grid .mini.cardRedMini b,
+#inicio .grid .mini.cardRedMini span{
+  color:#ff453a !important;
+}
+
+
+/* CORREÇÃO: CARD CARTÕES PRINCIPAL COM NOME CINZA E VALOR VERMELHO */
+#inicio .grid .mini.cardRedMini b{
+  color:var(--muted)!important;
+}
+#inicio .grid .mini.cardRedMini #totalCartoes{
+  color:#ff453a!important;
+}
+#iconeCardCartoes{
+  color:#fff!important;
+  display:inline-block;
+  filter:drop-shadow(0 0 8px #ff453a88);
+}
+
+
+/* FIREBASE BACKUP PREMIUM */
+.backupBtns{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}
+.backupBtns .backupNow{background:linear-gradient(145deg,#1f7aff,#034fc7)!important}
+.backupBtns .restoreNow{background:linear-gradient(145deg,#31d158,#0f7a2b)!important}
+.backupBtns .datesNow{background:linear-gradient(145deg,#f2b632,#a96500)!important}
+.backupStatus{margin-top:10px;background:#07111d;border:1.5px solid var(--line);border-radius:14px;padding:10px;color:var(--muted);font-size:12px;text-align:center}
+.backupListItem{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:#0b1522;border:1.5px solid #00e5ff;border-radius:16px;padding:12px;margin-bottom:8px;box-shadow:0 0 10px #00e5ff33}
+.backupListItem b{color:#fff;font-size:13px}
+.backupListItem small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.backupListItem button{border:0;border-radius:12px;background:linear-gradient(145deg,#31d158,#0f7a2b);color:#fff;padding:10px;font-weight:900}
+.firebaseWarn{border:1.5px solid #ff453a!important;box-shadow:0 0 14px #ff453a66!important;color:#ffb4ae!important}
+
+
+/* FIREBASE BACKUP PREMIUM CORRIGIDO */
+.backupBtns{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}
+.backupBtns .backupNow{background:linear-gradient(145deg,#1f7aff,#034fc7)!important}
+.backupBtns .restoreNow{background:linear-gradient(145deg,#31d158,#0f7a2b)!important}
+.backupBtns .datesNow{background:linear-gradient(145deg,#f2b632,#a96500)!important}
+.backupListItem{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;background:#0b1522;border:1.5px solid #00e5ff;border-radius:16px;padding:12px;margin-bottom:8px;box-shadow:0 0 10px #00e5ff33}
+.backupListItem b{color:#fff;font-size:13px}
+.backupListItem small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.backupListItem button{border:0;border-radius:12px;background:linear-gradient(145deg,#31d158,#0f7a2b);color:#fff;padding:10px;font-weight:900}
+
+
+/* PENDÊNCIAS PREMIUM - SELEÇÃO MÚLTIPLA E FILTRO */
+.pendingTools{
+  display:none;
+  background:linear-gradient(145deg,#07111d,#0d1724);
+  border:1.7px solid #f2b632;
+  border-radius:18px;
+  padding:12px;
+  margin-bottom:12px;
+  box-shadow:0 0 14px #f2b63244, inset 0 0 10px #ffffff08;
+}
+.pendingTools.show{display:block}
+.pendingToolsTop{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.pendingTools select{
+  width:100%;
+  padding:13px;
+  border-radius:14px;
+  background:#0a1420;
+  border:1px solid #29435f;
+  color:#fff;
+  font-weight:900;
+}
+.pendingSumBox{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+  background:#0b1522;
+  border:1.5px solid #00e5ff;
+  border-radius:16px;
+  padding:12px;
+  text-align:center;
+  margin-top:10px;
+  box-shadow:0 0 12px #00e5ff44;
+}
+.pendingSumBox b{font-size:12px;color:var(--muted)}
+.pendingSumBox span{font-size:26px;font-weight:900;color:var(--gold);text-shadow:0 0 12px currentColor}
+.pendingActionsGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.pendingActionsGrid button{
+  border:0;
+  border-radius:15px;
+  padding:14px 10px;
+  color:#fff;
+  font-weight:900;
+  box-shadow:0 0 13px #0008;
+}
+.pendingSelectAll{background:linear-gradient(145deg,#1f7aff,#063f9e)}
+.pendingPay{background:linear-gradient(145deg,#31d158,#0f7a2b)}
+.pendingReceive{background:linear-gradient(145deg,#31d158,#0f7a2b)}
+.pendingClear{background:linear-gradient(145deg,#ff453a,#9e1010)}
+.pendingItem{
+  position:relative;
+  display:grid!important;
+  grid-template-columns:42px 1fr auto!important;
+  gap:10px!important;
+  align-items:center!important;
+  border-radius:18px!important;
+  padding:12px!important;
+}
+.pendingCheck{
+  width:34px;
+  height:34px;
+  border-radius:12px;
+  accent-color:#31d158;
+}
+.pendingItem.selectedPending{
+  border-color:#31d158!important;
+  box-shadow:0 0 15px #31d15888, inset 0 0 12px #31d15822!important;
+}
+.pendingValue{
+  font-size:18px;
+  font-weight:900;
+  white-space:nowrap;
+  text-shadow:0 0 10px currentColor;
+}
+.pendingMeta small{font-size:11px}
+.pendingFilterLabel{font-size:11px;color:var(--muted);display:block;margin-bottom:5px}
+
+
+/* AJUSTE PENDÊNCIAS COMPACTAS + LIXEIRA */
+.pendingTools{padding:8px!important;border-radius:14px!important;margin-bottom:8px!important}
+.pendingToolsTop{grid-template-columns:1fr!important;gap:6px!important;margin-bottom:6px!important}
+.pendingTools select{padding:9px!important;border-radius:11px!important;font-size:12px!important}
+.pendingFilterLabel{font-size:9px!important;margin-bottom:3px!important}
+.pendingSumBox{padding:8px!important;border-radius:12px!important;margin-top:4px!important}
+.pendingSumBox b{font-size:10px!important}
+.pendingSumBox span{font-size:20px!important}
+.pendingActionsGrid{gap:6px!important;margin-top:7px!important}
+.pendingActionsGrid button{padding:9px 6px!important;border-radius:11px!important;font-size:10px!important}
+.pendingItem{grid-template-columns:28px 1fr auto!important;gap:7px!important;padding:8px!important;border-radius:14px!important;margin-bottom:6px!important}
+.pendingCheck{width:22px!important;height:22px!important;border-radius:8px!important}
+.pendingItem .ico{width:32px!important;height:32px!important;border-radius:10px!important;font-size:18px!important}
+.pendingMeta b{font-size:12px!important}
+.pendingMeta small{font-size:9px!important}
+.pendingValue{font-size:14px!important}
+.pendingItem .actions{display:flex!important;gap:4px!important;justify-content:flex-end!important;flex-wrap:wrap!important;margin-top:4px!important}
+.pendingItem .actions button{font-size:9px!important;padding:5px 6px!important;margin-left:0!important;border-radius:8px!important}
+.trashRestoreBtn{background:linear-gradient(145deg,#31d158,#0f7a2b)!important;color:#fff!important;border:0!important;border-radius:10px!important;padding:8px 10px!important;font-weight:900!important}
+.trashDeleteBtn{background:linear-gradient(145deg,#ff453a,#9e1010)!important;color:#fff!important;border:0!important;border-radius:10px!important;padding:8px 10px!important;font-weight:900!important}
+
+
+/* ALERTAS:  SEPARADO DO BUSCAR POR NOME */
+.alertTools{
+  background:linear-gradient(145deg,#07111d,#0d1724);
+  border:1.7px solid #ff453a;
+  border-radius:16px;
+  padding:10px;
+  margin-bottom:10px;
+  box-shadow:0 0 14px #ff453a44, inset 0 0 10px #ffffff08;
+}
+.alertTools label{
+  display:block;
+  font-size:10px;
+  color:var(--muted);
+  margin-bottom:5px;
+  font-weight:900;
+}
+.alertTools select{
+  width:100%;
+  padding:11px;
+  border-radius:13px;
+  background:#0a1420;
+  border:1px solid #ff453a;
+  color:#fff;
+  font-weight:900;
+}
+.alertTools .alertClearCat{
+  width:100%;
+  margin-top:8px;
+  border:0;
+  border-radius:12px;
+  padding:10px;
+  background:linear-gradient(145deg,#ff453a,#9e1010);
+  color:#fff;
+  font-weight:900;
+}
+
+
+/* FINAL: CATEGORIAS SOMENTE NOS BOTÕES DE BAIXO */
+.pendingToolsTop{
+  display:block!important;
+  margin:0!important;
+}
+.pendingToolsTop > div:first-child{
+  display:none!important;
+}
+.pendingActionsGrid{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:6px!important;
+}
+.categoryBottomSelect{
+  width:100%!important;
+  padding:10px!important;
+  border-radius:12px!important;
+  background:#0a1420!important;
+  border:1.5px solid #f2b632!important;
+  color:#fff!important;
+  font-weight:900!important;
+  box-shadow:0 0 10px #f2b63244!important;
+}
+.alertBottomTools{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:8px!important;
+  margin-bottom:10px!important;
+  background:linear-gradient(145deg,#07111d,#0d1724)!important;
+  border:1.7px solid #ff453a!important;
+  border-radius:16px!important;
+  padding:10px!important;
+  box-shadow:0 0 14px #ff453a44, inset 0 0 10px #ffffff08!important;
+}
+.alertTopFilter,
+.alertTools label,
+.pendingFilterLabel{
+  display:none!important;
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="appTitle" onclick="showScreen('inicio')">📊SL FINANCEIRO PREMIUM📊</div>
+  <div class="dateFilterBox homeDateFilter">
+    <button class="smallBtn" onclick="toggleFiltroDatas()" style="width:100%;margin-bottom:10px">🔍 FILTRO DE DATAS</button>
+    <div class="mesAnoBox">
+      <div class="mesAnoControl">
+        <button onclick="mudarMes(-1)">&lt;</button>
+        <strong id="histMesNome">MÊS</strong>
+        <button onclick="mudarMes(1)">&gt;</button>
+      </div>
+      <div class="mesAnoControl">
+        <button onclick="mudarAno(-1)">&lt;</button>
+        <strong id="histAnoValor">ANO</strong>
+        <button onclick="mudarAno(1)">&gt;</button>
+      </div>
+    </div>
+    <div id="filtroDatasBox" style="display:none">
+      <div class="row" style="margin-bottom:10px">
+        <div><label class="muted" style="font-size:12px">Data inicial</label><input id="dataInicio" type="date" oninput="render()" style="width:100%;padding:13px;border-radius:12px;border:1px solid var(--line);background:#0a1420;color:white"></div>
+        <div><label class="muted" style="font-size:12px">Data final</label><input id="dataFim" type="date" oninput="render()" style="width:100%;padding:13px;border-radius:12px;border:1px solid var(--line);background:#0a1420;color:white"></div>
+      </div>
+      <button class="smallBtn" onclick="aplicarMesAno()" style="width:100%;margin-bottom:8px">Usar mês selecionado</button>
+      <button class="smallBtn" onclick="limparDatasHistorico()" style="width:100%;margin-bottom:10px">Limpar datas</button>
+    </div>
+  </div>
+  <input id="logoInput" type="file" accept="image/*" style="display:none" onchange="selecionarLogo(event)">
+  <div id="logoBox" style="display:none"></div>
+  <div id="logoControls" style="display:none"></div>
+  <span id="today" style="display:none"></span>
+
+  <section id="inicio" class="screen active">
+    <div class="card balance"><div class="balanceTop"><div class="label">SALDO GERAL</div><div class="balanceControls"><button id="eyeBtn" class="eyeInside" onclick="toggleValores()">👁️</button><button class="gearInside" onclick="openModal('config')">⚙️</button></div></div><div id="saldoGeral" class="value">R$ 0,00</div><div id="saldoStatus" class="green">↗ Positivo</div><div class="histAlertRow"><button class="btn" onclick="abrirHistoricoTodos()">📜 HISTÓRICO</button><button class="btn alertBtn" onclick="abrirAlertas()">⚠️ ALERTAS</button></div></div>
+    <div class="grid">
+      <div class="mini click" onclick="abrirCategoria('receita',true)"><b>⏳ Receitas Pendentes</b><span id="receitasPendentes" class="gold">R$ 0,00</span></div>
+      <div class="mini click" onclick="abrirCategoria('despesa',true)"><b>⚠️ Despesas Pendentes</b><span id="despesasPendentes" class="red">R$ 0,00</span></div>
+      <div class="mini click" onclick="abrirCategoria('receita')"><b>💰 Receitas</b><span id="totalReceitas" class="green">R$ 0,00</span></div>
+      <div class="mini click" onclick="abrirCategoria('despesa')"><b>🛒 Despesas</b><span id="totalDespesas" class="red">R$ 0,00</span></div>
+      <div class="mini click" onclick="abrirCategoria('contas')"><b>🏦 Contas</b><span id="totalContas" class="blue">R$ 0,00</span></div>
+      <div class="mini click cardRedMini" onclick="showScreen('cartoes')"><b><span id="iconeCardCartoes" onclick="event.stopPropagation();abrirIcones('homeCartoes')" style="cursor:pointer;font-size:18px;margin-right:4px">💳</span> CARTÕES</b><span id="totalCartoes" class="red">R$ 0,00</span></div>
+    </div>
+    <div class="sectionTitle"><h2>🏦 Todas as contas</h2></div>
+    <div id="contasInicio"></div>
+  </section>
+
+  <section id="contas" class="screen">
+    <div class="sectionTitle"><h2>🏦 Carteiras / Contas</h2><button onclick="openModal('conta')">+ Nova</button></div>
+    <p class="muted">Aqui você cadastra, edita e exclui as carteiras. Na tela inicial aparece apenas o saldo individual de cada uma.</p>
+    <div id="listaContas"></div>
+  </section>
+
+  <section id="cartoes" class="screen">
+    <div class="sectionTitle"><h2>Meus Cartões</h2><button onclick="showScreen('inicio')">VOLTAR</button></div>
+    <button class="btn goldBg" onclick="openModal('compraCartao')" style="margin-bottom:12px">LANÇAR COMPRA NO CARTÃO</button>
+    <div class="grid cartoesResumo">
+      <div class="mini destaqueCartao"><b>💳 Limite Total</b><span id="limiteTotalCartoes" class="gold">R$ 0,00</span></div>
+      <div class="mini destaqueCartao"><b>💸 Já Gastou</b><span id="usadoTotalCartoes" class="red">R$ 0,00</span></div>
+    </div>
+    <div id="listaCartoes"></div>
+  </section>
+
+  <section id="relatorios" class="screen">
+    <div class="sectionTitle"><h2>📊 Relatórios</h2><button onclick="showScreen('inicio')">Voltar</button></div>
+    <div class="card"><h2>📈 Resumo</h2><p class="muted">Receitas, despesas, cartões e saldo são atualizados automaticamente.</p><div id="relResumo"></div></div>
+  </section>
+
+  <section id="historico" class="screen">
+    <div class="sectionTitle"><h2 id="historicoTitulo">📜 Histórico</h2><button onclick="showScreen('inicio')">Voltar</button></div>
+    <p id="historicoSubtitulo" class="muted" style="margin-top:-6px;margin-bottom:12px"></p>
+
+    <input id="busca" oninput="render()" placeholder="Buscar por nome ou categoria" style="width:100%;padding:13px;border-radius:12px;border:1px solid var(--line);background:#0a1420;color:white;margin-bottom:12px">
+    <div id="listaHistorico"></div>
+  </section>
+</div>
+
+
+<div id="modal" class="modal"><div class="box"><button class="close" onclick="closeModal()">X</button><div id="modalBody"></div></div></div>
+<div id="confirmOverlay" class="confirmOverlay"><div class="confirmBox"><h2 id="confirmTitle">Confirmar</h2><p id="confirmText">Tem certeza?</p><div class="confirmBtns"><button class="confirmYes" onclick="responderConfirmacao(true)">SIM</button><button class="confirmNo" onclick="responderConfirmacao(false)">NÃO</button></div></div></div>
+
+<script>
+let ocultarValores=JSON.parse(localStorage.getItem('ocultarValoresFinanceiro')||'false');
+const fmt=v=>ocultarValores?'••••':(Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const uid=()=>Date.now()+Math.random().toString(16).slice(2);
+const ICONES_WHATSAPP='😀 😃 😄 😁 😆 😅 😂 🤣 😊 😇 🙂 🙃 😉 😌 😍 🥰 😘 😗 😙 😚 😋 😛 😜 🤪 😝 🤑 🤗 🤭 🤫 🤔 🤐 🤨 😐 😑 😶 😏 😒 🙄 😬 🤥 😌 😔 😪 🤤 😴 😷 🤒 🤕 🤢 🤮 🤧 🥵 🥶 😎 🤓 🧐 😕 😟 🙁 ☹️ 😮 😯 😲 😳 🥺 😦 😧 😨 😰 😥 😢 😭 😱 😖 😣 😞 😓 😩 😫 🥱 😤 😡 😠 🤬 😈 👿 💀 ☠️ 💩 🤡 👻 👽 🤖 😺 😸 😹 😻 😼 😽 🙀 😿 😾 🙈 🙉 🙊 💋 💌 💘 💝 💖 💗 💓 💞 💕 💟 ❣️ 💔 ❤️ 🧡 💛 💚 💙 💜 🤎 🖤 🤍 💯 💢 💥 💫 💦 💨 🕳️ 💣 💬 👁️‍🗨️ 🗨️ 🗯️ 💭 💤 👋 🤚 🖐️ ✋ 🖖 👌 🤌 🤏 ✌️ 🤞 🤟 🤘 🤙 👈 👉 👆 🖕 👇 ☝️ 👍 👎 ✊ 👊 🤛 🤜 👏 🙌 👐 🤲 🤝 🙏 ✍️ 💅 🤳 💪 🦾 🦿 🦵 🦶 👂 👃 🧠 🫀 🫁 🦷 🦴 👀 👁️ 👅 👄 👶 🧒 👦 👧 🧑 👱 👨 🧔 👩 🧓 👴 👵 🙍 🙎 🙅 🙆 💁 🙋 🧏 🙇 🤦 🤷 👮 🕵️ 💂 🥷 👷 🤴 👸 👳 👲 🧕 🤵 👰 🤰 🤱 👼 🎅 🤶 🦸 🦹 🧙 🧚 🧛 🧜 🧝 🧞 🧟 💆 💇 🚶 🧍 🧎 🏃 💃 🕺 🕴️ 👯 🧖 🧗 🤺 🏇 ⛷️ 🏂 🏌️ 🏄 🚣 🏊 ⛹️ 🏋️ 🚴 🚵 🤸 🤼 🤽 🤾 🤹 🧘 🛀 🛌 🐶 🐱 🐭 🐹 🐰 🦊 🐻 🐼 🐨 🐯 🦁 🐮 🐷 🐸 🐵 🐔 🐧 🐦 🐤 🦆 🦅 🦉 🦇 🐺 🐗 🐴 🦄 🐝 🐛 🦋 🐌 🐞 🐜 🦟 🦗 🕷️ 🦂 🐢 🐍 🦎 🦖 🐙 🦑 🦐 🦞 🦀 🐡 🐠 🐟 🐬 🐳 🦈 🐊 🐅 🐆 🦓 🦍 🦧 🐘 🦛 🦏 🐪 🦒 🦘 🦬 🐃 🐂 🐄 🐎 🐖 🐏 🐑 🐐 🦌 🐕 🐩 🦮 🐈 🐓 🦃 🦚 🦜 🦢 🦩 🕊️ 🐇 🦝 🦨 🦡 🦦 🦥 🐁 🐀 🐿️ 🦔 🐾 🐉 🐲 🌵 🎄 🌲 🌳 🌴 🌱 🌿 ☘️ 🍀 🎍 🪴 🎋 🍃 🍂 🍁 🍄 🐚 🌾 💐 🌷 🌹 🥀 🌺 🌸 🌼 🌻 🌞 🌝 🌛 🌜 🌚 🌕 🌖 🌗 🌘 🌑 🌒 🌓 🌔 🌙 🌎 ⭐ 🌟 ✨ ⚡ ☄️ 💥 🔥 🌪️ 🌈 ☀️ 🌤️ ⛅ 🌧️ ⛈️ ❄️ ☃️ ⛄ 🌬️ 💧 🌊 🍏 🍎 🍐 🍊 🍋 🍌 🍉 🍇 🍓 🫐 🍈 🍒 🍑 🥭 🍍 🥥 🥝 🍅 🥑 🍆 🥔 🥕 🌽 🌶️ 🥒 🥬 🥦 🧄 🧅 🍄 🥜 🌰 🍞 🥐 🥖 🥨 🥯 🥞 🧇 🧀 🍖 🍗 🥩 🥓 🍔 🍟 🍕 🌭 🥪 🌮 🌯 🫔 🥙 🧆 🥚 🍳 🥘 🍲 🫕 🥣 🥗 🍿 🧈 🧂 🥫 🍱 🍘 🍙 🍚 🍛 🍜 🍝 🍠 🍢 🍣 🍤 🍥 🥮 🍡 🥟 🥠 🥡 🦪 🍦 🍧 🍨 🍩 🍪 🎂 🍰 🧁 🥧 🍫 🍬 🍭 🍮 🍯 🍼 🥛 ☕ 🫖 🍵 🍶 🍾 🍷 🍸 🍹 🍺 🍻 🥂 🥃 🥤 🧋 🧃 🧉 🧊 🥢 🍽️ 🍴 🥄 🔪 🏺 🌍 🏠 🏡 🏢 🏦 🏪 🏫 🏥 🏭 🏰 💒 🗼 🗽 ⛪ 🕌 🛕 🕍 ⛩️ 🕋 ⛲ ⛺ 🌁 🌃 🌄 🌅 🌆 🌇 🌉 ♨️ 🎠 🎡 🎢 💈 🎪 🚂 🚆 🚇 🚊 🚉 ✈️ 🛫 🛬 🚁 🚀 🛸 🚗 🚕 🚙 🚌 🚎 🏎️ 🚓 🚑 🚒 🚐 🛻 🚚 🚛 🚜 🛵 🏍️ 🛺 🚲 🛴 🛹 🛼 🚏 🛣️ ⛽ 🚨 🚥 🚦 🛑 ⚓ ⛵ 🛶 🚤 🛳️ ⌛ ⏳ ⌚ ⏰ 🕰️ 🌡️ ☂️ 🧳 🌂 🧵 🪡 🪢 🧶 👓 🕶️ 🥽 🥼 🦺 👔 👕 👖 🧣 🧤 🧥 🧦 👗 👘 🥻 🩱 🩲 🩳 👙 👚 👛 👜 👝 🎒 🩴 👞 👟 🥾 🥿 👠 👡 🩰 👢 👑 👒 🎩 🎓 🧢 ⛑️ 💄 💍 💎 🔇 🔈 🔉 🔊 📢 📣 📯 🔔 🔕 🎼 🎵 🎶 🎙️ 🎚️ 🎛️ 🎤 🎧 📻 🎷 🪗 🎸 🎹 🎺 🎻 🪕 🥁 📱 📲 ☎️ 📞 📟 📠 🔋 🔌 💻 🖥️ 🖨️ ⌨️ 🖱️ 💽 💾 💿 📀 🧮 🎥 🎬 📺 📷 📸 📹 📼 🔍 🔎 🕯️ 💡 🔦 🏮 🪔 📔 📕 📖 📗 📘 📙 📚 📓 📒 📃 📜 📄 📰 🗞️ 📑 🔖 🏷️ 💰 🪙 💴 💵 💶 💷 💸 💳 🧾 💹 ✉️ 📧 📨 📩 📤 📥 📦 📫 📪 📬 📭 📮 🗳️ ✏️ ✒️ 🖋️ 🖊️ 🖌️ 🖍️ 📝 💼 📁 📂 🗂️ 📅 📆 🗒️ 🗓️ 📇 📈 📉 📊 📋 📌 📍 📎 🖇️ 📏 📐 ✂️ 🗃️ 🗄️ 🗑️ 🔒 🔓 🔏 🔐 🔑 🗝️ 🔨 🪓 ⛏️ ⚒️ 🛠️ 🗡️ 🛡️ 🔧 🔩 ⚙️ 🗜️ ⚖️ 🦯 🔗 ⛓️ 🧰 🧲 🪜 ⚗️ 🧪 🧫 🧬 🔬 🔭 📡 💉 🩸 💊 🩹 🩺 🚪 🛗 🪞 🪟 🛏️ 🛋️ 🪑 🚽 🚿 🛁 🪠 🧴 🧷 🧹 🧺 🧻 🪣 🧼 🪥 🧽 🧯 🛒 🚬 ⚰️ ⚱️ 🗿 🪧 🏧 🚮 🚰 ♿ 🚹 🚺 🚻 🚼 🚾 🛂 🛃 🛄 🛅 ⚠️ 🚸 ⛔ 🚫 🚳 🚭 🚯 🚱 🚷 📵 🔞 ☢️ ☣️ ⬆️ ↗️ ➡️ ↘️ ⬇️ ↙️ ⬅️ ↖️ ↕️ ↔️ ↩️ ↪️ ⤴️ ⤵️ 🔃 🔄 🔙 🔚 🔛 🔜 🔝 🛐 ⚛️ 🕉️ ✡️ ☸️ ☯️ ✝️ ☦️ ☪️ ☮️ 🕎 🔯 ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓ ⛎ 🔀 🔁 ▶️ ⏸️ ⏯️ ⏹️ ⏺️ ⏭️ ⏮️ ⏩ ⏪ 🔼 🔽 🎦 📶 📳 📴 ♀️ ♂️ ⚧️ ✖️ ➕ ➖ ➗ ♾️ ‼️ ⁉️ ❓ ❔ ❕ ❗ 〰️ 💱 💲 ⚕️ ♻️ ⚜️ 🔱 📛 🔰 ✅ ☑️ ✔️ ❌ ❎ ➰ ➿ 〽️ ✳️ ✴️ ❇️ ©️ ®️ ™️ #️⃣ *️⃣ 0️⃣ 1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ 6️⃣ 7️⃣ 8️⃣ 9️⃣ 🔟'.split(' ');
+let iconPickerTarget=null;
+let filtro='todos', filtroPendencia=false, editId=null, contaPreId=null, catTipo='despesa', editandoLogo=false;
+let pendSelecionados=[];
+let pendCategoriaFiltro='todos';
+let alertCategoriaFiltro='todos';
+let hojeHist=new Date(), histMes=hojeHist.getMonth(), histAno=hojeHist.getFullYear();
+let db=JSON.parse(localStorage.getItem('financeiroPremium')||'null')||{
+ contas:[{id:uid(),nome:'Carteira',tipo:'Dinheiro',saldo:0}],
+ categoriasReceitas:['Salário','Pix Recebido','Comissão','Venda','Investimento','Outros'],
+ categoriasDespesas:['Alimentação','Mercado','Transporte','Casa','Lazer','Saúde','Educação','Outros'],
+ cartoes:[], movs:[],
+ tema:{bg:'#050b12',card:'#0d1724',blue:'#1f7aff',gold:'#f2b632',green:'#31d158',red:'#ff453a'}
+};
+db.tema=db.tema||{bg:'#050b12',card:'#0d1724',blue:'#1f7aff',gold:'#f2b632',green:'#31d158',red:'#ff453a'};
+db.fonte=db.fonte||{size:15,family:'Arial, Helvetica, sans-serif'};
+db.logo=db.logo||{src:'',scale:1};
+db.temaAtual=db.temaAtual||'Neon Azul';
+db.categoriaIcones=db.categoriaIcones||{};
+db.lixeira=db.lixeira||[];
+db.iconesHome=db.iconesHome||{cartoes:'💳'};
+db.contas.forEach(c=>{c.icone=c.icone||'🏦'});
+db.cartoes.forEach(c=>{c.icone=c.icone||'💳'});
+const ICONES_CATEGORIA_PADRAO={
+  'Salário':'💵','Pix Recebido':'📲','Comissão':'💰','Venda':'🛍️','Investimento':'📈','Outros':'⭐',
+  'Alimentação':'🍔','Mercado':'🛒','Transporte':'🚗','Casa':'🏠','Lazer':'🎮','Saúde':'💊','Educação':'📚'
+};
+function iconeCategoria(nome,tipo){return db.categoriaIcones[nome]||ICONES_CATEGORIA_PADRAO[nome]||(tipo=='receita'?'💰':'🛒')}
+
+// Migração: versões antigas usavam uma lista única. Agora receitas e despesas ficam separadas.
+if(!db.categoriasReceitas){db.categoriasReceitas=['Salário','Pix Recebido','Comissão','Venda','Investimento','Outros']}
+if(!db.categoriasDespesas){db.categoriasDespesas=['Alimentação','Mercado','Transporte','Casa','Lazer','Saúde','Educação','Outros']}
+if(db.categorias && Array.isArray(db.categorias)){
+  const recBase=['Salário','Pix Recebido','Comissão','Venda','Investimento'];
+  const despBase=['Alimentação','Mercado','Transporte','Casa','Lazer','Saúde','Educação'];
+  db.categorias.forEach(c=>{
+    if(recBase.includes(c) && !db.categoriasReceitas.includes(c))db.categoriasReceitas.push(c);
+    if(despBase.includes(c) && !db.categoriasDespesas.includes(c))db.categoriasDespesas.push(c);
+  });
+}
+
+function applyTheme(){let t=db.tema||{}; for(let k in t){document.documentElement.style.setProperty('--'+k,t[k])} let f=db.fonte||{size:15,family:'Arial, Helvetica, sans-serif'}; document.documentElement.style.setProperty('--appFontSize',(f.size||15)+'px'); document.documentElement.style.setProperty('--appFontFamily',f.family||'Arial, Helvetica, sans-serif')}
+function save(){localStorage.setItem('financeiroPremium',JSON.stringify(db));applyTheme();render()}
+function todayBR(){return new Date().toLocaleDateString('pt-BR')}
+document.getElementById('today').innerText='Hoje é '+todayBR();
+function showScreen(id,btn){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); if(btn)btn.classList.add('active'); render()}
+function nomeFiltroAtual(){
+  if(filtro=='ignorados')return '';
+  if(filtroPendencia&&filtro=='receita')return 'Receitas Pendentes';
+  if(filtroPendencia&&filtro=='despesa')return 'Despesas Pendentes';
+  if(filtro=='receita')return 'Receitas';
+  if(filtro=='despesa')return 'Despesas';
+  if(filtro=='cartao')return 'Cartões';
+  if(filtro=='contas')return 'Contas';
+  return 'Tudo';
+}
+function abrirHistoricoTodos(){filtro='todos';filtroPendencia=false;showScreen('historico');render()}
+function abrirAlertas(){filtro='ignorados';filtroPendencia=false;showScreen('historico');render()}
+function abrirCategoria(tipo,pendente=false){filtro=tipo;filtroPendencia=pendente;pendSelecionados=[];pendCategoriaFiltro='todos';showScreen('historico');render()}
+
+function pad2(n){return String(n).padStart(2,'0')}
+function ultimoDiaMes(ano,mes){return new Date(ano,mes+1,0).getDate()}
+function nomeMes(m){return ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m]}
+function atualizarMesAnoTela(){
+  if(document.getElementById('histMesNome')) histMesNome.innerText=nomeMes(histMes);
+  if(document.getElementById('histAnoValor')) histAnoValor.innerText=histAno;
+}
+function aplicarMesAno(){
+  let ini=`${histAno}-${pad2(histMes+1)}-01`;
+  let fim=`${histAno}-${pad2(histMes+1)}-${pad2(ultimoDiaMes(histAno,histMes))}`;
+  if(document.getElementById('dataInicio')) dataInicio.value=ini;
+  if(document.getElementById('dataFim')) dataFim.value=fim;
+  atualizarMesAnoTela();
+  render();
+}
+function mudarMes(delta){
+  histMes+=delta;
+  if(histMes<0){histMes=11;histAno--}
+  if(histMes>11){histMes=0;histAno++}
+  aplicarMesAno();
+}
+function mudarAno(delta){histAno+=delta; aplicarMesAno()}
+function toggleFiltroDatas(){let box=document.getElementById('filtroDatasBox'); if(box) box.style.display=box.style.display==='none'?'block':'none'}
+
+
+function toggleValores(){
+  ocultarValores=!ocultarValores;
+  localStorage.setItem('ocultarValoresFinanceiro',JSON.stringify(ocultarValores));
+  const b=document.getElementById('eyeBtn'); if(b)b.innerText=ocultarValores?'🙈':'👁️';
+  render();
+}
+let confirmCallback=null;
+function pedirConfirmacao(titulo,texto,callback){
+  confirmCallback=callback;
+  document.getElementById('confirmTitle').innerText=titulo||'Confirmar';
+  document.getElementById('confirmText').innerText=texto||'Tem certeza?';
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+function responderConfirmacao(ok){
+  document.getElementById('confirmOverlay').classList.remove('show');
+  const cb=confirmCallback; confirmCallback=null;
+  if(ok&&cb)cb();
+}
+
+function openModal(type,id=null){
+  contaPreId=null;
+  editId=id;
+  const modalEl=document.getElementById('modal');
+  if(type=='receita'||type=='despesa') {
+    modalEl.classList.add('moneyModal');
+    const closeBtn=modalEl.querySelector('.close');
+    if(closeBtn) closeBtn.style.display='none';
+  } else {
+    modalEl.classList.remove('moneyModal');
+    const closeBtn=modalEl.querySelector('.close');
+    if(closeBtn) closeBtn.style.display='';
+  }
+  if(type=='entradaConta'){contaPreId=id; editId=null; type='receita'}
+  if(type=='saidaConta'){contaPreId=id; editId=null; type='despesa'}
+  if(type=='categoriaReceita'){catTipo='receita'; type='categoria'}
+  if(type=='categoriaDespesa'){catTipo='despesa'; type='categoria'}
+  const m=document.getElementById('modal'), b=document.getElementById('modalBody');
+  m.classList.add('show');
+  b.innerHTML=forms[type]();
+  if(type=='receita'||type=='despesa') {
+    const closeBtn=m.querySelector('.close');
+    if(closeBtn) closeBtn.style.display='none';
+  }
+  if(type=='receita'||type=='despesa') setTimeout(()=>{let v=document.getElementById('valor'); if(v){v.focus(); try{v.select()}catch(e){}}},80);
+}
+function closeModal(){let md=document.getElementById('modal');md.classList.remove('show');md.classList.remove('moneyModal');let closeBtn=md.querySelector('.close'); if(closeBtn) closeBtn.style.display=''; editId=null;contaPreId=null}
+function catsOptions(tipo='despesa',sel=''){let lista=tipo=='receita'?db.categoriasReceitas:db.categoriasDespesas; return lista.map(c=>`<option ${c==sel?'selected':''}>${c}</option>`).join('')}
+function contasOptions(sel=''){return db.contas.map(c=>`<option value="${c.id}" ${c.id==sel?'selected':''}>${c.nome}</option>`).join('')}
+function cartoesOptions(sel=''){return db.cartoes.map(c=>`<option value="${c.id}" ${c.id==sel?'selected':''}>${c.nome}</option>`).join('')}
+function brlValue(v){return String(v||'').replace('.',',')}
+function parseMoney(v){return +(String(v||'').replace(/[^0-9,.-]/g,'').replace(',','.'))||0}
+function quickDate(opt){let d=new Date(); if(opt=='ontem')d.setDate(d.getDate()-1); if(opt=='outros'){let inp=document.getElementById('data'); inp.style.display='block'; inp.focus(); if(inp.showPicker) inp.showPicker(); return} document.getElementById('data').value=d.toISOString().slice(0,10); document.querySelectorAll('.chipRow .chip').forEach(b=>b.classList.remove('green','red')); event.target.classList.add(document.getElementById('tipoForm').value=='receita'?'green':'red')}
+function nomeCategoriaAtual(){let tipo=document.getElementById('tipoForm')?.value||'despesa'; let v=document.getElementById('cat')?.value||''; return v||'Categoria'}
+function nomeContaAtual(){let v=document.getElementById('conta')?.value||''; let c=db.contas.find(x=>x.id==v); return c?c.nome:'Conta'}
+function abrirSeletor(kind){
+  let html='', titulo=kind=='cat'?'Escolher categoria':'Escolher conta';
+  if(kind=='cat'){let tipo=document.getElementById('tipoForm')?.value||'despesa'; let lista=tipo=='receita'?db.categoriasReceitas:db.categoriasDespesas; html=lista.map(c=>`<button class="selectOption" onclick="selecionarCat('${String(c).replace(/'/g,"\'")}')"><span>${iconeCategoria(c,tipo)}</span><div><b>${c}</b><small>${tipo=='receita'?'Receita':'Despesa'}</small></div></button>`).join('')}
+  else {html=db.contas.map(c=>`<button class="selectOption" onclick="selecionarConta('${c.id}')"><span>${c.icone||'🏦'}</span><div><b>${c.nome}</b><small>${c.tipo}</small></div></button>`).join('')}
+  document.body.insertAdjacentHTML('beforeend',`<div id="selectSheet" class="selectSheet show" onclick="if(event.target.id=='selectSheet')fecharSeletor()"><div class="selectBox"><h2>${titulo}</h2>${html||'<div class="empty">Nada cadastrado.</div>'}</div></div>`);
+}
+function fecharSeletor(){document.getElementById('selectSheet')?.remove()}
+function selecionarCat(v){document.getElementById('cat').value=v; document.getElementById('catLabel').innerText=v; fecharSeletor()}
+function selecionarConta(id){document.getElementById('conta').value=id; document.getElementById('contaLabel').innerText=nomeContaAtual(); fecharSeletor()}
+function abrirIcones(alvo=null){
+  iconPickerTarget=alvo||iconPickerTarget;
+  let html=ICONES_WHATSAPP.map(i=>`<button class="iconChoice" onclick="selecionarIcone('${i}')">${i}</button>`).join('');
+  document.body.insertAdjacentHTML('beforeend',`<div id="iconSheet" class="iconSheet show" onclick="if(event.target.id=='iconSheet')fecharIcones()"><div class="iconBox"><h2>ESCOLHER ÍCONE</h2><div class="iconGrid">${html}</div></div></div>`);
+}
+function fecharIcones(){document.getElementById('iconSheet')?.remove()}
+function selecionarIcone(i){
+  if(iconPickerTarget==='homeCartoes'){
+    db.iconesHome=db.iconesHome||{};
+    db.iconesHome.cartoes=i;
+    const el=document.getElementById('iconeCardCartoes');
+    if(el)el.innerText=i;
+    fecharIcones();
+    save();
+    return;
+  }
+  if(iconPickerTarget && iconPickerTarget.tipo==='conta'){
+    let c=db.contas.find(x=>x.id==iconPickerTarget.id);
+    if(c){c.icone=i; fecharIcones(); save();}
+    iconPickerTarget=null;
+    return;
+  }
+  if(iconPickerTarget && iconPickerTarget.tipo==='cartao'){
+    let c=db.cartoes.find(x=>x.id==iconPickerTarget.id);
+    if(c){c.icone=i; fecharIcones(); save();}
+    iconPickerTarget=null;
+    return;
+  }
+  if(iconPickerTarget && iconPickerTarget.tipo==='categoria'){
+    db.categoriaIcones=db.categoriaIcones||{};
+    db.categoriaIcones[iconPickerTarget.nome]=i;
+    fecharIcones();
+    save();
+    iconPickerTarget=null;
+    return;
+  }
+  if(document.getElementById('iconeMov')){
+    document.getElementById('iconeMov').value=i;
+    const b=document.getElementById('iconeBtn');
+    if(b)b.innerText=i;
+  }
+  fecharIcones();
+}
+function addMonthsISO(dateStr,n){let d=new Date(dateStr+'T00:00'); let day=d.getDate(); d.setMonth(d.getMonth()+n); if(d.getDate()!=day)d.setDate(0); return d.toISOString().slice(0,10)}
+
+function abrirRepetir(){document.getElementById('repeatSheet').classList.add('show'); document.getElementById('repetirCheck').checked=true}
+function fecharRepetir(){document.getElementById('repeatSheet').classList.remove('show')}
+function formMov(tipo){
+  let e=db.movs.find(x=>x.id==editId)||{};
+  let isRec=tipo=='receita';
+  let cor=isRec?'green':'red';
+  let titulo=(editId?'Editar ':'Nova ')+(isRec?'receita':'despesa');
+  let pagoTxt=isRec?'Recebido':'Pago';
+  let naoTxt=isRec?'Não foi recebido':'Não foi pago';
+  let hoje=new Date().toISOString().slice(0,10);
+  let statusHelp=isRec?'Vai para Receitas Pendentes':'Vai para Despesas Pendentes';
+  let catAtual=e.cat||(isRec?(db.categoriasReceitas[0]||'Receita'):(db.categoriasDespesas[0]||'Despesa'));
+  let contaAtual=e.conta||contaPreId||(db.contas[0]?.id||'');
+  let contaNome=(db.contas.find(c=>c.id==contaAtual)||{}).nome||'Conta';
+  let icone=e.icone||iconeCategoria(catAtual,tipo);
+  let tipoIcon=isRec?'💰':'🛒';
+  return `<div class="moneyHeader">
+    <div class="backTitle"><span></span><span>${titulo}</span><span></span></div>
+    <div class="moneyLabel">Valor da ${isRec?'receita':'despesa'}</div>
+    <div class="moneyInputWrap"><button class="moneyClose" onclick="closeModal()" type="button">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" inputmode="decimal" step="0.01" value="${e.valor||''}" placeholder="0,00"><span class="currency">BRL</span></div>
+  </div>
+  <div class="mobForm">
+    <input type="hidden" id="tipoForm" value="${tipo}"><input type="hidden" id="iconeMov" value="${icone}"><input id="data" type="date" value="${e.data||hoje}" style="display:none">
+
+    <div class="modernGroup">
+      <div class="mobRow modernCard">
+        <div class="mobIcon">✅</div>
+        <div><b id="statusText">${e.pago===false?naoTxt:pagoTxt}</b><small style="display:block;margin-top:4px">Desativado: ${statusHelp}</small></div>
+        <label class="switch"><input id="pagoCheck" type="checkbox" ${e.pago===false?'':'checked'} onchange="statusText.innerText=this.checked?'${pagoTxt}':'${naoTxt}'"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <div class="modernCard" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div class="mobIcon">📅</div><div><b>Data do lançamento</b><small style="display:block;margin-top:3px;color:#9fb3c8">Escolha rápido ou use Outros</small></div></div>
+      <div class="chipRow"><button type="button" class="chip ${cor}" onclick="quickDate('hoje')">Hoje</button><button type="button" class="chip" onclick="quickDate('ontem')">Ontem</button><button type="button" class="chip" onclick="quickDate('outros')">Outros...</button></div>
+    </div>
+
+    <div class="modernGroup">
+      <div class="mobRow modernCard full"><div class="mobIcon">✍️</div><input id="desc" placeholder="Descrição do lançamento" value="${e.desc||''}"></div>
+      <div class="mobRow modernCard" onclick="abrirSeletor('cat')"><div class="mobIcon">📂</div><input id="cat" type="hidden" value="${catAtual}"><div><b id="catLabel">${catAtual}</b><small style="display:block;margin-top:4px">Categoria</small></div><span class="arrowModern">›</span></div>
+      <div class="mobRow modernCard" onclick="abrirSeletor('conta')"><div class="mobIcon">🏦</div><input id="conta" type="hidden" value="${contaAtual}"><div><b id="contaLabel">${contaNome}</b><small style="display:block;margin-top:4px">Conta / carteira</small></div><span class="arrowModern">›</span></div>
+    </div>
+
+    <div class="optionsGrid">
+      <div class="optionCard"><div class="mobIcon">📌</div><div><b>${isRec?'Receita fixa':'Despesa fixa'}</b><small>Repete todo mês</small></div><label class="switch"><input id="fixaCheck" type="checkbox" ${e.fixa?'checked':''}><span class="slider"></span></label></div>
+      <div class="optionCard"><div class="mobIcon">↻</div><div onclick="abrirRepetir()"><b>Repetir</b><small>Parcelar / repetir</small></div><label class="switch"><input id="repetirCheck" type="checkbox" ${e.repetir?'checked':''} onchange="if(this.checked)abrirRepetir()"><span class="slider"></span></label></div>
+      <div class="optionCard"><div class="mobIcon">🚫</div><div><b>Ignorar</b><small>Não soma no saldo</small></div><label class="switch"><input id="ignorarCheck" type="checkbox" ${e.ignorado?'checked':''}><span class="slider"></span></label></div>
+    </div>
+
+    <div class="mobRow modernCard full obsModern"><div class="mobIcon">📝</div><textarea id="obs" placeholder="Observação opcional">${e.obs||''}</textarea></div>
+    <div class="saveContinue">SALVAR E CONTINUAR</div><button class="saveRound" onclick="salvarMov('${tipo}')">✓</button>
+  </div>
+  <div id="repeatSheet" class="repeatSheet"><h3>Como sua transação se repete?</h3><div class="sheetLine"><span>▢</span><span>Quantidade</span><input id="repQtd" type="number" min="1" value="${e.repQtd||2}"></div><div class="sheetLine"><span>↻</span><span>Período</span><select id="repPeriodo"><option ${e.repPeriodo=='Mensal'?'selected':''}>Mensal</option><option ${e.repPeriodo=='Semanal'?'selected':''}>Semanal</option><option ${e.repPeriodo=='Anual'?'selected':''}>Anual</option></select></div><button class="sheetDone" onclick="fecharRepetir()">CONCLUÍDO</button></div>`}
+
+const forms={
+ menu:()=>`<h2>☰ Menu Principal</h2><div class="menuGrid"><button class="smallBtn" onclick="closeModal();abrirHistoricoTodos()">📜 Histórico</button><button class="smallBtn" onclick="closeModal();showScreen('relatorios')">📊 Relatórios</button><button class="smallBtn" onclick="closeModal();showScreen('cartoes')">💳 Cartões</button><button class="smallBtn" onclick="openModal('editorCategorias')">📂 Categorias</button><button class="smallBtn" onclick="openModal('config')">⚙️ Configurações</button><button class="smallBtn" onclick="openModal('backup')">☁️ Backup</button></div>`,
+ lancamento:()=>`<h2>Novo lançamento</h2><button class="btn greenBg" onclick="openModal('receita')">+ NOVA RECEITA</button><button class="btn redBg" onclick="openModal('despesa')">+ NOVA DESPESA</button><button class="btn goldBg" onclick="openModal('compraCartao')">+ COMPRA NO CARTÃO</button>`,
+ receita:()=>formMov('receita'),
+ despesa:()=>formMov('despesa'),
+ entradaConta:()=>{let c=db.contas.find(x=>x.id==editId)||{};return `<h2>Adicionar dinheiro em ${c.nome||'Conta'}</h2><div class="form"><label>Descrição</label><input id="desc" value="Entrada em ${c.nome||'conta'}"><label>Valor</label><input id="valor" type="number" step="0.01"><label>Categoria</label><select id="cat">${catsOptions('receita','Salário')}</select><label>Data</label><input id="data" type="date" value="${new Date().toISOString().slice(0,10)}"><label>Observação</label><textarea id="obs"></textarea><button class="btn greenBg" onclick="salvarMovConta('receita','${editId}')">+ ADICIONAR DINHEIRO</button></div>`},
+ saidaConta:()=>{let c=db.contas.find(x=>x.id==editId)||{};return `<h2>Colocar despesa em ${c.nome||'Conta'}</h2><div class="form"><label>Descrição</label><input id="desc" value="Despesa em ${c.nome||'conta'}"><label>Valor</label><input id="valor" type="number" step="0.01"><label>Categoria</label><select id="cat">${catsOptions('despesa','Alimentação')}</select><label>Data</label><input id="data" type="date" value="${new Date().toISOString().slice(0,10)}"><label>Observação</label><textarea id="obs"></textarea><button class="btn redBg" onclick="salvarMovConta('despesa','${editId}')">- LANÇAR DESPESA</button></div>`},
+ conta:()=>{let e=db.contas.find(x=>x.id==editId)||{};let ic=e.icone||'🏦';return `<h2>${editId?'Editar':'Nova'} Conta</h2><div class="form"><label>Ícone</label><button id="iconeContaBtn" type="button" class="catIconBtn" onclick="abrirIcones('contaForm')">${ic}</button><input id="iconeConta" type="hidden" value="${ic}"><label>Nome</label><input id="nome" value="${e.nome||''}"><label>Tipo</label><select id="tipo"><option ${e.tipo=='Carteira'?'selected':''}>Carteira</option><option ${e.tipo=='Conta Corrente'?'selected':''}>Conta Corrente</option><option ${e.tipo=='Poupança'?'selected':''}>Poupança</option><option ${e.tipo=='Pix'?'selected':''}>Pix</option><option ${e.tipo=='Caixa'?'selected':''}>Caixa</option></select><label>Saldo inicial</label><input id="saldo" type="number" step="0.01" value="${e.saldo||0}"><button class="btn" onclick="salvarConta()">SALVAR</button></div>`},
+ categoria:()=>{let lista=catTipo=='receita'?db.categoriasReceitas:db.categoriasDespesas; let e=editId!==null?lista[editId]:''; let titulo=catTipo=='receita'?'Categoria de Receita':'Categoria de Despesa'; let ic=iconeCategoria(e,catTipo); return `<h2>${editId!==null?'Editar':'Nova'} ${titulo}</h2><div class="form"><label>Ícone</label><button id="iconeCatBtn" type="button" class="catIconBtn" onclick="abrirIcones('categoriaForm')">${ic}</button><input id="iconeCat" type="hidden" value="${ic}"><label>Nome da categoria</label><input id="nome" value="${e||''}"><button class="btn ${catTipo=='receita'?'greenBg':'redBg'}" onclick="salvarCategoria()">SALVAR</button></div>`},
+ cartao:()=>{let e=db.cartoes.find(x=>x.id==editId)||{};let ic=e.icone||'💳';return `<h2>${editId?'Editar':'Novo'} Cartão</h2><div class="form"><label>Ícone</label><button id="iconeCartaoBtn" type="button" class="catIconBtn" onclick="abrirIcones('cartaoForm')">${ic}</button><input id="iconeCartao" type="hidden" value="${ic}"><label>Nome</label><input id="nome" value="${e.nome||''}"><label>Final do cartão</label><input id="final" maxlength="4" value="${e.final||''}"><label>Limite total</label><input id="limite" type="number" step="0.01" value="${e.limite||''}"><div class="row"><div><label>Fechamento</label><input id="fech" type="number" min="1" max="31" value="${e.fech||1}"></div><div><label>Vencimento</label><input id="venc" type="number" min="1" max="31" value="${e.venc||10}"></div></div><button class="btn" onclick="salvarCartao()">SALVAR</button></div>`},
+ compraCartao:()=>`<h2>Compra no Cartão</h2><div class="form"><label>Cartão</label><select id="cartao">${cartoesOptions()}</select><label>Descrição</label><input id="desc"><label>Valor total</label><input id="valor" type="number" step="0.01"><label>Parcelas</label><input id="parcelas" type="number" min="1" value="1"><label>Categoria</label><select id="cat">${catsOptions('despesa')}</select><label>Data</label><input id="data" type="date" value="${new Date().toISOString().slice(0,10)}"><button class="btn goldBg" onclick="salvarCompraCartao()">SALVAR COMPRA</button></div>`,
+ editCompraCartao:()=>{let e=db.movs.find(x=>x.id==editId)||{};return `<h2>Editar Compra do Cartão</h2><div class="form"><label>Cartão</label><select id="cartao">${cartoesOptions(e.cartao)}</select><label>Descrição</label><input id="desc" value="${e.desc||''}"><label>Valor</label><input id="valor" type="number" step="0.01" value="${e.valor||''}"><label>Categoria</label><select id="cat">${catsOptions(tipo,e.cat)}</select><label>Data</label><input id="data" type="date" value="${e.data||new Date().toISOString().slice(0,10)}"><label>Observação</label><textarea id="obs">${e.obs||''}</textarea><button class="btn goldBg" onclick="salvarCompraEditada()">SALVAR ALTERAÇÃO</button></div>`},
+ backup:()=>`<h2>☁️ Backup</h2><div class="editorGroup"><h3>Dados do aplicativo</h3><div class="editorBtns"><button class="smallBtn" onclick="exportar()">📤 Exportar</button><label class="smallBtn" style="display:block;text-align:center">📥 Importar<input type="file" accept=".json" onchange="importar(event)" style="display:none"></label></div></div><button class="btn redBg" onclick="zerar()">🗑️ ZERAR TUDO</button>`,
+ config:()=>`<h2>⚙️ Configurações</h2><div class="editorGroup"><h3>☁️ BACKUP FIREBASE</h3><div class="backupBtns"><button class="smallBtn backupNow" onclick="fazerBackupFirebaseManual()">☁️ FAZER BACKUP AGORA</button><button class="smallBtn restoreNow" onclick="restaurarUltimoBackupFirebase()">♻️ RESTAURAR ÚLTIMO BACKUP</button><button class="smallBtn datesNow" onclick="verDatasBackupsFirebase()">📅 VER DATAS DOS ÚLTIMOS BACKUPS</button></div></div><div class="editorGroup"><h3>🎨 Aparência</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal('temas')">🎨 Temas</button><button class="smallBtn" onclick="openModal('fonte')">🔠 Fonte</button></div></div><div class="editorGroup"><h3>📊 Relatórios</h3><div class="editorBtns"><button class="smallBtn" onclick="closeModal();showScreen('relatorios')">📊 Abrir Relatórios</button></div></div><div class="editorGroup"><h3>🛠️ Editor Geral</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal('editorCartoes')">💳 Cartões</button><button class="smallBtn" onclick="openModal('editorContas')">🏦 Contas</button><button class="smallBtn" onclick="openModal('editorCategorias')">📂 Categorias</button><button class="smallBtn" onclick="abrirLixeira()">🗑️ Lixeira</button></div></div><button class="btn redBg" onclick="zerar()">🗑️ ZERAR TUDO</button>`,
+ temas:()=>temaModal(),
+ fonte:()=>{let f=db.fonte||{size:15,family:'Arial, Helvetica, sans-serif'};let fontes=[['Arial, Helvetica, sans-serif','ARIAL'],['Verdana, Geneva, sans-serif','VERDANA'],['Tahoma, Geneva, sans-serif','TAHOMA'],['Trebuchet MS, Arial, sans-serif','TREBUCHET'],['Georgia, serif','GEORGIA'],['Courier New, monospace','COURIER']];return `<h2>🔠 Fonte</h2><div class="fontPreviewBox"><div style="font-family:${f.family};font-size:${f.size}px;font-weight:900">SL FINANCEIRO PREMIUM</div><small class="muted">PRÉVIA DA FONTE</small></div><div class="editorGroup"><h3>Tamanho da fonte</h3><div class="fontControls"><button type="button" onclick="ajustarFonteTemp(-1)">−</button><strong id="fontSizeView">${f.size||15}px</strong><button type="button" onclick="ajustarFonteTemp(1)">+</button></div></div><input id="fonteSize" type="hidden" value="${f.size||15}"><input id="fonteFamily" type="hidden" value="${f.family}"><div class="editorGroup"><h3>Fontes diferentes</h3><div class="fontSelectGrid">${fontes.map(([val,nome])=>`<button type="button" class="fontChoice ${f.family==val?'activeFont':''}" style="font-family:${val}" onclick="selecionarFonteTemp('${val.replace(/'/g,'&#39;')}',this)">${nome}</button>`).join('')}</div></div><button class="btn" onclick="salvarFonte()">SALVAR FONTE</button>`},
+  cores:()=>`<h2>Editar Cores</h2><div class="form">${colorInput('bg','Fundo')}${colorInput('card','Cartões')}${colorInput('blue','Azul principal')}${colorInput('gold','Dourado')}${colorInput('green','Receitas')}${colorInput('red','Despesas')}<button class="btn" onclick="salvarCores()">SALVAR CORES</button></div>`,
+ editorReceitas:()=>editorMovs('receita','Receitas'),
+ editorDespesas:()=>editorMovs('despesa','Despesas'),
+ editorCartoes:()=>editorCartoes(),
+ editorContas:()=>editorContas(),
+ editorCategorias:()=>editorCategorias()
+}
+
+
+const temasPremium=[
+{name:'Neon Azul',desc:'Azul elétrico premium',bg:'#050b12',card:'#0d1724',blue:'#1f7aff',gold:'#f2b632',green:'#31d158',red:'#ff453a'},
+{name:'Verde Esmeralda',desc:'Financeiro clássico',bg:'#03110c',card:'#092018',blue:'#00c2ff',gold:'#d6ff57',green:'#25f08a',red:'#ff4d5e'},
+{name:'Roxo Luxo',desc:'Roxo com brilho neon',bg:'#10021f',card:'#1a0b2e',blue:'#a855f7',gold:'#facc15',green:'#34d399',red:'#fb7185'},
+{name:'Dourado Black',desc:'Preto com ouro',bg:'#080704',card:'#17120a',blue:'#f59e0b',gold:'#ffd166',green:'#4ade80',red:'#ef4444'},
+{name:'Ocean Blue',desc:'Azul oceano escuro',bg:'#02101f',card:'#09243a',blue:'#38bdf8',gold:'#fbbf24',green:'#22c55e',red:'#f43f5e'},
+{name:'Cyber Pink',desc:'Rosa futurista',bg:'#100514',card:'#201020',blue:'#ec4899',gold:'#f59e0b',green:'#10b981',red:'#f43f5e'},
+{name:'Laranja Solar',desc:'Energia quente',bg:'#120804',card:'#231108',blue:'#fb923c',gold:'#fde047',green:'#84cc16',red:'#ef4444'},
+{name:'Gelo Claro',desc:'Visual claro premium',bg:'#f4f7fb',card:'#ffffff',blue:'#2563eb',gold:'#d97706',green:'#16a34a',red:'#dc2626'},
+{name:'Grafite Premium',desc:'Cinza moderno',bg:'#09090b',card:'#18181b',blue:'#60a5fa',gold:'#fbbf24',green:'#22c55e',red:'#ef4444'},
+{name:'Matrix Green',desc:'Verde tecnológico',bg:'#020b07',card:'#06170f',blue:'#00ff88',gold:'#bef264',green:'#39ff14',red:'#ff3131'},
+{name:'Royal Blue',desc:'Azul nobre',bg:'#030816',card:'#0b1633',blue:'#3b82f6',gold:'#facc15',green:'#2dd4bf',red:'#f87171'},
+{name:'Vinho Premium',desc:'Vermelho elegante',bg:'#130408',card:'#240b12',blue:'#f43f5e',gold:'#fbbf24',green:'#4ade80',red:'#ff1744'},
+{name:'Aqua Neon',desc:'Ciano brilhante',bg:'#031316',card:'#06272b',blue:'#06b6d4',gold:'#f59e0b',green:'#2dd4bf',red:'#fb7185'},
+{name:'Purple Blue',desc:'Azul e violeta',bg:'#07071f',card:'#101033',blue:'#6366f1',gold:'#f59e0b',green:'#34d399',red:'#f43f5e'},
+{name:'Minimal Branco',desc:'Limpo e claro',bg:'#f8fafc',card:'#ffffff',blue:'#0f172a',gold:'#ca8a04',green:'#15803d',red:'#b91c1c'},
+{name:'Chocolate',desc:'Marrom dourado',bg:'#120905',card:'#21130c',blue:'#d97706',gold:'#fbbf24',green:'#65a30d',red:'#dc2626'},
+{name:'Midnight Gold',desc:'Noite dourada',bg:'#020617',card:'#0f172a',blue:'#38bdf8',gold:'#facc15',green:'#22c55e',red:'#ef4444'},
+{name:'Fire Red',desc:'Vermelho fogo',bg:'#120303',card:'#220707',blue:'#ef4444',gold:'#fb923c',green:'#22c55e',red:'#ff1f1f'},
+{name:'Lime Dark',desc:'Lima no preto',bg:'#070b02',card:'#121a08',blue:'#84cc16',gold:'#eab308',green:'#a3e635',red:'#f43f5e'},
+{name:'Sky Soft',desc:'Azul suave',bg:'#eef6ff',card:'#ffffff',blue:'#0284c7',gold:'#f59e0b',green:'#16a34a',red:'#dc2626'},
+{name:'Neon Rainbow',desc:'Cores fortes',bg:'#050510',card:'#101020',blue:'#00e5ff',gold:'#ffea00',green:'#00ff85',red:'#ff2d55'},
+{name:'Dark Orange',desc:'Preto e laranja',bg:'#080402',card:'#170d06',blue:'#f97316',gold:'#facc15',green:'#22c55e',red:'#ef4444'},
+{name:'Ice Purple',desc:'Roxo gelado',bg:'#f5f3ff',card:'#ffffff',blue:'#7c3aed',gold:'#d97706',green:'#059669',red:'#e11d48'},
+{name:'Banco Verde',desc:'Verde institucional',bg:'#06120b',card:'#0b1f12',blue:'#16a34a',gold:'#eab308',green:'#22c55e',red:'#dc2626'},
+{name:'Azul Petróleo',desc:'Escuro sofisticado',bg:'#031416',card:'#0a2629',blue:'#0891b2',gold:'#fbbf24',green:'#10b981',red:'#f43f5e'},
+{name:'Magenta Club',desc:'Balada premium',bg:'#130216',card:'#24072b',blue:'#d946ef',gold:'#facc15',green:'#2dd4bf',red:'#fb7185'},
+{name:'Elite Silver',desc:'Prata elegante',bg:'#111827',card:'#1f2937',blue:'#cbd5e1',gold:'#facc15',green:'#4ade80',red:'#f87171'},
+{name:'Tropical',desc:'Verde e azul vivo',bg:'#03120f',card:'#09251d',blue:'#14b8a6',gold:'#facc15',green:'#22c55e',red:'#f97316'},
+{name:'Black White',desc:'Preto minimalista',bg:'#030303',card:'#101010',blue:'#ffffff',gold:'#d4d4d8',green:'#22c55e',red:'#ef4444'},
+{name:'Premium Rosa',desc:'Rosa dourado',bg:'#120611',card:'#241020',blue:'#f472b6',gold:'#fbbf24',green:'#34d399',red:'#fb7185'}
+];
+let temaSelecionadoIndex=0;
+function temaModal(){
+  let atual=db.temaAtual||'Neon Azul';
+  temaSelecionadoIndex=Math.max(0,temasPremium.findIndex(t=>t.name===atual));
+  return `<h2>🎨 Temas Premium</h2><p class="muted">Escolha uma das 30 artes de tema e toque em SALVAR TEMA para mudar o aplicativo.</p><div class="themeToolbar"><button class="smallBtn" onclick="aplicarTemaPreview()">👁️ Prévia</button><button class="smallBtn" onclick="openModal('config')">↩ Voltar</button></div><div id="themeGrid" class="themeGrid">${temasPremium.map((t,i)=>themeCard(t,i)).join('')}</div><div class="themeActions"><button class="btn greenBg" onclick="salvarTemaEscolhido()">✅ SALVAR TEMA</button></div>`;
+}
+function themeCard(t,i){
+  return `<button class="themeCard ${i===temaSelecionadoIndex?'activeTheme':''}" onclick="selecionarTema(${i})"><span class="themeCheck">${i===temaSelecionadoIndex?'✓':''}</span><div class="themePreview" style="background:linear-gradient(135deg,${t.bg},${t.card})"><i style="background:${t.blue}"></i><i style="background:${t.green}"></i><i style="background:${t.red}"></i></div><span class="themeName">${String(i+1).padStart(2,'0')} • ${t.name}</span><span class="themeSmall">${t.desc}</span></button>`;
+}
+function selecionarTema(i){temaSelecionadoIndex=i; let grid=document.getElementById('themeGrid'); if(grid)grid.innerHTML=temasPremium.map((t,idx)=>themeCard(t,idx)).join('');}
+function aplicarTemaPreview(){let t=temasPremium[temaSelecionadoIndex]; db.tema={bg:t.bg,card:t.card,blue:t.blue,gold:t.gold,green:t.green,red:t.red}; applyTheme(); render();}
+function salvarTemaEscolhido(){let t=temasPremium[temaSelecionadoIndex]; db.tema={bg:t.bg,card:t.card,blue:t.blue,gold:t.gold,green:t.green,red:t.red}; db.temaAtual=t.name; save(); openModal('config');}
+
+
+function ajustarFonteTemp(delta){
+  let inp=document.getElementById('fonteSize');
+  if(!inp)return;
+  let v=Math.max(11,Math.min(28,(+inp.value||15)+delta));
+  inp.value=v;
+  let view=document.getElementById('fontSizeView'); if(view)view.innerText=v+'px';
+  let prev=document.querySelector('.fontPreviewBox div'); if(prev)prev.style.fontSize=v+'px';
+}
+function selecionarFonteTemp(familia,btn){
+  let inp=document.getElementById('fonteFamily'); if(inp)inp.value=familia;
+  document.querySelectorAll('.fontChoice').forEach(b=>b.classList.remove('activeFont'));
+  if(btn)btn.classList.add('activeFont');
+  let prev=document.querySelector('.fontPreviewBox div'); if(prev)prev.style.fontFamily=familia;
+}
+function salvarFonte(){
+  db.fonte=db.fonte||{};
+  db.fonte.size=+(document.getElementById('fonteSize')?.value||15);
+  db.fonte.family=document.getElementById('fonteFamily')?.value||'Arial, Helvetica, sans-serif';
+  closeModal();
+  save();
+}
+function colorInput(k,label){return `<div class="colorRow"><label>${label}</label><input id="cor_${k}" type="color" value="${(db.tema&&db.tema[k])||'#000000'}"></div>`}
+function salvarCores(){['bg','card','blue','gold','green','red'].forEach(k=>db.tema[k]=document.getElementById('cor_'+k).value); closeModal(); save()}
+function editorMovs(tipo,titulo){let arr=db.movs.filter(m=>m.tipo==tipo);return `<h2>Editar ${titulo}</h2><button class="btn ${tipo=='receita'?'greenBg':'redBg'}" onclick="openModal('${tipo}')">+ NOVA</button><div class="editList">${arr.map(m=>`<div class="item"><div><b>${m.desc}</b><small>${m.cat} • ${fmt(m.valor)}</small></div><div class="actions"><button onclick="openModal('${tipo}','${m.id}')">✏️</button><button onclick="excluir('${m.id}');openModal('editor${tipo=='receita'?'Receitas':'Despesas'}')">🗑️</button></div></div>`).join('')||'<div class="empty">Nada cadastrado.</div>'}</div>`}
+function editorCartoes(){return `<h2>Editar Cartões</h2><button class="btn goldBg" onclick="openModal('cartao')">+ NOVO CARTÃO</button><div class="editList">${db.cartoes.map(c=>`<div class="item"><div><b>${c.nome}</b><small>Final ${c.final} • Limite ${fmt(c.limite)}</small></div><div class="actions"><button onclick="openModal('cartao','${c.id}')">✏️</button><button onclick="excluirCartao('${c.id}');openModal('editorCartoes')">🗑️</button></div></div>`).join('')||'<div class="empty">Nenhum cartão.</div>'}</div>`}
+function editorContas(){return `<h2>Editar Contas</h2><button class="btn" onclick="openModal('conta')">+ NOVA CONTA</button><div class="editList">${db.contas.map(c=>`<div class="item"><div><b>${c.nome}</b><small>${c.tipo} • ${fmt(c.saldo)}</small></div><div class="actions"><button onclick="openModal('conta','${c.id}')">✏️</button><button onclick="excluirConta('${c.id}');openModal('editorContas')">🗑️</button></div></div>`).join('')||'<div class="empty">Nenhuma conta.</div>'}</div>`}
+function editorCategorias(){return `<h2>Editar Categorias</h2>
+<div class="editorGroup"><h3>💰 Categorias de Receitas</h3><button class="btn greenBg" onclick="openModal('categoriaReceita')">+ NOVA CATEGORIA DE RECEITA</button><div class="editList">${db.categoriasReceitas.map((c,i)=>`<div class="item"><div class="itemLeft"><div class="ico clickIcon" onclick="abrirIcones('categoria','${String(c).replace(/'/g,"\'")}')">${iconeCategoria(c,'receita')}</div><div><b>${c}</b><small>Receita • clique no ícone para trocar</small></div></div><div class="actions"><button onclick="openModal('categoriaReceita','${i}')">✏️</button><button onclick="excluirCategoria('receita',${i});openModal('editorCategorias')">🗑️</button></div></div>`).join('')||'<div class="empty">Nenhuma categoria de receita.</div>'}</div></div>
+<div class="editorGroup"><h3>💸 Categorias de Despesas</h3><button class="btn redBg" onclick="openModal('categoriaDespesa')">+ NOVA CATEGORIA DE DESPESA</button><div class="editList">${db.categoriasDespesas.map((c,i)=>`<div class="item"><div class="itemLeft"><div class="ico clickIcon" onclick="abrirIcones('categoria','${String(c).replace(/'/g,"\'")}')">${iconeCategoria(c,'despesa')}</div><div><b>${c}</b><small>Despesa • clique no ícone para trocar</small></div></div><div class="actions"><button onclick="openModal('categoriaDespesa','${i}')">✏️</button><button onclick="excluirCategoria('despesa',${i});openModal('editorCategorias')">🗑️</button></div></div>`).join('')||'<div class="empty">Nenhuma categoria de despesa.</div>'}</div></div>`}
+function salvarMov(tipo){
+  let old=db.movs.find(x=>x.id==editId);
+  let pagoCheck=document.getElementById('pagoCheck');
+  let ignorar=document.getElementById('ignorarCheck')?.checked||false;
+  let base={
+    id:editId||uid(),
+    tipo:tipo,
+    desc:desc.value||'Sem descrição',
+    valor:+valor.value||0,
+    cat:cat.value,
+    data:data.value,
+    conta:conta.value,
+    obs:obs.value||'',
+    pago:pagoCheck?pagoCheck.checked:true,
+    venc:document.getElementById('venc')?.value||'',
+    fixa:document.getElementById('fixaCheck')?.checked||false,
+    repetir:document.getElementById('repetirCheck')?.checked||false,
+    repQtd:+(document.getElementById('repQtd')?.value||1),
+    repPeriodo:document.getElementById('repPeriodo')?.value||'',
+    ignorado:ignorar,
+    icone:document.getElementById('iconeMov')?.value||(tipo=='receita'?'💰':'🛒')
+  };
+  if(!base.valor)return alert('Digite um valor');
+  if(old){db.movs=db.movs.map(x=>x.id==editId?base:x)}
+  else if(base.fixa){
+    let qtd=base.repetir?Math.max(1,base.repQtd||1):12;
+    for(let i=0;i<qtd;i++){db.movs.push({...base,id:uid(),data:addMonthsISO(base.data,i),desc:i?`${base.desc} (${i+1}/${qtd})`:base.desc})}
+  } else db.movs.push(base);
+  closeModal(); save();
+}
+function salvarMovConta(tipo,contaId){let mov={id:uid(),tipo,desc:desc.value||'Sem descrição',valor:+valor.value||0,cat:cat.value,data:data.value,conta:contaId,obs:obs.value||'',pago:true,venc:''}; if(!mov.valor)return alert('Digite um valor'); db.movs.push(mov); closeModal(); save()}
+function salvarConta(){let obj={id:editId||uid(),nome:nome.value||'Conta',tipo:tipo.value,saldo:+saldo.value||0,icone:document.getElementById('iconeConta')?.value||'🏦'}; if(editId) db.contas=db.contas.map(x=>x.id==editId?obj:x); else db.contas.push(obj); closeModal(); save()}
+function salvarCategoria(){if(!nome.value)return; let lista=catTipo=='receita'?db.categoriasReceitas:db.categoriasDespesas; let ic=document.getElementById('iconeCat')?.value||iconeCategoria(nome.value,catTipo); if(editId!==null){let antigo=lista[editId]; lista[editId]=nome.value; if(antigo&&antigo!==nome.value&&db.categoriaIcones[antigo]){db.categoriaIcones[nome.value]=db.categoriaIcones[antigo]; delete db.categoriaIcones[antigo];}} else if(!lista.includes(nome.value))lista.push(nome.value); db.categoriaIcones[nome.value]=ic; closeModal(); save()}
+function salvarCartao(){let obj={id:editId||uid(),nome:nome.value||'Cartão',final:final.value||'0000',limite:+limite.value||0,fech:fech.value||1,venc:venc.value||10,icone:document.getElementById('iconeCartao')?.value||'💳'}; if(editId) db.cartoes=db.cartoes.map(x=>x.id==editId?obj:x); else db.cartoes.push(obj); closeModal(); save()}
+function salvarCompraEditada(){let mov={id:editId,tipo:'cartao',cartao:cartao.value,desc:desc.value||'Compra',valor:+valor.value||0,cat:cat.value,data:data.value,pago:false,obs:obs.value||'Compra no cartão'}; db.movs=db.movs.map(x=>x.id==editId?mov:x); closeModal(); save()}
+function salvarCompraCartao(){if(!cartao.value)return alert('Cadastre um cartão primeiro'); let parc=Math.max(1,+parcelas.value||1), total=+valor.value||0; for(let i=1;i<=parc;i++){db.movs.push({id:uid(),tipo:'cartao',cartao:cartao.value,desc:`${desc.value||'Compra'} ${parc>1?i+'/'+parc:''}`,valor:total/parc,cat:cat.value,data:data.value,pago:false,obs:'Compra parcelada no cartão'})} closeModal(); save()}
+function excluir(id){
+  pedirConfirmacao('ENVIAR PARA LIXEIRA','DESEJA ENVIAR ESTE LANÇAMENTO PARA A LIXEIRA?',()=>{
+    db.lixeira=db.lixeira||[];
+    const item=db.movs.find(x=>x.id==id);
+    if(item){
+      db.lixeira.unshift({...item,apagadoEm:new Date().toISOString(),apagadoEmBR:new Date().toLocaleString('pt-BR')});
+      db.movs=db.movs.filter(x=>x.id!=id);
+      save();
+    }
+  });
+}
+function ignorarMov(id){let m=db.movs.find(x=>x.id==id); if(!m)return; m.ignorado=!m.ignorado; save()}
+function pagarMov(id){let m=db.movs.find(x=>x.id==id); if(!m)return; m.pago=true; m.ignorado=false; save()}
+function impactoHistorico(m){let v=+m.valor||0; if(m.ignorado)return 0; if((m.tipo=='receita'||m.tipo=='despesa')&&m.pago===false)return 0; if(m.tipo=='receita')return v; if(m.tipo=='despesa'||m.tipo=='cartao')return -v; return 0}
+function excluirConta(id){if(confirm('Excluir conta?')){db.contas=db.contas.filter(x=>x.id!=id);save()}}
+function excluirCartao(id){if(confirm('Excluir cartão?')){db.cartoes=db.cartoes.filter(x=>x.id!=id);save()}}
+function excluirCategoria(tipo,i){if(confirm('Excluir categoria?')){let lista=tipo=='receita'?db.categoriasReceitas:db.categoriasDespesas; lista.splice(i,1);save()}}
+function dentroFiltroData(m){let di=document.getElementById('dataInicio')?.value||'';let df=document.getElementById('dataFim')?.value||'';return (!di||m.data>=di)&&(!df||m.data<=df)}
+function totais(){let rec=0,desp=0,cart=0,recPend=0,despPend=0; db.movs.filter(dentroFiltroData).forEach(m=>{let v=+m.valor||0; if(m.ignorado)return; if(m.tipo=='receita'){if(m.pago===false)recPend+=v; else rec+=v} if(m.tipo=='despesa'){if(m.pago===false)despPend+=v; else desp+=v} if(m.tipo=='cartao')cart+=v}); let contas=db.contas.reduce((a,c)=>a+(+c.saldo||0),0)+rec-desp; return {rec,desp,cart,contas,saldo:contas-cart,recPend,despPend}}
+
+function abrirLixeira(){
+  db.lixeira=db.lixeira||[];
+  const html=db.lixeira.map(m=>`<div class="item"><div class="itemLeft"><div class="ico">${m.icone||((m.tipo=='receita')?'💰':(m.tipo=='cartao'?'💳':'🛒'))}</div><div><b>${m.desc||'SEM DESCRIÇÃO'}</b><small>${m.cat||''} • ${fmt(m.valor)} • ${m.apagadoEmBR||''}</small></div></div><div class="actions"><button class="trashRestoreBtn" onclick="restaurarDaLixeira('${m.id}')">♻️ RESTAURAR</button><button class="trashDeleteBtn" onclick="excluirDefinitivoLixeira('${m.id}')">🗑️ APAGAR</button></div></div>`).join('')||'<div class="empty">LIXEIRA VAZIA.</div>';
+  document.body.insertAdjacentHTML('beforeend',`<div id="selectSheet" class="selectSheet show" onclick="if(event.target.id=='selectSheet')fecharSeletor()"><div class="selectBox"><h2>🗑️ LIXEIRA</h2>${html}</div></div>`);
+}
+function restaurarDaLixeira(id){
+  db.lixeira=db.lixeira||[];
+  const item=db.lixeira.find(x=>x.id==id);
+  if(!item)return;
+  const {apagadoEm,apagadoEmBR,...restaurado}=item;
+  restaurado.id=uid();
+  db.movs.push(restaurado);
+  db.lixeira=db.lixeira.filter(x=>x.id!=id);
+  document.getElementById('selectSheet')?.remove();
+  save();
+  abrirLixeira();
+}
+function excluirDefinitivoLixeira(id){
+  pedirConfirmacao('APAGAR DEFINITIVO','DESEJA APAGAR DEFINITIVAMENTE?',()=>{
+    db.lixeira=(db.lixeira||[]).filter(x=>x.id!=id);
+    document.getElementById('selectSheet')?.remove();
+    save();
+    abrirLixeira();
+  });
+}
+
+function render(){const icHome=document.getElementById('iconeCardCartoes'); if(icHome&&db.iconesHome&&db.iconesHome.cartoes)icHome.innerText=db.iconesHome.cartoes;let t=totais(); saldoGeral.innerText=fmt(t.saldo); saldoGeral.className='value '+(t.saldo>=0?'green':'red'); saldoStatus.innerText=t.saldo>=0?'↗ Positivo':'↘ Negativo'; saldoStatus.className=t.saldo>=0?'green':'red'; totalReceitas.innerText=fmt(t.rec); totalDespesas.innerText=fmt(t.desp); totalCartoes.innerText=fmt(t.cart); totalContas.innerText=fmt(t.contas); if(typeof receitasPendentes!='undefined')receitasPendentes.innerText=fmt(t.recPend); if(typeof despesasPendentes!='undefined')despesasPendentes.innerText=fmt(t.despPend); renderContas(); renderMovs(); renderCartoes(); renderRelatorios()}
+function movHTML(m){let sign=m.tipo=='receita'?'+':'-';let color=m.tipo=='receita'?'green':'red';let icon=m.icone||(m.tipo=='cartao'?'💳':iconeCategoria(m.cat,m.tipo));let form=m.tipo=='receita'?'receita':(m.tipo=='cartao'?'editCompraCartao':'despesa');let status=m.ignorado?' • Ignorado':(m.pago===false?' • Pendente':'');let pendBtn=''; if(m.pago===false&&!m.ignorado&&m.tipo=='despesa')pendBtn=`<button class="payBtn redPay" onclick="pagarMov('${m.id}')">PAGAR</button>`; if(m.pago===false&&!m.ignorado&&m.tipo=='receita')pendBtn=`<button class="payBtn greenPay" onclick="pagarMov('${m.id}')">RECEBER</button>`; let ignoreTxt=m.ignorado?'IGNORADO':'IGNORAR'; return `<div class="item ${m.ignorado?'ignoredItem':''}"><div class="itemLeft"><div class="ico">${icon}</div><div><b>${m.desc}</b><small>${m.cat||''} • ${new Date(m.data+'T00:00').toLocaleDateString('pt-BR')}${status}</small></div></div><div style="text-align:right"><b class="${m.ignorado?'muted':color}">${sign} ${fmt(m.valor)}</b><div class="actions">${pendBtn}<button class="ignoreBtn ${m.ignorado?'activeIgnore':''}" onclick="ignorarMov('${m.id}')">${ignoreTxt}</button><button onclick="openModal('${form}','${m.id}')">✏️ EDITAR</button><button onclick="excluir('${m.id}')">🗑️</button></div></div></div>`}
+function saldoConta(c){let rec=0,des=0; db.movs.filter(dentroFiltroData).forEach(m=>{if(m.conta==c.id&&!m.ignorado){if(m.tipo=='receita'&&m.pago!==false)rec+=m.valor; if(m.tipo=='despesa'&&m.pago!==false)des+=m.valor;}}); return (+c.saldo||0)+rec-des}
+function contaResumoHTML(c){let saldo=saldoConta(c);return `<div class="item accountCard accountCardCompact"><div class="accountMainLine"><div class="ico clickIcon" onclick="abrirIcones('conta','${c.id}')">${c.icone||'🏦'}</div><div class="accountTextLine"><div class="accountCardName">${c.nome}</div><div class="accountCardType">${c.tipo}</div></div></div><div><div class="accountValueSide ${saldo>=0?'blue':'red'}">${fmt(saldo)}</div><div class="accountBtns accountMiniBtns"><button class="plus" onclick="openModal('entradaConta','${c.id}')">+</button><button class="minus" onclick="openModal('saidaConta','${c.id}')">-</button></div></div></div>`}
+function contaHTML(c){let saldo=saldoConta(c);return `<div class="item"><div class="itemLeft"><div class="ico clickIcon" onclick="abrirIcones('conta','${c.id}')">${c.icone||'🏦'}</div><div><b>${c.nome}</b><small>${c.tipo} • Inicial ${fmt(c.saldo)}</small></div></div><div style="text-align:right"><b class="${saldo>=0?'blue':'red'}">${fmt(saldo)}</b><div class="actions"><button onclick="openModal('conta','${c.id}')">✏️ EDITAR</button><button onclick="excluirConta('${c.id}')">🗑️</button></div></div></div>`}
+function renderContas(){let htmlEdit=db.contas.map(contaHTML).join('')||'<div class="empty">Nenhuma conta cadastrada.</div>'; let htmlResumo=db.contas.map(contaResumoHTML).join('')||'<div class="empty">Nenhuma conta cadastrada.</div>'; if(typeof listaContas!='undefined')listaContas.innerHTML=htmlEdit; if(typeof contasInicio!='undefined')contasInicio.innerHTML=htmlResumo}
+function passaFiltroCategoria(m){
+  if(filtro=='ignorados')return !!m.ignorado;
+  if(filtro=='todos')return !m.ignorado;
+  if(filtro=='contas')return (m.tipo=='receita'||m.tipo=='despesa')&&!!m.conta&&!m.ignorado;
+  return m.tipo==filtro&&!m.ignorado;
+}
+function totalIgnoradosHTML(arr){
+  let total=arr.reduce((a,m)=>a+(+m.valor||0),0);
+  return `<div class="card alertTotalBox"><b>⚠️ TOTAL IGNORADO</b><span>${fmt(total)}</span></div>`;
+}
+function historicoAgrupadoHTML(arr){
+  if(!arr.length)return filtro=='ignorados'?'<div class="empty">Nenhum lançamento ignorado.</div>':'<div class="empty">Nada encontrado.</div>';
+  let grupos={};
+  arr.forEach(m=>{let d=m.data||'Sem data'; (grupos[d]=grupos[d]||[]).push(m)});
+  return Object.keys(grupos).sort().reverse().map(d=>{
+    let totalDia=grupos[d].reduce((a,m)=>a+impactoHistorico(m),0);
+    let dataBR=d=='Sem data'?d:new Date(d+'T00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+    return `<div class="sectionTitle" style="margin-top:14px"><h2 style="font-size:15px">${dataBR}</h2><span class="${totalDia>=0?'green':'red'}" style="font-weight:900">${fmt(totalDia)}</span></div>`+grupos[d].map(movHTML).join('');
+  }).join('');
+}
+
+function categoriasPendentesAtuais(){
+  let tipo=filtro;
+  let arr=db.movs.filter(m=>m.pago===false&&!m.ignorado&&(tipo=='receita'?m.tipo=='receita':m.tipo=='despesa'));
+  return [...new Set(arr.map(m=>m.cat||'Sem categoria'))].sort();
+}
+function togglePendSelecionado(id){
+  if(pendSelecionados.includes(id)) pendSelecionados=pendSelecionados.filter(x=>x!=id);
+  else pendSelecionados.push(id);
+  render();
+}
+function selecionarTodosPendentes(){
+  let arr=movsFiltradosAtuais().filter(m=>m.pago===false&&!m.ignorado);
+  let ids=arr.map(m=>m.id);
+  let todos=ids.length && ids.every(id=>pendSelecionados.includes(id));
+  pendSelecionados=todos?[]:ids;
+  render();
+}
+function limparSelecaoPendentes(){
+  pendSelecionados=[];
+  render();
+}
+function totalPendentesSelecionados(){
+  return db.movs.filter(m=>pendSelecionados.includes(m.id)).reduce((a,m)=>a+(+m.valor||0),0);
+}
+function pagarReceberSelecionados(){
+  if(!pendSelecionados.length){alert('SELECIONE PELO MENOS 1 LANÇAMENTO');return}
+  const qtd=pendSelecionados.length;
+  const total=fmt(totalPendentesSelecionados());
+  const acao=filtro=='receita'?'RECEBER':'PAGAR';
+  pedirConfirmacao(acao+' SELECIONADOS',`CONFIRMAR ${acao} ${qtd} LANÇAMENTOS NO TOTAL DE ${total}?`,()=>{
+    db.movs.forEach(m=>{
+      if(pendSelecionados.includes(m.id)){
+        m.pago=true;
+        m.ignorado=false;
+      }
+    });
+    pendSelecionados=[];
+    save();
+  });
+}
+function mudarFiltroCategoriaPendentes(v){
+  pendCategoriaFiltro=v;
+  pendSelecionados=[];
+  render();
+}
+function movsFiltradosAtuais(){
+  let busca=(document.getElementById('busca')?.value||'').toLowerCase();
+  let di=document.getElementById('dataInicio')?.value||'';
+  let df=document.getElementById('dataFim')?.value||'';
+  return [...db.movs].sort((a,b)=>String(b.data).localeCompare(String(a.data))||String(b.id).localeCompare(String(a.id))).filter(m=>
+    passaFiltroCategoria(m)&&
+    (!filtroPendencia||(m.pago===false&&!m.ignorado))&&
+    (!(filtro=='ignorados')||m.ignorado)&&
+    (!di||m.data>=di)&&
+    (!df||m.data<=df)&&
+    ((pendCategoriaFiltro=='todos')||!filtroPendencia||((m.cat||'Sem categoria')==pendCategoriaFiltro))&&
+    ((m.desc||'').toLowerCase().includes(busca)||(m.cat||'').toLowerCase().includes(busca))
+  );
+}
+function pendingToolsHTML(arr){
+  if(!filtroPendencia || !(filtro=='receita'||filtro=='despesa')) return '';
+  const cats=categoriasPendentesAtuais();
+  const opts='<option value="todos">TODAS AS CATEGORIAS</option>'+cats.map(c=>`<option value="${c}" ${pendCategoriaFiltro==c?'selected':''}>${c}</option>`).join('');
+  const total=fmt(totalPendentesSelecionados());
+  const acao=filtro=='receita'?'RECEBER':'PAGAR';
+  const cls=filtro=='receita'?'pendingReceive':'pendingPay';
+  return `<div class="pendingTools show">
+    <div class="pendingToolsTop">
+      <div><span class="pendingFilterLabel"></span><select onchange="mudarFiltroCategoriaPendentes(this.value)">${opts}</select></div>
+      <div class="pendingSumBox"><b>TOTAL SELECIONADO</b><span>${total}</span></div>
+    </div>
+    <div class="pendingActionsGrid">
+      <button class="pendingSelectAll" onclick="selecionarTodosPendentes()">SELECIONAR TODOS</button>
+      <button class="${cls}" onclick="pagarReceberSelecionados()">${acao} SELECIONADOS</button>
+      <button class="pendingClear" onclick="limparSelecaoPendentes()">LIMPAR SELEÇÃO</button>
+      <button class="pendingSelectAll" onclick="pendCategoriaFiltro='todos';pendSelecionados=[];render()">TODAS CATEGORIAS</button>
+    </div>
+  </div>`;
+}
+function movPendenteHTML(m){
+  const checked=pendSelecionados.includes(m.id);
+  const color=m.tipo=='receita'?'green':'red';
+  const icon=m.icone||(m.tipo=='receita'?'💰':'🛒');
+  const form=m.tipo=='receita'?'receita':'despesa';
+  const acao=m.tipo=='receita'?'RECEBER':'PAGAR';
+  const payClass=m.tipo=='receita'?'greenPay':'redPay';
+  return `<div class="item pendingItem ${checked?'selectedPending':''}">
+    <input class="pendingCheck" type="checkbox" ${checked?'checked':''} onchange="togglePendSelecionado('${m.id}')">
+    <div class="itemLeft" style="min-width:0"><div class="ico">${icon}</div><div class="pendingMeta" style="min-width:0"><b>${m.desc}</b><small>${m.cat||''} • ${new Date(m.data+'T00:00').toLocaleDateString('pt-BR')}</small></div></div>
+    <div style="text-align:right"><b class="pendingValue ${color}">${fmt(m.valor)}</b><div class="actions"><button class="payBtn ${payClass}" onclick="pagarMov('${m.id}')">${acao}</button><button class="ignoreBtn" onclick="ignorarMov('${m.id}')">IGNORAR</button><button onclick="openModal('${form}','${m.id}')">✏️</button><button onclick="excluir('${m.id}')">🗑️</button></div></div>
+  </div>`;
+}
+function renderMovs(){
+  let arr=movsFiltradosAtuais();
+  if(filtro=='ignorados') arr=arr.filter(m=>m.ignorado);
+  if(typeof historicoTitulo!='undefined'){
+    historicoTitulo.innerText = filtro=='ignorados' ? '⚠️ ALERTAS' : '📜 Histórico - '+nomeFiltroAtual();
+  }
+  if(typeof historicoSubtitulo!='undefined'){
+    historicoSubtitulo.innerText = '';
+    historicoSubtitulo.style.display = 'none';
+  }
+  if(typeof listaMov!='undefined')listaMov.innerHTML=arr.map(movHTML).join('')||'<div class="empty">Nenhuma movimentação.</div>';
+  if(typeof listaHistorico!='undefined'){
+    if(filtroPendencia&&(filtro=='receita'||filtro=='despesa')){
+      listaHistorico.innerHTML=pendingToolsHTML(arr)+(arr.map(movPendenteHTML).join('')||'<div class="empty">NENHUMA PENDÊNCIA ENCONTRADA.</div>');
+    }else{
+      listaHistorico.innerHTML=historicoAgrupadoHTML(arr);
+    }
+  }
+}
+function renderCartoes(){let limiteTotal=db.cartoes.reduce((a,c)=>a+(+c.limite||0),0);let usadoTotal=db.movs.filter(m=>m.tipo=='cartao'&&dentroFiltroData(m)).reduce((a,m)=>a+(+m.valor||0),0); if(typeof limiteTotalCartoes!='undefined')limiteTotalCartoes.innerText=fmt(limiteTotal); if(typeof usadoTotalCartoes!='undefined')usadoTotalCartoes.innerText=fmt(usadoTotal); listaCartoes.innerHTML=db.cartoes.map(c=>{let usado=db.movs.filter(m=>m.tipo=='cartao'&&m.cartao==c.id&&dentroFiltroData(m)).reduce((a,m)=>a+m.valor,0), pct=c.limite?Math.min(100,usado/c.limite*100):0;let cor=c.cor||'#4c1d95';return `<div class="cardCredit cardCompact" style="--cartaoCor:${cor}"><input class="cardColorTiny" type="color" value="${cor}" onchange="mudarCorCartao('${c.id}',this.value)" title="Mudar cor"><div class="cardCompactTop"><div class="cardIconBig" onclick="abrirIcones('cartao','${c.id}')">${c.icone||'💳'}</div><div class="cardCompactName">${c.nome}</div></div><div class="cardCompactValues"><div><small>LIMITE</small><b class="gold">${fmt(c.limite)}</b></div><div><small>GASTOU</small><b class="red">${fmt(usado)}</b></div><div><small>LIVRE</small><b class="green">${fmt(c.limite-usado)}</b></div></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div><div class="cardCompactFoot">${pct.toFixed(0)}% UTILIZADO • FECHA ${c.fech} • VENCE ${c.venc}</div></div>`}).join('')||'<div class="empty">Nenhum cartão cadastrado.</div>'}
+function mudarCorCartao(id,cor){let c=db.cartoes.find(x=>x.id==id); if(c){c.cor=cor; save()}}
+function renderRelatorios(){let t=totais(); if(typeof relResumo!='undefined')relResumo.innerHTML=`<div class="grid"><div class="mini"><b>Total receitas</b><span class="green">${fmt(t.rec)}</span></div><div class="mini"><b>Total despesas</b><span class="red">${fmt(t.desp+t.cart)}</span></div><div class="mini"><b>Saldo</b><span class="blue">${fmt(t.saldo)}</span></div><div class="mini"><b>Cartão</b><span class="gold">${fmt(t.cart)}</span></div></div>`}
+function limparDatasHistorico(){if(document.getElementById('dataInicio'))dataInicio.value=''; if(document.getElementById('dataFim'))dataFim.value=''; atualizarMesAnoTela(); render()}
+function setFiltro(f,el){filtro=f;filtroPendencia=false;document.querySelectorAll('.pillBtns button').forEach(b=>b.classList.remove('active'));el.classList.add('active');render()}
+function exportar(){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'}));a.download='backup-financeiro-premium.json';a.click()}
+function importar(e){let file=e.target.files[0]; if(!file)return; let r=new FileReader(); r.onload=()=>{try{db=JSON.parse(r.result);save();closeModal();alert('Backup importado com sucesso!')}catch{alert('Arquivo inválido')}}; r.readAsText(file)}
+function zerar(){
+  let s=prompt('Digite a senha');
+  if(s===null)return;
+  if(s!=='6533')return alert('Senha incorreta');
+  pedirConfirmacao('ZERAR TUDO','Essa ação vai apagar todos os dados salvos neste aparelho.',()=>{localStorage.removeItem('financeiroPremium');location.reload()});
+}
+function renderLogo(){
+  const box=document.getElementById('logoBox'); if(!box) return;
+  if(!box)return;
+  if(db.logo&&db.logo.src){
+    box.innerHTML=`<img src="${db.logo.src}" style="transform:scale(${db.logo.scale||1})">`;
+  }else{
+    box.innerHTML='<div class="logoPlaceholder">📷 TOQUE PARA COLOCAR FOTO / LOGO</div>';
+  }
+  const ctr=document.getElementById('logoControls');
+  if(ctr) ctr.style.display=(editandoLogo&&db.logo&&db.logo.src)?'grid':'none';
+}
+function selecionarLogo(e){
+  const file=e.target.files&&e.target.files[0];
+  if(!file)return;
+  const r=new FileReader();
+  r.onload=()=>{db.logo={src:r.result,scale:1}; editandoLogo=true; localStorage.setItem('financeiroPremium',JSON.stringify(db)); renderLogo();};
+  r.readAsDataURL(file);
+}
+function finalizarLogo(){editandoLogo=false; renderLogo();}
+function ajustarLogo(delta){
+  db.logo=db.logo||{src:'',scale:1};
+  db.logo.scale=Math.max(0.5,Math.min(2.5,(db.logo.scale||1)+delta));
+  localStorage.setItem('financeiroPremium',JSON.stringify(db));
+  renderLogo();
+}
+
+applyTheme();
+renderLogo();
+if(document.getElementById('eyeBtn'))document.getElementById('eyeBtn').innerText=ocultarValores?'🙈':'👁️';
+atualizarMesAnoTela();
+aplicarMesAno();
+render();
+
+/* ================= FIREBASE BACKUP PREMIUM FUNCIONAL ================= */
+const FIREBASE_URL='https://sl-financeiro-premium-default-rtdb.firebaseio.com';
+const FIREBASE_ULTIMO_PATH='backups/ultimo';
+const FIREBASE_LISTA_PATH='backups/lista';
+let ultimoBackupAutoFirebase=0;
+
+function mostrarMsgBackup(msg){
+  alert(msg);
+}
+
+function dadosBackupFirebase(){
+  return {
+    app:'SL FINANCEIRO PREMIUM',
+    dataISO:new Date().toISOString(),
+    dataBR:new Date().toLocaleString('pt-BR'),
+    db:db,
+    ocultarValores:ocultarValores
+  };
+}
+
+async function firebaseRequest(path,method='GET',body=null){
+  const cfg={method:method,headers:{'Content-Type':'application/json'}};
+  if(body!==null) cfg.body=JSON.stringify(body);
+  const resp=await fetch(`${FIREBASE_URL}/${path}.json`,cfg);
+  if(!resp.ok){
+    if(resp.status===413 || resp.status===402 || resp.status===507){
+      throw new Error('LIMITE_FIREBASE');
+    }
+    throw new Error('ERRO_FIREBASE_'+resp.status);
+  }
+  return await resp.json();
+}
+
+function chaveBackupFirebase(){
+  const d=new Date();
+  const p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}-${p(d.getSeconds())}`;
+}
+
+async function limparBackupsAntigosFirebase(){
+  const lista=await firebaseRequest(FIREBASE_LISTA_PATH,'GET') || {};
+  const keys=Object.keys(lista).sort((a,b)=>{
+    const da=lista[a]?.dataISO||a;
+    const dbb=lista[b]?.dataISO||b;
+    return String(dbb).localeCompare(String(da));
+  });
+  const apagar=keys.slice(10);
+  for(const k of apagar){
+    try{ await firebaseRequest(`${FIREBASE_LISTA_PATH}/${k}`,'DELETE'); }catch(e){}
+  }
+}
+
+async function fazerBackupFirebase(silencioso=false){
+  try{
+    const agora=Date.now();
+    if(silencioso && agora-ultimoBackupAutoFirebase<2500) return true;
+    ultimoBackupAutoFirebase=agora;
+
+    const dados=dadosBackupFirebase();
+    const key=chaveBackupFirebase();
+
+    await firebaseRequest(FIREBASE_ULTIMO_PATH,'PUT',dados);
+    await firebaseRequest(`${FIREBASE_LISTA_PATH}/${key}`,'PUT',dados);
+    await limparBackupsAntigosFirebase();
+
+    if(!silencioso) mostrarMsgBackup('✅ BACKUP REALIZADO COM SUCESSO');
+    return true;
+  }catch(e){
+    if(String(e.message).includes('LIMITE_FIREBASE')){
+      if(!silencioso) mostrarMsgBackup('❌ LIMITE DO FIREBASE ATINGIDO');
+    }else{
+      if(!silencioso) mostrarMsgBackup('❌ ERRO AO REALIZAR BACKUP');
+    }
+    return false;
+  }
+}
+
+window.fazerBackupFirebaseManual=function(){
+  fazerBackupFirebase(false);
+};
+
+window.restaurarUltimoBackupFirebase=async function(){
+  pedirConfirmacao('RESTAURAR BACKUP','DESEJA RESTAURAR O ÚLTIMO BACKUP?',async()=>{
+    try{
+      const backup=await firebaseRequest(FIREBASE_ULTIMO_PATH,'GET');
+      if(!backup || !backup.db){
+        mostrarMsgBackup('❌ NENHUM BACKUP ENCONTRADO');
+        return;
+      }
+      db=backup.db;
+      ocultarValores=!!backup.ocultarValores;
+      localStorage.setItem('financeiroPremium',JSON.stringify(db));
+      localStorage.setItem('ocultarValoresFinanceiro',JSON.stringify(ocultarValores));
+      applyTheme();
+      render();
+      closeModal();
+      mostrarMsgBackup('✅ BACKUP RESTAURADO COM SUCESSO');
+    }catch(e){
+      mostrarMsgBackup('❌ ERRO AO RESTAURAR BACKUP');
+    }
+  });
+};
+
+window.restaurarBackupPorChaveFirebase=async function(key){
+  pedirConfirmacao('RESTAURAR BACKUP','DESEJA RESTAURAR ESTE BACKUP?',async()=>{
+    try{
+      const backup=await firebaseRequest(`${FIREBASE_LISTA_PATH}/${key}`,'GET');
+      if(!backup || !backup.db){
+        mostrarMsgBackup('❌ BACKUP NÃO ENCONTRADO');
+        return;
+      }
+      db=backup.db;
+      ocultarValores=!!backup.ocultarValores;
+      localStorage.setItem('financeiroPremium',JSON.stringify(db));
+      localStorage.setItem('ocultarValoresFinanceiro',JSON.stringify(ocultarValores));
+      applyTheme();
+      render();
+      document.getElementById('selectSheet')?.remove();
+      closeModal();
+      mostrarMsgBackup('✅ BACKUP RESTAURADO COM SUCESSO');
+    }catch(e){
+      mostrarMsgBackup('❌ ERRO AO RESTAURAR BACKUP');
+    }
+  });
+};
+
+window.verDatasBackupsFirebase=async function(){
+  try{
+    const lista=await firebaseRequest(FIREBASE_LISTA_PATH,'GET') || {};
+    const keys=Object.keys(lista).sort((a,b)=>{
+      const da=lista[a]?.dataISO||a;
+      const dbb=lista[b]?.dataISO||b;
+      return String(dbb).localeCompare(String(da));
+    }).slice(0,10);
+
+    const html=keys.map((k,i)=>{
+      const b=lista[k]||{};
+      return `<div class="backupListItem"><div><b>${i+1}. ${b.dataBR||k}</b><small>${k}</small></div><button onclick="restaurarBackupPorChaveFirebase('${k}')">RESTAURAR</button></div>`;
+    }).join('') || '<div class="empty">NENHUM BACKUP ENCONTRADO.</div>';
+
+    document.body.insertAdjacentHTML('beforeend',`<div id="selectSheet" class="selectSheet show" onclick="if(event.target.id=='selectSheet')fecharSeletor()"><div class="selectBox"><h2>📅 ÚLTIMOS 10 BACKUPS</h2>${html}</div></div>`);
+  }catch(e){
+    mostrarMsgBackup('❌ ERRO AO BUSCAR BACKUPS');
+  }
+};
+
+window.addEventListener('beforeunload',function(e){
+  try{fazerBackupFirebase(true)}catch(err){}
+  e.preventDefault();
+  e.returnValue='DESEJA SAIR DO APLICATIVO?';
+  return 'DESEJA SAIR DO APLICATIVO?';
+});
+
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='hidden'){
+    try{fazerBackupFirebase(true)}catch(e){}
+  }
+});
+/* =============== FIM FIREBASE BACKUP PREMIUM FUNCIONAL =============== */
+
+
+
+
+
+
+
+
+/* ===== FINAL REAL: CATEGORIAS NO BOTÃO DE BAIXO ===== */
+function categoriasPendentesAtuais(){
+  let tipo=filtro;
+  let arr=db.movs.filter(m=>m.pago===false&&!m.ignorado&&(tipo=='receita'?m.tipo=='receita':m.tipo=='despesa'));
+  return [...new Set(arr.map(m=>m.cat||'Sem categoria'))].sort();
+}
+function categoriasAlertasAtuais(){
+  let arr=db.movs.filter(m=>m.ignorado);
+  return [...new Set(arr.map(m=>m.cat||'Sem categoria'))].sort();
+}
+function optionsCategorias(lista,valor){
+  return '<option value="todos">▼ TODAS AS CATEGORIAS</option>' + lista.map(c=>`<option value="${c}" ${valor==c?'selected':''}>${c}</option>`).join('');
+}
+function mudarFiltroCategoriaPendentes(v){
+  pendCategoriaFiltro=v;
+  pendSelecionados=[];
+  render();
+}
+function mudarFiltroCategoriaAlertas(v){
+  alertCategoriaFiltro=v;
+  render();
+}
+function movsFiltradosAtuais(){
+  let busca=(document.getElementById('busca')?.value||'').toLowerCase();
+  let di=document.getElementById('dataInicio')?.value||'';
+  let df=document.getElementById('dataFim')?.value||'';
+  return [...db.movs].sort((a,b)=>String(b.data).localeCompare(String(a.data))||String(b.id).localeCompare(String(a.id))).filter(m=>{
+    if(!passaFiltroCategoria(m)) return false;
+    if(filtroPendencia && !(m.pago===false&&!m.ignorado)) return false;
+    if(filtro=='ignorados' && !m.ignorado) return false;
+    if(di && m.data<di) return false;
+    if(df && m.data>df) return false;
+    if(filtroPendencia && pendCategoriaFiltro!='todos' && (m.cat||'Sem categoria')!=pendCategoriaFiltro) return false;
+    if(filtro=='ignorados' && alertCategoriaFiltro!='todos' && (m.cat||'Sem categoria')!=alertCategoriaFiltro) return false;
+    if(busca){
+      return (m.desc||'').toLowerCase().includes(busca);
+    }
+    return true;
+  });
+}
+function pendingToolsHTML(arr){
+  if(!filtroPendencia || !(filtro=='receita'||filtro=='despesa')) return '';
+  const cats=categoriasPendentesAtuais();
+  const total=fmt(totalPendentesSelecionados());
+  const acao=filtro=='receita'?'RECEBER':'PAGAR';
+  const cls=filtro=='receita'?'pendingReceive':'pendingPay';
+  return `<div class="pendingTools show">
+    <div class="pendingToolsTop">
+      <div class="pendingSumBox"><b>TOTAL SELECIONADO</b><span>${total}</span></div>
+    </div>
+    <div class="pendingActionsGrid">
+      <button class="pendingSelectAll" onclick="selecionarTodosPendentes()">SELECIONAR TODOS</button>
+      <button class="${cls}" onclick="pagarReceberSelecionados()">${acao} SELECIONADOS</button>
+      <button class="pendingClear" onclick="limparSelecaoPendentes()">LIMPAR SELEÇÃO</button>
+      <select class="categoryBottomSelect" onchange="mudarFiltroCategoriaPendentes(this.value)">${optionsCategorias(cats,pendCategoriaFiltro)}</select>
+    </div>
+  </div>`;
+}
+function alertToolsHTML(){
+  if(filtro!='ignorados') return '';
+  const cats=categoriasAlertasAtuais();
+  return `<div class="alertBottomTools">
+    <select class="categoryBottomSelect" onchange="mudarFiltroCategoriaAlertas(this.value)">${optionsCategorias(cats,alertCategoriaFiltro)}</select>
+  </div>`;
+}
+function renderMovs(){
+  let arr=movsFiltradosAtuais();
+  if(typeof historicoTitulo!='undefined'){
+    historicoTitulo.innerText = filtro=='ignorados' ? '⚠️ ALERTAS' : '📜 Histórico - '+nomeFiltroAtual();
+  }
+  if(typeof historicoSubtitulo!='undefined'){
+    historicoSubtitulo.innerText='';
+    historicoSubtitulo.style.display='none';
+  }
+  const buscaEl=document.getElementById('busca');
+  if(buscaEl){
+    buscaEl.placeholder='BUSCAR POR NOME';
+  }
+  if(typeof listaMov!='undefined')listaMov.innerHTML=arr.map(movHTML).join('')||'<div class="empty">NENHUMA MOVIMENTAÇÃO.</div>';
+  if(typeof listaHistorico!='undefined'){
+    if(filtroPendencia&&(filtro=='receita'||filtro=='despesa')){
+      listaHistorico.innerHTML=pendingToolsHTML(arr)+(arr.map(movPendenteHTML).join('')||'<div class="empty">NENHUMA PENDÊNCIA ENCONTRADA.</div>');
+    }else if(filtro=='ignorados'){
+      listaHistorico.innerHTML=alertToolsHTML()+historicoAgrupadoHTML(arr);
+    }else{
+      listaHistorico.innerHTML=historicoAgrupadoHTML(arr);
+    }
+  }
+}
+function abrirAlertas(){
+  filtro='ignorados';
+  filtroPendencia=false;
+  alertCategoriaFiltro='todos';
+  showScreen('historico');
+  render();
+}
+function abrirCategoria(tipo,pendente=false){
+  filtro=tipo;
+  filtroPendencia=pendente;
+  pendSelecionados=[];
+  pendCategoriaFiltro='todos';
+  showScreen('historico');
+  render();
+}
+/* ===== FIM FINAL REAL ===== */
+
+</script>
+</body>
+</html>
