@@ -492,6 +492,51 @@ body{margin:0;background:radial-gradient(circle at top,#10233b 0,#050b12 45%,#02
 .iconKeyboardSave{background:linear-gradient(145deg,#31d158,#0f7a2b)}
 .iconKeyboardCancel{background:linear-gradient(145deg,#ff453a,#9e1010)}
 
+
+
+/* AJUSTE SOLICITADO: CARTÕES SEM DEGRADÊ + FATURAS FECHADAS */
+.histAlertRow{grid-template-columns:1fr 1fr 1fr!important}
+.invoiceBtn{
+  background:linear-gradient(145deg,#ff453a,#8f1010)!important;
+  color:#fff!important;
+  border:0!important;
+  box-shadow:0 0 14px #ff453a88!important;
+}
+.invoiceBtn.blinkInvoice{
+  animation:invoiceBlink .85s infinite;
+}
+@keyframes invoiceBlink{
+  0%,100%{filter:brightness(1);box-shadow:0 0 10px #ff453a88!important;transform:scale(1)}
+  50%{filter:brightness(1.65);box-shadow:0 0 24px #ff453a,0 0 10px #fff!important;transform:scale(1.035)}
+}
+.cardCredit,.cardCredit.cardCompact{
+  background:var(--cartaoCor,#111827)!important;
+  border:2px solid var(--blue)!important;
+  box-shadow:0 0 16px #1f7aff88, inset 0 0 12px #1f7aff22!important;
+}
+.cardCredit.cardCompact::after{display:none!important;background:none!important}
+.invoiceBox{
+  position:relative;
+  border:1.7px solid #ff453a;
+  border-radius:18px;
+  padding:12px;
+  margin-bottom:10px;
+  background:#120809;
+  box-shadow:0 0 14px #ff453a55;
+}
+.invoiceBox h3{margin:0 34px 8px 0;font-size:16px;color:#fff}
+.invoiceBox small{display:block;color:var(--muted);margin-bottom:8px}
+.invoiceClose{position:absolute;right:8px;top:8px;width:28px;height:28px;border:1px solid #ff453a;border-radius:10px;background:linear-gradient(145deg,#ff453a,#8f1010);color:#fff;font-weight:900;font-size:16px;line-height:1;box-shadow:0 0 10px #ff453a88}
+.invoiceActions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
+.invoiceHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.invoiceHeader h2{margin:0!important;font-size:18px!important;color:#fff!important}
+.invoiceHeaderClose{width:32px;height:32px;border:1px solid #ff453a;border-radius:12px;background:linear-gradient(145deg,#ff453a,#8f1010);color:#fff;font-weight:900;font-size:18px;line-height:1;box-shadow:0 0 10px #ff453a88}
+.invoiceActions button{border:0;border-radius:8px;padding:3px 4px;min-height:15px;color:#fff;font-weight:900;font-size:9px;line-height:1}
+.invoicePay{background:linear-gradient(145deg,#ff453a,#8f1010)}
+.invoiceAdvance{background:linear-gradient(145deg,#f2b632,#9a5a00)}
+.invoiceEdit{background:linear-gradient(145deg,#1f7aff,#06459e)}
+@media(max-width:380px){.histAlertRow{grid-template-columns:1fr!important}}
+
 </style>
 </head>
 <body>
@@ -526,7 +571,7 @@ body{margin:0;background:radial-gradient(circle at top,#10233b 0,#050b12 45%,#02
   <span id="today" style="display:none"></span>
 
   <section id="inicio" class="screen active">
-    <div class="card balance"><div class="balanceTop"><div class="label">SALDO GERAL</div><div class="balanceControls"><button id="eyeBtn" class="eyeInside" onclick="toggleValores()">👁️</button><button class="gearInside" onclick="openModal('config')">⚙️</button></div></div><div id="saldoGeral" class="value">R$ 0,00</div><div id="saldoStatus" class="green">↗ Positivo</div><div class="histAlertRow"><button class="btn" onclick="abrirHistoricoTodos()">📜 HISTÓRICO</button><button class="btn alertBtn" onclick="abrirAlertas()">⚠️ ALERTAS</button></div></div>
+    <div class="card balance"><div class="balanceTop"><div class="label">SALDO GERAL</div><div class="balanceControls"><button id="eyeBtn" class="eyeInside" onclick="toggleValores()">👁️</button><button class="gearInside" onclick="openModal('config')">⚙️</button></div></div><div id="saldoGeral" class="value">R$ 0,00</div><div id="saldoStatus" class="green">↗ Positivo</div><div class="histAlertRow"><button class="btn" onclick="abrirHistoricoTodos()">📜 HISTÓRICO</button><button class="btn alertBtn" onclick="abrirAlertas()">⚠️ ALERTAS</button><button id="btnFaturasFechadas" class="btn invoiceBtn" onclick="abrirFaturasFechadas()">💳 FATURAS</button></div></div>
     <div class="grid">
       <div class="mini click" onclick="abrirCategoria('receita',true)"><b>⏳ Receitas Pendentes</b><span id="receitasPendentes" class="gold">R$ 0,00</span></div>
       <div class="mini click" onclick="abrirCategoria('despesa',true)"><b>⚠️ Despesas Pendentes</b><span id="despesasPendentes" class="red">R$ 0,00</span></div>
@@ -734,7 +779,7 @@ function openModal(type,id=null){
   }
   if(type=='receita'||type=='despesa') setTimeout(()=>{let v=document.getElementById('valor'); if(v){v.focus(); try{v.select()}catch(e){}}},80);
 }
-function closeModal(){let md=document.getElementById('modal');md.classList.remove('show');md.classList.remove('moneyModal');let closeBtn=md.querySelector('.close'); if(closeBtn) closeBtn.style.display=''; editId=null;contaPreId=null}
+function closeModal(){let md=document.getElementById('modal');md.classList.remove('show');md.classList.remove('moneyModal');md.classList.remove('invoiceModal');md.onclick=null;let closeBtn=md.querySelector('.close'); if(closeBtn) closeBtn.style.display=''; editId=null;contaPreId=null}
 function catsOptions(tipo='despesa',sel=''){let lista=tipo=='receita'?db.categoriasReceitas:db.categoriasDespesas; return lista.map(c=>`<option ${c==sel?'selected':''}>${c}</option>`).join('')}
 function contasOptions(sel=''){return db.contas.map(c=>`<option value="${c.id}" ${c.id==sel?'selected':''}>${c.nome}</option>`).join('')}
 function cartoesOptions(sel=''){return db.cartoes.map(c=>`<option value="${c.id}" ${c.id==sel?'selected':''}>${c.nome}</option>`).join('')}
@@ -1099,7 +1144,7 @@ function excluirDefinitivoLixeira(id){
   });
 }
 
-function render(){const icHome=document.getElementById('iconeCardCartoes'); if(icHome&&db.iconesHome&&db.iconesHome.cartoes)icHome.innerText=db.iconesHome.cartoes;let t=totais(); saldoGeral.innerText=fmt(t.saldo); saldoGeral.className='value '+(t.saldo>=0?'green':'red'); saldoStatus.innerText=t.saldo>=0?'↗ Positivo':'↘ Negativo'; saldoStatus.className=t.saldo>=0?'green':'red'; totalReceitas.innerText=fmt(t.rec); totalDespesas.innerText=fmt(t.desp); totalCartoes.innerText=fmt(t.cart); totalContas.innerText=fmt(t.contas); if(typeof receitasPendentes!='undefined')receitasPendentes.innerText=fmt(t.recPend); if(typeof despesasPendentes!='undefined')despesasPendentes.innerText=fmt(t.despPend); renderContas(); renderMovs(); renderCartoes(); renderRelatorios()}
+function render(){const icHome=document.getElementById('iconeCardCartoes'); if(icHome&&db.iconesHome&&db.iconesHome.cartoes)icHome.innerText=db.iconesHome.cartoes;let t=totais(); saldoGeral.innerText=fmt(t.saldo); saldoGeral.className='value '+(t.saldo>=0?'green':'red'); saldoStatus.innerText=t.saldo>=0?'↗ Positivo':'↘ Negativo'; saldoStatus.className=t.saldo>=0?'green':'red'; totalReceitas.innerText=fmt(t.rec); totalDespesas.innerText=fmt(t.desp); totalCartoes.innerText=fmt(t.cart); totalContas.innerText=fmt(t.contas); if(typeof receitasPendentes!='undefined')receitasPendentes.innerText=fmt(t.recPend); if(typeof despesasPendentes!='undefined')despesasPendentes.innerText=fmt(t.despPend); renderContas(); renderMovs(); renderCartoes(); renderRelatorios(); atualizarBotaoFaturasFechadas()}
 function movHTML(m){let sign=m.tipo=='receita'?'+':'-';let color=m.tipo=='receita'?'green':'red';let icon=m.icone||(m.tipo=='cartao'?'💳':iconeCategoria(m.cat,m.tipo));let form=m.tipo=='receita'?'receita':(m.tipo=='cartao'?'editCompraCartao':'despesa');let status=m.ignorado?' • Ignorado':(m.pago===false?' • Pendente':'');let pendBtn=''; if(m.pago===false&&!m.ignorado&&m.tipo=='despesa')pendBtn=`<button class="payBtn redPay" onclick="pagarMov('${m.id}')">PAGAR</button>`; if(m.pago===false&&!m.ignorado&&m.tipo=='receita')pendBtn=`<button class="payBtn greenPay" onclick="pagarMov('${m.id}')">RECEBER</button>`; let ignoreTxt=m.ignorado?'IGNORADO':'IGNORAR'; return `<div class="item ${m.ignorado?'ignoredItem':''}"><div class="itemLeft"><div class="ico">${icon}</div><div><b>${m.desc}</b><small>${m.cat||''} • ${new Date(m.data+'T00:00').toLocaleDateString('pt-BR')}${status}</small></div></div><div style="text-align:right"><b class="${m.ignorado?'muted':color}">${sign} ${fmt(m.valor)}</b><div class="actions">${pendBtn}<button class="ignoreBtn ${m.ignorado?'activeIgnore':''}" onclick="ignorarMov('${m.id}')">${ignoreTxt}</button><button onclick="openModal('${form}','${m.id}')">✏️ EDITAR</button><button onclick="excluir('${m.id}')">🗑️</button></div></div></div>`}
 function saldoConta(c){let rec=0,des=0; db.movs.filter(dentroFiltroData).forEach(m=>{if(m.conta==c.id&&!m.ignorado){if(m.tipo=='receita'&&m.pago!==false)rec+=m.valor; if(m.tipo=='despesa'&&m.pago!==false)des+=m.valor;}}); return (+c.saldo||0)+rec-des}
 function contaResumoHTML(c){let saldo=saldoConta(c);return `<div class="item accountCard accountCardCompact"><div class="accountMainLine"><div class="ico clickIcon" onclick="abrirIconeConta('${c.id}',event)">${c.icone||'🏦'}</div><div class="accountTextLine"><div class="accountCardName">${c.nome}</div><div class="accountCardType">${c.tipo}</div></div></div><div><div class="accountValueSide ${saldo>=0?'blue':'red'}">${fmt(saldo)}</div><div class="accountBtns accountMiniBtns"><button class="plus" onclick="openModal('entradaConta','${c.id}')">+</button><button class="minus" onclick="openModal('saidaConta','${c.id}')">-</button></div></div></div>`}
@@ -1237,6 +1282,63 @@ function renderMovs(){
     }
   }
 }
+
+function movimentosCartaoAbertos(cartaoId){
+  return db.movs.filter(m=>m.tipo=='cartao'&&m.cartao==cartaoId&&!m.ignorado&&m.pago===false);
+}
+function faturaFechadaCartao(c){
+  const diaHoje=new Date().getDate();
+  const diaFechamento=Number(c.fech||1);
+  return diaHoje>=diaFechamento && movimentosCartaoAbertos(c.id).length>0;
+}
+function existemFaturasFechadas(){
+  return (db.cartoes||[]).some(faturaFechadaCartao);
+}
+function atualizarBotaoFaturasFechadas(){
+  const btn=document.getElementById('btnFaturasFechadas');
+  if(!btn)return;
+  const tem=existemFaturasFechadas();
+  btn.classList.toggle('blinkInvoice',tem);
+  btn.innerText=tem?'💳 FATURA FECHADA':'💳 FATURAS';
+}
+function abrirFaturasFechadas(){
+  const fechadas=(db.cartoes||[]).filter(faturaFechadaCartao);
+  const todas=(db.cartoes||[]).filter(c=>movimentosCartaoAbertos(c.id).length>0);
+  const lista=fechadas.length?fechadas:todas;
+  let html='<div class="invoiceHeader"><h2>💳 FATURAS FECHADAS</h2><button class="invoiceHeaderClose" onclick="closeModal()">×</button></div>';
+  if(!lista.length){
+    html+='<div class="empty">NENHUMA FATURA FECHADA OU ABERTA COM VALOR PENDENTE.</div>';
+  }else{
+    html+=lista.map(c=>{
+      const movs=movimentosCartaoAbertos(c.id);
+      const total=movs.reduce((a,m)=>a+(+m.valor||0),0);
+      const status=faturaFechadaCartao(c)?'FATURA FECHADA':'FATURA AINDA ABERTA';
+      return `<div class="invoiceBox"><h3>${c.icone||'💳'} ${c.nome}</h3><small>${status} • FECHA ${c.fech} • VENCE ${c.venc}</small><b class="red" style="font-size:24px">${fmt(total)}</b><div class="invoiceActions"><button class="invoicePay" onclick="pagarFaturaCartao('${c.id}')">PAGAR FATURA</button><button class="invoiceAdvance" onclick="adiantarFaturaCartao('${c.id}')">ADIANTAR</button><button class="invoiceEdit" onclick="editarFaturaCartao('${c.id}')">EDITAR</button></div></div>`;
+    }).join('');
+  }
+  modal.classList.add('show');
+  modal.classList.add('moneyModal');
+  modal.classList.add('invoiceModal');
+  modal.onclick=function(e){if(e.target===modal)closeModal();};
+  modalBody.innerHTML=html;
+}
+function pagarFaturaCartao(id){
+  const movs=movimentosCartaoAbertos(id);
+  if(!movs.length)return alert('NENHUM VALOR PENDENTE NESTA FATURA.');
+  pedirConfirmacao('PAGAR FATURA','MARCAR TODAS AS COMPRAS PENDENTES DESTA FATURA COMO PAGAS?',()=>{movs.forEach(m=>m.pago=true);closeModal();save();});
+}
+function adiantarFaturaCartao(id){
+  const movs=movimentosCartaoAbertos(id);
+  if(!movs.length)return alert('NENHUM VALOR PARA ADIANTAR.');
+  pedirConfirmacao('ADIANTAR FATURA','MARCAR ESTA FATURA COMO PAGA ANTES DO VENCIMENTO?',()=>{movs.forEach(m=>m.pago=true);closeModal();save();});
+}
+function editarFaturaCartao(id){
+  const mov=movimentosCartaoAbertos(id)[0];
+  if(!mov)return alert('NENHUMA COMPRA PENDENTE PARA EDITAR.');
+  closeModal();
+  openModal('editCompraCartao',mov.id);
+}
+
 function renderCartoes(){let limiteTotal=db.cartoes.reduce((a,c)=>a+(+c.limite||0),0);let usadoTotal=db.movs.filter(m=>m.tipo=='cartao'&&dentroFiltroData(m)).reduce((a,m)=>a+(+m.valor||0),0); if(typeof limiteTotalCartoes!='undefined')limiteTotalCartoes.innerText=fmt(limiteTotal); if(typeof usadoTotalCartoes!='undefined')usadoTotalCartoes.innerText=fmt(usadoTotal); listaCartoes.innerHTML=db.cartoes.map(c=>{let usado=db.movs.filter(m=>m.tipo=='cartao'&&m.cartao==c.id&&dentroFiltroData(m)).reduce((a,m)=>a+m.valor,0), pct=c.limite?Math.min(100,usado/c.limite*100):0;let cor=c.cor||'#4c1d95';return `<div class="cardCredit cardCompact" style="--cartaoCor:${cor}"><input class="cardColorTiny" type="color" value="${cor}" onchange="mudarCorCartao('${c.id}',this.value)" title="Mudar cor"><div class="cardCompactTop"><div class="cardIconBig" onclick="abrirIconeCartao('${c.id}',event)">${c.icone||'💳'}</div><div class="cardCompactName">${c.nome}</div></div><div class="cardCompactValues"><div><small>LIMITE</small><b class="gold">${fmt(c.limite)}</b></div><div><small>GASTOU</small><b class="red">${fmt(usado)}</b></div><div><small>LIVRE</small><b class="green">${fmt(c.limite-usado)}</b></div></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div><div class="cardCompactFoot">${pct.toFixed(0)}% UTILIZADO • FECHA ${c.fech} • VENCE ${c.venc}</div></div>`}).join('')||'<div class="empty">Nenhum cartão cadastrado.</div>'}
 function mudarCorCartao(id,cor){let c=db.cartoes.find(x=>x.id==id); if(c){c.cor=cor; save()}}
 function renderRelatorios(){let t=totais(); if(typeof relResumo!='undefined')relResumo.innerHTML=`<div class="grid"><div class="mini"><b>Total receitas</b><span class="green">${fmt(t.rec)}</span></div><div class="mini"><b>Total despesas</b><span class="red">${fmt(t.desp+t.cart)}</span></div><div class="mini"><b>Saldo</b><span class="blue">${fmt(t.saldo)}</span></div><div class="mini"><b>Cartão</b><span class="gold">${fmt(t.cart)}</span></div></div>`}
