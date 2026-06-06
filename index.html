@@ -621,6 +621,8 @@ body{margin:0;background:radial-gradient(circle at top,#10233b 0,#050b12 45%,#02
 .screenAdjustPreview{border:1.5px solid var(--gold);border-radius:18px;padding:14px;background:#0b1522;margin:12px 0;text-align:center;box-shadow:0 0 14px #f2b63244}
 .screenControls{display:grid;grid-template-columns:54px 1fr 54px;gap:8px;align-items:center;margin:10px 0}.screenControls button{height:48px;border:0;border-radius:14px;background:#16263a;color:#fff;font-size:24px;font-weight:900}.screenControls strong{font-size:20px;color:var(--gold);text-align:center}.screenAdjustBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
+
+.invoicePaidHistory{border-color:#31d158!important;box-shadow:0 0 14px #31d15866!important}
 </style>
 </head>
 <body>
@@ -659,10 +661,10 @@ body{margin:0;background:radial-gradient(circle at top,#10233b 0,#050b12 45%,#02
     <div class="grid">
       <div class="mini click" onclick="abrirCategoria('receita',true)"><b>⏳ Receitas Pendentes</b><span id="receitasPendentes" class="gold">R$ 0,00</span></div>
       <div class="mini click" onclick="abrirCategoria('despesa',true)"><b>⚠️ Despesas Pendentes</b><span id="despesasPendentes" class="red">R$ 0,00</span></div>
-      <div class="mini click" onclick="abrirCategoria('receita')"><b>💰 Receitas</b><span id="totalReceitas" class="green">R$ 0,00</span></div>
+      <div class="mini click" onclick="abrirCategoria('receita')"><b>💰 RECEITAS + CONTAS</b><span id="totalReceitas" class="green">R$ 0,00</span></div>
       <div class="mini click" onclick="abrirCategoria('despesa')"><b>🛒 Despesas</b><span id="totalDespesas" class="red">R$ 0,00</span></div>
-      <div class="mini click" onclick="abrirCategoria('contas')"><b>🏦 Contas</b><span id="totalContas" class="blue">R$ 0,00</span></div>
-      <div class="mini click cardRedMini" onclick="showScreen('cartoes')"><b><span id="iconeCardCartoes" onclick="event.stopPropagation();abrirIcones('homeCartoes')" style="cursor:pointer;font-size:18px;margin-right:4px">💳</span> CARTÕES</b><span id="totalCartoes" class="red">R$ 0,00</span></div>
+      <div class="mini click" onclick="showScreen('cartoes')"><b>💳 LIMITE DOS CARTÕES</b><span id="totalContas" class="gold">R$ 0,00</span></div>
+      <div class="mini click cardRedMini" onclick="abrirCategoria('cartao')"><b><span id="iconeCardCartoes" onclick="event.stopPropagation();abrirIcones('homeCartoes')" style="cursor:pointer;font-size:18px;margin-right:4px">💳</span> GASTOS COM CARTÕES</b><span id="totalCartoes" class="red">R$ 0,00</span></div>
     </div>
     <div class="sectionTitle"><h2>🏦 Todas as contas</h2></div>
     <div id="contasInicio"></div>
@@ -755,6 +757,7 @@ db.temaAtual=db.temaAtual||'Neon Azul';
 db.categoriaIcones=db.categoriaIcones||{};
 db.lixeira=db.lixeira||[];
 db.iconesHome=db.iconesHome||{cartoes:'💳'};
+db.movs=(db.movs||[]).map(m=>{ if(m.tipo=='cartao'&&m.valorPagoFatura===undefined)m.valorPagoFatura=0; return m; });
 db.contas.forEach(c=>{c.icone=c.icone||'🏦'});
 db.cartoes.forEach(c=>{c.icone=c.icone||'💳'});
 const ICONES_CATEGORIA_PADRAO={
@@ -990,7 +993,7 @@ const forms={
  saidaConta:()=>{let c=db.contas.find(x=>x.id==editId)||{};return `<h2>Colocar despesa em ${c.nome||'Conta'}</h2><div class="form"><label>Descrição</label><input id="desc" value="Despesa em ${c.nome||'conta'}"><label>Valor</label><input id="valor" type="number" step="0.01"><label>Categoria</label><select id="cat">${catsOptions('despesa','Alimentação')}</select><label>Data</label><input id="data" type="date" value="${new Date().toISOString().slice(0,10)}"><label>Observação</label><textarea id="obs"></textarea><button class="btn redBg" onclick="salvarMovConta('despesa','${editId}')">- LANÇAR DESPESA</button></div>`},
  conta:()=>{let e=db.contas.find(x=>x.id==editId)||{};let ic=e.icone||'🏦';return `<h2>${editId?'Editar':'Nova'} Conta</h2><div class="form"><label>Ícone</label><button id="iconeContaBtn" type="button" class="catIconBtn" onclick="abrirIcones('contaForm')">${ic}</button><input id="iconeConta" type="hidden" value="${ic}"><label>Nome</label><input id="nome" value="${e.nome||''}"><label>Tipo</label><select id="tipo"><option ${e.tipo=='Carteira'?'selected':''}>Carteira</option><option ${e.tipo=='Conta Corrente'?'selected':''}>Conta Corrente</option><option ${e.tipo=='Poupança'?'selected':''}>Poupança</option><option ${e.tipo=='Pix'?'selected':''}>Pix</option><option ${e.tipo=='Caixa'?'selected':''}>Caixa</option></select><label>Saldo inicial</label><input id="saldo" type="number" step="0.01" value="${e.saldo||0}"><button class="btn" onclick="salvarConta()">SALVAR</button></div>`},
  categoria:()=>{let lista=catTipo=='receita'?db.categoriasReceitas:db.categoriasDespesas; let e=editId!==null?lista[editId]:''; let titulo=catTipo=='receita'?'Categoria de Receita':'Categoria de Despesa'; let ic=iconeCategoria(e,catTipo); return `<h2>${editId!==null?'Editar':'Nova'} ${titulo}</h2><div class="form"><label>Ícone</label><button id="iconeCatBtn" type="button" class="catIconBtn" onclick="abrirIcones('categoriaForm')">${ic}</button><input id="iconeCat" type="hidden" value="${ic}"><label>Nome da categoria</label><input id="nome" value="${e||''}"><button class="btn ${catTipo=='receita'?'greenBg':'redBg'}" onclick="salvarCategoria()">SALVAR</button></div>`},
- cartao:()=>{let e=db.cartoes.find(x=>x.id==editId)||{};let ic=e.icone||'💳';return `<h2>${editId?'Editar':'Novo'} Cartão</h2><div class="form"><label>Ícone</label><button id="iconeCartaoBtn" type="button" class="catIconBtn" onclick="abrirIcones('cartaoForm')">${ic}</button><input id="iconeCartao" type="hidden" value="${ic}"><label>Nome</label><input id="nome" value="${e.nome||''}"><label>Final do cartão</label><input id="final" maxlength="4" value="${e.final||''}"><label>Limite total</label><input id="limite" type="number" step="0.01" value="${e.limite||''}"><div class="row"><div><label>Fechamento</label><input id="fech" type="number" min="1" max="31" value="${e.fech||1}"></div><div><label>Vencimento</label><input id="venc" type="number" min="1" max="31" value="${e.venc||10}"></div></div><button class="btn" onclick="salvarCartao()">SALVAR</button></div>`},
+ cartao:()=>{let e=db.cartoes.find(x=>x.id==editId)||{};let ic=e.icone||'💳';return `<h2>${editId?'Editar':'Novo'} Cartão</h2><div class="form"><label>Ícone</label><button id="iconeCartaoBtn" type="button" class="catIconBtn" onclick="abrirIcones('cartaoForm')">${ic}</button><input id="iconeCartao" type="hidden" value="${ic}"><label>Nome do cartão</label><input id="nome" value="${e.nome||''}"><label>Limite total</label><input id="limite" type="number" step="0.01" value="${e.limite||''}"><div class="row"><div><label>Fechamento</label><input id="fech" type="number" min="1" max="31" value="${e.fech||1}"></div><div><label>Vencimento</label><input id="venc" type="number" min="1" max="31" value="${e.venc||10}"></div></div><button class="btn" onclick="salvarCartao()">SALVAR</button></div>`},
  compraCartao:()=>`<h2>Compra no Cartão</h2><div class="form"><label>Cartão</label><select id="cartao">${cartoesOptions()}</select><label>Descrição</label><input id="desc"><label>Valor total</label><input id="valor" type="number" step="0.01"><label>Parcelas</label><input id="parcelas" type="number" min="1" value="1"><label>Categoria</label><select id="cat">${catsOptions('despesa')}</select><label>Data</label><input id="data" type="date" value="${new Date().toISOString().slice(0,10)}"><button class="btn goldBg" onclick="salvarCompraCartao()">SALVAR COMPRA</button></div>`,
  editCompraCartao:()=>{let e=db.movs.find(x=>x.id==editId)||{};return `<h2>Editar Compra do Cartão</h2><div class="form"><label>Cartão</label><select id="cartao">${cartoesOptions(e.cartao)}</select><label>Descrição</label><input id="desc" value="${e.desc||''}"><label>Valor</label><input id="valor" type="number" step="0.01" value="${e.valor||''}"><label>Categoria</label><select id="cat">${catsOptions('despesa',e.cat)}</select><label>Data</label><input id="data" type="date" value="${e.data||new Date().toISOString().slice(0,10)}"><label>Observação</label><textarea id="obs">${e.obs||''}</textarea><button class="btn goldBg" onclick="salvarCompraEditada()">SALVAR ALTERAÇÃO</button></div>`},
  backup:()=>`<h2>☁️ Backup</h2><div class="editorGroup"><h3>Dados do aplicativo</h3><div class="editorBtns"><button class="smallBtn" onclick="exportar()">📤 Exportar</button><label class="smallBtn" style="display:block;text-align:center">📥 Importar<input type="file" accept=".json" onchange="importar(event)" style="display:none"></label></div></div><button class="btn redBg" onclick="zerar()">🗑️ ZERAR TUDO</button>`,
@@ -1099,7 +1102,7 @@ function salvarAjusteTela(){
 function colorInput(k,label){return `<div class="colorRow"><label>${label}</label><input id="cor_${k}" type="color" value="${(db.tema&&db.tema[k])||'#000000'}"></div>`}
 function salvarCores(){['bg','card','blue','gold','green','red'].forEach(k=>db.tema[k]=document.getElementById('cor_'+k).value); closeModal(); save()}
 function editorMovs(tipo,titulo){let arr=db.movs.filter(m=>m.tipo==tipo);return `<h2>Editar ${titulo}</h2><button class="btn ${tipo=='receita'?'greenBg':'redBg'}" onclick="openModal('${tipo}')">+ NOVA</button><div class="editList">${arr.map(m=>`<div class="item"><div><b>${m.desc}</b><small>${m.cat} • ${fmt(m.valor)}</small></div><div class="actions"><button onclick="openModal('${tipo}','${m.id}')">✏️</button><button onclick="excluir('${m.id}');openModal('editor${tipo=='receita'?'Receitas':'Despesas'}')">🗑️</button></div></div>`).join('')||'<div class="empty">Nada cadastrado.</div>'}</div>`}
-function editorCartoes(){return `<h2>Editar Cartões</h2><button class="btn goldBg" onclick="openModal('cartao')">+ NOVO CARTÃO</button><div class="editList">${db.cartoes.map(c=>`<div class="item"><div><b>${c.nome}</b><small>Final ${c.final} • Limite ${fmt(c.limite)}</small></div><div class="actions"><button onclick="openModal('cartao','${c.id}')">✏️</button><button onclick="excluirCartao('${c.id}');openModal('editorCartoes')">🗑️</button></div></div>`).join('')||'<div class="empty">Nenhum cartão.</div>'}</div>`}
+function editorCartoes(){return `<h2>Editar Cartões</h2><button class="btn goldBg" onclick="openModal('cartao')">+ NOVO CARTÃO</button><div class="editList">${db.cartoes.map(c=>`<div class="item"><div><b>${c.nome}</b><small>Limite ${fmt(c.limite)}</small></div><div class="actions"><button onclick="openModal('cartao','${c.id}')">✏️</button><button onclick="excluirCartao('${c.id}');openModal('editorCartoes')">🗑️</button></div></div>`).join('')||'<div class="empty">Nenhum cartão.</div>'}</div>`}
 function editorContas(){return `<h2>Editar Contas</h2><button class="btn" onclick="openModal('conta')">+ NOVA CONTA</button><div class="editList">${db.contas.map(c=>`<div class="item"><div><b>${c.nome}</b><small>${c.tipo} • ${fmt(c.saldo)}</small></div><div class="actions"><button onclick="openModal('conta','${c.id}')">✏️</button><button onclick="excluirConta('${c.id}');openModal('editorContas')">🗑️</button></div></div>`).join('')||'<div class="empty">Nenhuma conta.</div>'}</div>`}
 function editorCategorias(){return `<h2>Editar Categorias</h2>
 <div class="editorGroup"><h3>💰 Categorias de Receitas</h3><button class="btn greenBg" onclick="openModal('categoriaReceita')">+ NOVA CATEGORIA DE RECEITA</button><div class="editList">${db.categoriasReceitas.map((c,i)=>`<div class="item"><div class="itemLeft"><div class="ico clickIcon" onclick="abrirIcones('categoria','${String(c).replace(/'/g,"\'")}')">${iconeCategoria(c,'receita')}</div><div><b>${c}</b><small></small></div></div><div class="actions"><button onclick="openModal('categoriaReceita','${i}')">✏️</button><button onclick="excluirCategoria('receita',${i});openModal('editorCategorias')">🗑️</button></div></div>`).join('')||'<div class="empty">Nenhuma categoria de receita.</div>'}</div></div>
@@ -1179,7 +1182,7 @@ function salvarCategoria(){
   openModal('editorCategorias');
   render();
 }
-function salvarCartao(){let obj={id:editId||uid(),nome:nome.value||'Cartão',final:final.value||'0000',limite:+limite.value||0,fech:fech.value||1,venc:venc.value||10,icone:document.getElementById('iconeCartao')?.value||'💳'}; if(editId) db.cartoes=db.cartoes.map(x=>x.id==editId?obj:x); else db.cartoes.push(obj); closeModal(); save()}
+function salvarCartao(){let obj={id:editId||uid(),nome:nome.value||'Cartão',limite:+limite.value||0,fech:fech.value||1,venc:venc.value||10,icone:document.getElementById('iconeCartao')?.value||'💳'}; if(editId) db.cartoes=db.cartoes.map(x=>x.id==editId?obj:x); else db.cartoes.push(obj); closeModal(); save()}
 function salvarCompraEditada(){
   let old=db.movs.find(x=>x.id==editId)||{};
   let mov={id:editId,grupo:old.grupo||editId,origemTipo:old.origemTipo||'normal',tipo:'cartao',cartao:cartao.value,desc:desc.value||'Compra',valor:+valor.value||0,cat:cat.value,data:data.value,pago:old.pago===undefined?false:old.pago,obs:obs.value||'Compra no cartão'};
@@ -1207,6 +1210,25 @@ function salvarCompraCartao(){
   save();
 }
 function excluir(id){
+  const item=db.movs.find(x=>x.id==id);
+  if(item&&item.origemTipo==='pagamentoFatura'){
+    pedirConfirmacao('EXCLUIR FATURA PAGA','DESEJA EXCLUIR ESTE PAGAMENTO DO HISTÓRICO E DESFAZER A BAIXA DA FATURA?',()=>{
+      desfazerPagamentoFatura(item);
+      db.lixeira=db.lixeira||[];
+      db.lixeira.unshift({...item,apagadoEm:new Date().toISOString(),apagadoEmBR:new Date().toLocaleString('pt-BR')});
+      db.movs=db.movs.filter(x=>x.id!=id);
+      save();
+    });
+    return;
+  }
+  if(item && movimentoTemGrupo(item)){
+    pedirEscopoExclusao((escopo)=>{
+      if(!escopo)return;
+      aplicarExclusaoGrupo(item,escopo);
+      save();
+    });
+    return;
+  }
   pedirConfirmacao('ENVIAR PARA LIXEIRA','DESEJA ENVIAR ESTE LANÇAMENTO PARA A LIXEIRA?',()=>{
     db.lixeira=db.lixeira||[];
     const item=db.movs.find(x=>x.id==id);
@@ -1253,7 +1275,7 @@ function excluirDefinitivoLixeira(id){
 }
 
 function render(){const icHome=document.getElementById('iconeCardCartoes'); if(icHome&&db.iconesHome&&db.iconesHome.cartoes)icHome.innerText=db.iconesHome.cartoes;let t=totais(); saldoGeral.innerText=fmt(t.saldo); saldoGeral.className='value '+(t.saldo>=0?'green':'red'); saldoStatus.innerText=t.saldo>=0?'↗ Positivo':'↘ Negativo'; saldoStatus.className=t.saldo>=0?'green':'red'; totalReceitas.innerText=fmt(t.rec); totalDespesas.innerText=fmt(t.desp); totalCartoes.innerText=fmt(t.cart); totalContas.innerText=fmt(t.contas); if(typeof receitasPendentes!='undefined')receitasPendentes.innerText=fmt(t.recPend); if(typeof despesasPendentes!='undefined')despesasPendentes.innerText=fmt(t.despPend); renderContas(); renderMovs(); renderCartoes(); renderRelatorios(); atualizarBotaoFaturasFechadas()}
-function movHTML(m){let sign=m.tipo=='receita'?'+':'-';let color=m.tipo=='receita'?'green':'red';let icon=m.icone||(m.tipo=='cartao'?'💳':iconeCategoria(m.cat,m.tipo));let form=m.tipo=='receita'?'receita':(m.tipo=='cartao'?'editCompraCartao':'despesa');let status=m.ignorado?' • Ignorado':(m.pago===false?' • Pendente':'');let pendBtn=''; if(m.pago===false&&!m.ignorado&&m.tipo=='despesa')pendBtn=`<button class="payBtn redPay" onclick="pagarMov('${m.id}')">PAGAR</button>`; if(m.pago===false&&!m.ignorado&&m.tipo=='receita')pendBtn=`<button class="payBtn greenPay" onclick="pagarMov('${m.id}')">RECEBER</button>`; let ignoreTxt=m.ignorado?'IGNORADO':'IGNORAR'; return `<div class="item ${m.ignorado?'ignoredItem':''}"><div class="itemLeft"><div class="ico">${icon}</div><div><b>${m.desc}</b><small>${m.cat||''} • ${new Date(m.data+'T00:00').toLocaleDateString('pt-BR')}${status}</small></div></div><div style="text-align:right"><b class="${m.ignorado?'muted':color}">${sign} ${fmt(m.valor)}</b><div class="actions">${pendBtn}<button class="ignoreBtn ${m.ignorado?'activeIgnore':''}" onclick="ignorarMov('${m.id}')">${ignoreTxt}</button><button onclick="openModal('${form}','${m.id}')">✏️ EDITAR</button><button onclick="excluir('${m.id}')">🗑️</button></div></div></div>`}
+function movHTML(m){let sign=m.tipo=='receita'?'+':'-';let color=m.tipo=='receita'?'green':'red';let icon=m.icone||(m.tipo=='cartao'?'💳':iconeCategoria(m.cat,m.tipo));let form=m.tipo=='receita'?'receita':(m.tipo=='cartao'?'editCompraCartao':'despesa');let status=m.ignorado?' • Ignorado':(m.pago===false?' • Pendente':''); if(m.origemTipo==='pagamentoFatura')status+=' • FATURA PAGA';let pendBtn=''; if(m.pago===false&&!m.ignorado&&m.tipo=='despesa')pendBtn=`<button class="payBtn redPay" onclick="pagarMov('${m.id}')">PAGAR</button>`; if(m.pago===false&&!m.ignorado&&m.tipo=='receita')pendBtn=`<button class="payBtn greenPay" onclick="pagarMov('${m.id}')">RECEBER</button>`; let ignoreTxt=m.ignorado?'IGNORADO':'IGNORAR'; let editBtn=m.origemTipo==='pagamentoFatura'?'':`<button onclick="openModal('${form}','${m.id}')">✏️ EDITAR</button>`; return `<div class="item ${m.ignorado?'ignoredItem':''} ${m.origemTipo==='pagamentoFatura'?'invoicePaidHistory':''}"><div class="itemLeft"><div class="ico">${icon}</div><div><b>${m.desc}</b><small>${m.cat||''} • ${new Date(m.data+'T00:00').toLocaleDateString('pt-BR')}${status}</small></div></div><div style="text-align:right"><b class="${m.ignorado?'muted':color}">${sign} ${fmt(m.valor)}</b><div class="actions">${pendBtn}<button class="ignoreBtn ${m.ignorado?'activeIgnore':''}" onclick="ignorarMov('${m.id}')">${ignoreTxt}</button>${editBtn}<button onclick="excluir('${m.id}')">🗑️</button></div></div></div>`}
 function saldoConta(c){let rec=0,des=0; db.movs.filter(dentroFiltroData).forEach(m=>{if(m.conta==c.id&&!m.ignorado){if(m.tipo=='receita'&&m.pago!==false)rec+=m.valor; if(m.tipo=='despesa'&&m.pago!==false)des+=m.valor;}}); return (+c.saldo||0)+rec-des}
 function contaResumoHTML(c){let saldo=saldoConta(c);return `<div class="item accountCard accountCardCompact"><div class="accountMainLine"><div class="ico clickIcon" onclick="abrirIconeConta('${c.id}',event)">${c.icone||'🏦'}</div><div class="accountTextLine"><div class="accountCardName">${c.nome}</div><div class="accountCardType">${c.tipo}</div></div></div><div><div class="accountValueSide ${saldo>=0?'blue':'red'}">${fmt(saldo)}</div><div class="accountBtns accountMiniBtns"><button class="plus" onclick="openModal('entradaConta','${c.id}')">+</button><button class="minus" onclick="openModal('saidaConta','${c.id}')">-</button></div></div></div>`}
 function contaHTML(c){let saldo=saldoConta(c);return `<div class="item"><div class="itemLeft"><div class="ico clickIcon" onclick="abrirIconeConta('${c.id}',event)">${c.icone||'🏦'}</div><div><b>${c.nome}</b><small>${c.tipo} • Inicial ${fmt(c.saldo)}</small></div></div><div style="text-align:right"><b class="${saldo>=0?'blue':'red'}">${fmt(saldo)}</b><div class="actions"><button onclick="openModal('conta','${c.id}')">✏️ EDITAR</button><button onclick="excluirConta('${c.id}')">🗑️</button></div></div></div>`}
@@ -1391,8 +1413,19 @@ function renderMovs(){
   }
 }
 
+function restanteCompraCartao(m){return Math.max(0,(+m.valor||0)-(+m.valorPagoFatura||0))}
 function movimentosCartaoAbertos(cartaoId){
-  return db.movs.filter(m=>m.tipo=='cartao'&&m.cartao==cartaoId&&!m.ignorado&&m.pago===false);
+  return db.movs.filter(m=>m.tipo=='cartao'&&m.cartao==cartaoId&&!m.ignorado&&restanteCompraCartao(m)>0);
+}
+function totalRestanteFatura(cartaoId){return movimentosCartaoAbertos(cartaoId).reduce((a,m)=>a+restanteCompraCartao(m),0)}
+function desfazerPagamentoFatura(pg){
+  (pg.pagamentos||[]).forEach(p=>{
+    const m=db.movs.find(x=>x.id==p.movId);
+    if(m){
+      m.valorPagoFatura=Math.max(0,(+m.valorPagoFatura||0)-(+p.valor||0));
+      if(restanteCompraCartao(m)>0)m.pago=false;
+    }
+  });
 }
 function faturaFechadaCartao(c){
   const diaHoje=new Date().getDate();
@@ -1415,7 +1448,7 @@ function dataBR(data){
 }
 function comprasFaturaHTML(movs,cartaoId){
   if(!movs.length)return '<div class="empty">NENHUMA COMPRA NESTA FATURA.</div>';
-  return '<div class="invoicePurchaseList">'+movs.map(m=>`<div class="invoicePurchase"><div><b>${m.desc||'COMPRA DO CARTÃO'}</b><small>${m.cat||'SEM CATEGORIA'} • ${dataBR(m.data)}${m.obs?' • '+m.obs:''}</small><div class="invoicePurchaseBtns"><button onclick="editarCompraDaFatura('${m.id}')">✏️ EDITAR COMPRA</button></div></div><strong>${fmt(m.valor)}</strong><button class="invoicePurchaseDelete" onclick="event.stopPropagation();apagarCompraDaFatura('${m.id}','${cartaoId}')">X</button></div>`).join('')+'</div>';
+  return '<div class="invoicePurchaseList">'+movs.map(m=>{const rest=restanteCompraCartao(m);const pago=+m.valorPagoFatura||0;return `<div class="invoicePurchase"><div><b>${m.desc||'COMPRA DO CARTÃO'}</b><small>${m.cat||'SEM CATEGORIA'} • ${dataBR(m.data)}${pago>0?' • PAGO '+fmt(pago):''}${m.obs?' • '+m.obs:''}</small><div class="invoicePurchaseBtns"><button onclick="editarCompraDaFatura('${m.id}')">✏️ EDITAR COMPRA</button></div></div><strong>${fmt(rest)}</strong><button class="invoicePurchaseDelete" onclick="event.stopPropagation();apagarCompraDaFatura('${m.id}','${cartaoId}')">X</button></div>`}).join('')+'</div>';
 }
 function listaCartoesComFatura(){
   const fechadas=(db.cartoes||[]).filter(faturaFechadaCartao);
@@ -1430,7 +1463,7 @@ function abrirFaturasFechadas(){
   }else{
     html+='<div class="invoiceMiniGrid">'+lista.map(c=>{
       const movs=movimentosCartaoAbertos(c.id).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
-      const total=movs.reduce((a,m)=>a+(+m.valor||0),0);
+      const total=totalRestanteFatura(c.id);
       const status=faturaFechadaCartao(c)?'FECHADA':'ABERTA';
       const qtd=movs.length;
       return `<button class="invoiceMiniCard" onclick="abrirDetalheFaturaCartao('${c.id}')"><h3>${c.icone||'💳'} ${c.nome||'CARTÃO'}</h3><small>${status} • FECHA ${c.fech||1} • VENCE ${c.venc||10}</small><small>${qtd} COMPRA${qtd==1?'':'S'} NA FATURA</small><strong>${fmt(total)}</strong><span class="invoiceMiniOpen">ABRIR ›</span></button>`;
@@ -1446,7 +1479,7 @@ function abrirDetalheFaturaCartao(id){
   const c=(db.cartoes||[]).find(x=>x.id==id);
   if(!c)return abrirFaturasFechadas();
   const movs=movimentosCartaoAbertos(c.id).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
-  const total=movs.reduce((a,m)=>a+(+m.valor||0),0);
+  const total=totalRestanteFatura(c.id);
   const status=faturaFechadaCartao(c)?'FATURA FECHADA':'FATURA AINDA ABERTA';
   let html='<div class="invoiceHeader"><h2>💳 FATURA DO CARTÃO</h2><button class="invoiceHeaderClose" onclick="closeModal()">×</button></div>';
   html+=`<button class="invoiceBackBtn" onclick="abrirFaturasFechadas()">‹ VOLTAR PARA FATURAS</button><div class="invoiceCardGroup"><div class="invoiceCardTop"><div><h3>${c.icone||'💳'} ${c.nome||'CARTÃO'}</h3><small>${status} • FECHA ${c.fech||1} • VENCE ${c.venc||10} • ${movs.length} COMPRA${movs.length==1?'':'S'}</small></div><div class="invoiceTotal">${fmt(total)}</div></div><div class="invoiceSubBox"><div class="invoiceSubTitle"><b>COMPRAS DA FATURA</b><span>${fmt(total)}</span></div>${comprasFaturaHTML(movs,c.id)}<div class="invoiceActions compactTop"><button class="invoicePay" onclick="pagarFaturaCartao('${c.id}')">PAGAR FATURA</button><button class="invoiceAdvance" onclick="adiantarFaturaCartao('${c.id}')">ADIANTAR</button><button class="invoiceEdit" onclick="editarFaturaCartao('${c.id}')">EDITAR</button></div></div></div>`;
@@ -1472,16 +1505,47 @@ function apagarCompraDaFatura(id,cartaoId){
     }
   });
 }
-function pagarFaturaCartao(id){
-  const movs=movimentosCartaoAbertos(id);
-  if(!movs.length)return alert('NENHUM VALOR PENDENTE NESTA FATURA.');
-  pedirConfirmacao('PAGAR FATURA','MARCAR TODAS AS COMPRAS PENDENTES DESTA FATURA COMO PAGAS?',()=>{movs.forEach(m=>m.pago=true);closeModal();save();});
+function abrirPagamentoFaturaCartao(id,tipo='pagar'){
+  const c=(db.cartoes||[]).find(x=>x.id==id);
+  const total=totalRestanteFatura(id);
+  if(!c||total<=0)return alert('NENHUM VALOR PENDENTE NESTA FATURA.');
+  if(!(db.contas||[]).length)return alert('CADASTRE UMA CONTA PARA PAGAR A FATURA.');
+  let titulo=tipo==='adiantar'?'ADIANTAR FATURA':'PAGAR FATURA';
+  modal.classList.add('show'); modal.classList.add('invoiceModal'); modal.onclick=function(e){if(e.target===modal)closeModal();};
+  modalBody.innerHTML=`<div class="invoiceHeader"><h2>💳 ${titulo}</h2><button class="invoiceHeaderClose" onclick="closeModal()">×</button></div>
+  <div class="form">
+    <div class="card alertTotalBox"><b>${c.icone||'💳'} ${c.nome||'CARTÃO'}</b><span>${fmt(total)}</span></div>
+    <label>CONTA PARA DESCONTAR</label><select id="contaPagamentoFatura">${contasOptions()}</select>
+    <label>VALOR A PAGAR</label><input id="valorPagamentoFatura" type="number" step="0.01" value="${total.toFixed(2)}" max="${total.toFixed(2)}">
+    <button class="btn redBg" onclick="confirmarPagamentoFaturaCartao('${id}','${tipo}')">CONFIRMAR ${titulo}</button>
+  </div>`;
 }
-function adiantarFaturaCartao(id){
-  const movs=movimentosCartaoAbertos(id);
-  if(!movs.length)return alert('NENHUM VALOR PARA ADIANTAR.');
-  pedirConfirmacao('ADIANTAR FATURA','MARCAR ESTA FATURA COMO PAGA ANTES DO VENCIMENTO?',()=>{movs.forEach(m=>m.pago=true);closeModal();save();});
+function confirmarPagamentoFaturaCartao(id,tipo='pagar'){
+  const c=(db.cartoes||[]).find(x=>x.id==id);
+  const contaId=document.getElementById('contaPagamentoFatura')?.value;
+  const contaObj=(db.contas||[]).find(x=>x.id==contaId);
+  let valor=Math.max(0,parseMoney(document.getElementById('valorPagamentoFatura')?.value));
+  const total=totalRestanteFatura(id);
+  if(!contaId)return alert('ESCOLHA UMA CONTA.');
+  if(valor<=0)return alert('INFORME UM VALOR.');
+  valor=Math.min(valor,total);
+  let restante=valor;
+  let pagamentos=[];
+  movimentosCartaoAbertos(id).sort((a,b)=>(a.data||'').localeCompare(b.data||'')).forEach(m=>{
+    if(restante<=0)return;
+    const aberto=restanteCompraCartao(m);
+    const abat=Math.min(aberto,restante);
+    m.valorPagoFatura=(+m.valorPagoFatura||0)+abat;
+    if(restanteCompraCartao(m)<=0.009)m.pago=true;
+    pagamentos.push({movId:m.id,valor:abat});
+    restante-=abat;
+  });
+  db.movs.push({id:uid(),grupo:uid(),origemTipo:'pagamentoFatura',tipo:'despesa',icone:'💳',conta:contaId,cartao:id,desc:`${tipo==='adiantar'?'ADIANTAMENTO':'PAGAMENTO'} DE FATURA - ${(c&&c.nome)||'CARTÃO'}`,valor:valor,cat:'FATURA PAGA',data:new Date().toISOString().slice(0,10),pago:true,obs:`CARTÃO: ${(c&&c.nome)||''} • CONTA: ${(contaObj&&contaObj.nome)||''}`,pagamentos});
+  closeModal();
+  save();
 }
+function pagarFaturaCartao(id){abrirPagamentoFaturaCartao(id,'pagar')}
+function adiantarFaturaCartao(id){abrirPagamentoFaturaCartao(id,'adiantar')}
 function editarFaturaCartao(id){
   const mov=movimentosCartaoAbertos(id)[0];
   if(!mov)return alert('NENHUMA COMPRA PENDENTE PARA EDITAR.');
@@ -1489,7 +1553,7 @@ function editarFaturaCartao(id){
   openModal('editCompraCartao',mov.id);
 }
 
-function renderCartoes(){let limiteTotal=db.cartoes.reduce((a,c)=>a+(+c.limite||0),0);let usadoTotal=db.movs.filter(m=>m.tipo=='cartao'&&dentroFiltroData(m)).reduce((a,m)=>a+(+m.valor||0),0); if(typeof limiteTotalCartoes!='undefined')limiteTotalCartoes.innerText=fmt(limiteTotal); if(typeof usadoTotalCartoes!='undefined')usadoTotalCartoes.innerText=fmt(usadoTotal); listaCartoes.innerHTML=db.cartoes.map(c=>{let usado=db.movs.filter(m=>m.tipo=='cartao'&&m.cartao==c.id&&dentroFiltroData(m)).reduce((a,m)=>a+m.valor,0), pct=c.limite?Math.min(100,usado/c.limite*100):0;let cor=c.cor||'#4c1d95';return `<div class="cardCredit cardCompact" style="--cartaoCor:${cor}"><input class="cardColorTiny" type="color" value="${cor}" onchange="mudarCorCartao('${c.id}',this.value)" title="Mudar cor"><div class="cardCompactTop"><div class="cardIconBig" onclick="abrirIconeCartao('${c.id}',event)">${c.icone||'💳'}</div><div class="cardCompactName">${c.nome}</div></div><div class="cardCompactValues"><div><small>LIMITE</small><b class="gold">${fmt(c.limite)}</b></div><div><small>GASTOU</small><b class="red">${fmt(usado)}</b></div><div><small>LIVRE</small><b class="green">${fmt(c.limite-usado)}</b></div></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div><div class="cardCompactFoot">${pct.toFixed(0)}% UTILIZADO • FECHA ${c.fech} • VENCE ${c.venc}</div></div>`}).join('')||'<div class="empty">Nenhum cartão cadastrado.</div>'}
+function renderCartoes(){let limiteTotal=db.cartoes.reduce((a,c)=>a+(+c.limite||0),0);let usadoTotal=db.movs.filter(m=>m.tipo=='cartao'&&dentroFiltroData(m)).reduce((a,m)=>a+(+m.valor||0),0); if(typeof limiteTotalCartoes!='undefined')limiteTotalCartoes.innerText=fmt(limiteTotal); if(typeof usadoTotalCartoes!='undefined')usadoTotalCartoes.innerText=fmt(usadoTotal); listaCartoes.innerHTML=db.cartoes.map(c=>{let usado=db.movs.filter(m=>m.tipo=='cartao'&&m.cartao==c.id&&!m.ignorado).reduce((a,m)=>a+restanteCompraCartao(m),0), pct=c.limite?Math.min(100,usado/c.limite*100):0;let cor=c.cor||'#4c1d95';return `<div class="cardCredit cardCompact" style="--cartaoCor:${cor}"><input class="cardColorTiny" type="color" value="${cor}" onchange="mudarCorCartao('${c.id}',this.value)" title="Mudar cor"><div class="cardCompactTop"><div class="cardIconBig" onclick="abrirIconeCartao('${c.id}',event)">${c.icone||'💳'}</div><div class="cardCompactName">${c.nome}</div></div><div class="cardCompactValues"><div><small>LIMITE</small><b class="gold">${fmt(c.limite)}</b></div><div><small>GASTOU</small><b class="red">${fmt(usado)}</b></div><div><small>LIVRE</small><b class="green">${fmt(c.limite-usado)}</b></div></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div><div class="cardCompactFoot">${pct.toFixed(0)}% UTILIZADO • FECHA ${c.fech} • VENCE ${c.venc}</div></div>`}).join('')||'<div class="empty">Nenhum cartão cadastrado.</div>'}
 function mudarCorCartao(id,cor){let c=db.cartoes.find(x=>x.id==id); if(c){c.cor=cor; save()}}
 function renderRelatorios(){let t=totais(); if(typeof relResumo!='undefined')relResumo.innerHTML=`<div class="grid"><div class="mini"><b>Total receitas</b><span class="green">${fmt(t.rec)}</span></div><div class="mini"><b>Total despesas</b><span class="red">${fmt(t.desp+t.cart)}</span></div><div class="mini"><b>Saldo</b><span class="blue">${fmt(t.saldo)}</span></div><div class="mini"><b>Cartão</b><span class="gold">${fmt(t.cart)}</span></div></div>`}
 function limparDatasHistorico(){if(document.getElementById('dataInicio'))dataInicio.value=''; if(document.getElementById('dataFim'))dataFim.value=''; atualizarMesAnoTela(); render()}
@@ -1812,8 +1876,37 @@ function abrirCategoria(tipo,pendente=false){
 
 /* ESCOPO FIXAS/PARCELADAS CORRIGIDO */
 let escopoCallback=null;
+let escopoModo='editar';
+function prepararTextoEscopo(modo){
+  escopoModo=modo||'editar';
+  const box=document.querySelector('#scopeOverlay .scopeBox');
+  if(!box)return;
+  const p=box.querySelector('p');
+  const btns=box.querySelectorAll('.scopeBtns button');
+  if(p)p.innerHTML='ESTA É UMA TRANSAÇÃO FIXA OU PARCELADA.<br>VOCÊ DESEJA:';
+  if(btns.length>=4){
+    if(escopoModo==='excluir'){
+      btns[0].textContent='EXCLUIR SOMENTE ESTA';
+      btns[1].textContent='EXCLUIR TODAS PENDENTES';
+      btns[2].textContent='EXCLUIR TODAS, INCLUINDO EFETIVADAS';
+      btns[3].textContent='CANCELAR';
+    }else{
+      btns[0].textContent='ALTERAR SOMENTE ESTA';
+      btns[1].textContent='ALTERAR TODAS PENDENTES';
+      btns[2].textContent='ALTERAR TODAS, INCLUINDO EFETIVADAS';
+      btns[3].textContent='CANCELAR';
+    }
+  }
+}
 function pedirEscopoEdicao(callback){
   escopoCallback=callback;
+  prepararTextoEscopo('editar');
+  const el=document.getElementById('scopeOverlay');
+  if(el)el.classList.add('show');
+}
+function pedirEscopoExclusao(callback){
+  escopoCallback=callback;
+  prepararTextoEscopo('excluir');
   const el=document.getElementById('scopeOverlay');
   if(el)el.classList.add('show');
 }
@@ -1857,6 +1950,24 @@ function aplicarAlteracaoGrupo(base,old,escopo){
     };
   });
 }
+function aplicarExclusaoGrupo(old,escopo){
+  db.lixeira=db.lixeira||[];
+  const agoraISO=new Date().toISOString();
+  const agoraBR=new Date().toLocaleString('pt-BR');
+  const remover=[];
+  (db.movs||[]).forEach(x=>{
+    if(!mesmoGrupoMov(x,old))return;
+    if(escopo==='esta' && x.id!==old.id)return;
+    if(escopo==='pendentes' && x.pago!==false)return;
+    remover.push(x.id);
+    db.lixeira.unshift({...x,apagadoEm:agoraISO,apagadoEmBR:agoraBR});
+  });
+  if(!remover.length){
+    remover.push(old.id);
+    db.lixeira.unshift({...old,apagadoEm:agoraISO,apagadoEmBR:agoraBR});
+  }
+  db.movs=(db.movs||[]).filter(x=>!remover.includes(x.id));
+}
 /* FIM ESCOPO FIXAS/PARCELADAS CORRIGIDO */
 
 
@@ -1888,6 +1999,7 @@ function salvarIconeDigitado(){
   let valor=(inp?.value||'').trim();
   if(!valor)return alert('DIGITE UM ÍCONE, LETRA OU NÚMERO');
   db.iconesHome=db.iconesHome||{cartoes:'💳'};
+db.movs=(db.movs||[]).map(m=>{ if(m.tipo=='cartao'&&m.valorPagoFatura===undefined)m.valorPagoFatura=0; return m; });
   db.categoriaIcones=db.categoriaIcones||{};
   const t=iconKeyboardTarget||iconPickerTarget;
   if(t==='homeCartoes'){
@@ -2049,6 +2161,270 @@ window.addEventListener('pagehide',function(){
     salvarBackupFirebaseFinal(pacote,key);
   }catch(e){}
 });
+
+
+
+/* ===== AJUSTE HOME: RECEITAS+CONTAS / LIMITE / GASTOS CARTÃO ===== */
+(function(){
+  const oldNomeFiltroAtual=window.nomeFiltroAtual;
+  window.nomeFiltroAtual=function(){
+    if(filtro==='cartao') return 'Gastos com Cartões';
+    if(typeof oldNomeFiltroAtual==='function') return oldNomeFiltroAtual();
+    return 'Tudo';
+  };
+
+  window.passaFiltroCategoria=function(m){
+    if(filtro==='ignorados') return !!m.ignorado;
+    if(filtro==='todos') return !m.ignorado;
+    if(filtro==='contas') return (m.tipo==='receita'||m.tipo==='despesa') && !!m.conta && !m.ignorado;
+    if(filtro==='cartao') return m.tipo==='cartao' && !m.ignorado;
+    return m.tipo===filtro && !m.ignorado;
+  };
+
+  const oldTotais=window.totais;
+  window.totais=function(){
+    let t=typeof oldTotais==='function'?oldTotais():{rec:0,desp:0,cart:0,contas:0,saldo:0,recPend:0,despPend:0};
+    t.limiteCartoes=(db.cartoes||[]).reduce((a,c)=>a+(+c.limite||0),0);
+    t.receitasContas=t.contas;
+    return t;
+  };
+
+  const oldRender=window.render;
+  window.render=function(){
+    if(typeof oldRender==='function') oldRender();
+    const t=window.totais();
+    const recEl=document.getElementById('totalReceitas');
+    const limEl=document.getElementById('totalContas');
+    const cartEl=document.getElementById('totalCartoes');
+    if(recEl) recEl.innerText=fmt(t.receitasContas);
+    if(limEl) limEl.innerText=fmt(t.limiteCartoes);
+    if(cartEl) cartEl.innerText=fmt(t.cart);
+  };
+})();
+/* ===== FIM AJUSTE HOME ===== */
+
+
+/* ===== ATUALIZAÇÃO: GASTOS DO CARTÃO DESCONTAM AO PAGAR + ESCOLHER FATURA DA COMPRA ===== */
+(function(){
+  function money(v){return Math.max(0,+(v||0));}
+  window.faturaDataBase=function(cartaoId,dataStr,offset){
+    const c=(db.cartoes||[]).find(x=>x.id==cartaoId)||{};
+    let d=dataStr?new Date(dataStr+'T00:00'):new Date();
+    if(isNaN(d.getTime())) d=new Date();
+    const fech=+(c.fech||1);
+    if(d.getDate()>fech) d.setMonth(d.getMonth()+1);
+    d.setMonth(d.getMonth()+(+offset||0));
+    d.setDate(1);
+    return d;
+  };
+  window.faturaKeyFrom=function(cartaoId,dataStr,offset){
+    const d=faturaDataBase(cartaoId,dataStr,offset);
+    return cartaoId+'|'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  };
+  window.faturaLabelFromKey=function(key){
+    const parts=String(key||'').split('|');
+    const ym=(parts[1]||'').split('-');
+    const y=ym[0]||'';
+    const m=Math.max(1,Math.min(12,+(ym[1]||1)));
+    const meses=['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+    return 'FATURA '+meses[m-1]+'/'+y;
+  };
+  window.faturaKeyMov=function(m){
+    if(m&&m.faturaKey)return m.faturaKey;
+    return faturaKeyFrom(m.cartao,m.data||new Date().toISOString().slice(0,10),0);
+  };
+  window.faturaOptionsHTML=function(cartaoId,dataStr,sel){
+    const labels=[];
+    for(let i=0;i<6;i++){
+      const key=faturaKeyFrom(cartaoId,dataStr,i);
+      labels.push(`<option value="${i}" ${String(sel||'0')===String(i)?'selected':''}>${i===0?'FATURA ATUAL':i===1?'PRÓXIMA FATURA':'FATURA +'+i} • ${faturaLabelFromKey(key)}</option>`);
+    }
+    return labels.join('');
+  };
+  window.atualizarFaturasDestino=function(){
+    const sel=document.getElementById('faturaDestino');
+    const cart=document.getElementById('cartao');
+    const data=document.getElementById('data');
+    if(!sel||!cart)return;
+    const old=sel.value||'0';
+    sel.innerHTML=faturaOptionsHTML(cart.value,data&&data.value,old);
+  };
+
+  if(window.forms){
+    forms.compraCartao=()=>{
+      const hoje=new Date().toISOString().slice(0,10);
+      const primeiro=(db.cartoes&&db.cartoes[0]&&db.cartoes[0].id)||'';
+      return `<h2>COMPRA / VENDA NO CARTÃO</h2><div class="form"><label>CARTÃO</label><select id="cartao" onchange="atualizarFaturasDestino()">${cartoesOptions()}</select><label>JOGAR EM QUAL FATURA</label><select id="faturaDestino">${faturaOptionsHTML(primeiro,hoje,0)}</select><label>DESCRIÇÃO</label><input id="desc"><label>VALOR TOTAL</label><input id="valor" type="number" step="0.01"><label>PARCELAS</label><input id="parcelas" type="number" min="1" value="1"><label>CATEGORIA</label><select id="cat">${catsOptions('despesa')}</select><label>DATA DA COMPRA</label><input id="data" type="date" value="${hoje}" onchange="atualizarFaturasDestino()"><button class="btn goldBg" onclick="salvarCompraCartao()">SALVAR COMPRA / VENDA</button></div>`;
+    };
+    forms.editCompraCartao=()=>{
+      let e=db.movs.find(x=>x.id==editId)||{};
+      let atualOffset=0;
+      return `<h2>EDITAR COMPRA DO CARTÃO</h2><div class="form"><label>CARTÃO</label><select id="cartao" onchange="atualizarFaturasDestino()">${cartoesOptions(e.cartao)}</select><label>FATURA DA COMPRA</label><select id="faturaDestino">${faturaOptionsHTML(e.cartao||(db.cartoes[0]?.id||''),e.data||new Date().toISOString().slice(0,10),atualOffset)}</select><label>DESCRIÇÃO</label><input id="desc" value="${e.desc||''}"><label>VALOR</label><input id="valor" type="number" step="0.01" value="${e.valor||''}"><label>CATEGORIA</label><select id="cat">${catsOptions('despesa',e.cat)}</select><label>DATA</label><input id="data" type="date" value="${e.data||new Date().toISOString().slice(0,10)}" onchange="atualizarFaturasDestino()"><label>OBSERVAÇÃO</label><textarea id="obs">${e.obs||''}</textarea><button class="btn goldBg" onclick="salvarCompraEditada()">SALVAR ALTERAÇÃO</button></div>`;
+    };
+  }
+
+  window.restanteCompraCartao=function(m){return Math.max(0,money(m.valor)-money(m.valorPagoFatura));};
+  window.movimentosCartaoAbertos=function(cartaoId,faturaKey){
+    return (db.movs||[]).filter(m=>m.tipo==='cartao'&&m.cartao==cartaoId&&!m.ignorado&&restanteCompraCartao(m)>0&&(!faturaKey||faturaKeyMov(m)===faturaKey));
+  };
+  window.totalRestanteFatura=function(cartaoId,faturaKey){return movimentosCartaoAbertos(cartaoId,faturaKey).reduce((a,m)=>a+restanteCompraCartao(m),0);};
+  window.faturaFechadaCartao=function(c){return movimentosCartaoAbertos(c.id).length>0;};
+
+  window.salvarCompraCartao=function(){
+    const cartaoId=document.getElementById('cartao')?.value;
+    if(!cartaoId)return alert('CADASTRE UM CARTÃO PRIMEIRO');
+    let parc=Math.max(1,+(document.getElementById('parcelas')?.value||1));
+    let total=+(document.getElementById('valor')?.value||0);
+    if(total<=0)return alert('DIGITE UM VALOR');
+    let baseData=document.getElementById('data')?.value||new Date().toISOString().slice(0,10);
+    let destino=+(document.getElementById('faturaDestino')?.value||0);
+    let grupoCartao=uid();
+    for(let i=1;i<=parc;i++){
+      const offset=destino+i-1;
+      const key=faturaKeyFrom(cartaoId,baseData,offset);
+      db.movs.push({id:uid(),grupo:grupoCartao,origemTipo:parc>1?'parcelada':'normal',tipo:'cartao',cartao:cartaoId,faturaKey:key,faturaLabel:faturaLabelFromKey(key),desc:`${document.getElementById('desc')?.value||'Compra'} ${parc>1?i+'/'+parc:''}`,valor:total/parc,cat:document.getElementById('cat')?.value||'Cartão',data:baseData,pago:false,obs:'Compra no cartão • '+faturaLabelFromKey(key)});
+    }
+    closeModal();
+    save();
+  };
+  window.salvarCompraEditada=function(){
+    let old=db.movs.find(x=>x.id==editId)||{};
+    const cartaoId=document.getElementById('cartao')?.value;
+    const baseData=document.getElementById('data')?.value||new Date().toISOString().slice(0,10);
+    const destino=+(document.getElementById('faturaDestino')?.value||0);
+    const key=faturaKeyFrom(cartaoId,baseData,destino);
+    let mov={...old,id:editId,grupo:old.grupo||editId,origemTipo:old.origemTipo||'normal',tipo:'cartao',cartao:cartaoId,faturaKey:key,faturaLabel:faturaLabelFromKey(key),desc:document.getElementById('desc')?.value||'Compra',valor:+(document.getElementById('valor')?.value||0),cat:document.getElementById('cat')?.value||'Cartão',data:baseData,pago:old.pago===undefined?false:old.pago,valorPagoFatura:+old.valorPagoFatura||0,obs:document.getElementById('obs')?.value||('Compra no cartão • '+faturaLabelFromKey(key))};
+    if(!mov.valor)return alert('DIGITE UM VALOR');
+    db.movs=db.movs.map(x=>x.id==editId?mov:x);
+    closeModal();
+    save();
+  };
+
+  window.listaFaturasAbertas=function(){
+    const map={};
+    (db.cartoes||[]).forEach(c=>{
+      movimentosCartaoAbertos(c.id).forEach(m=>{
+        const k=faturaKeyMov(m);
+        if(!map[c.id+'@@'+k]) map[c.id+'@@'+k]={cartao:c,key:k,movs:[],total:0};
+        map[c.id+'@@'+k].movs.push(m);
+        map[c.id+'@@'+k].total+=restanteCompraCartao(m);
+      });
+    });
+    return Object.values(map).sort((a,b)=>((a.cartao.nome||'').localeCompare(b.cartao.nome||''))||String(a.key).localeCompare(String(b.key)));
+  };
+  window.listaCartoesComFatura=function(){return listaFaturasAbertas().map(x=>x.cartao);};
+
+  window.abrirFaturasFechadas=function(){
+    const lista=listaFaturasAbertas();
+    let html='<div class="invoiceHeader"><h2>💳 FATURAS FECHADAS</h2><button class="invoiceHeaderClose" onclick="closeModal()">×</button></div>';
+    if(!lista.length){
+      html+='<div class="empty">NENHUMA FATURA FECHADA OU ABERTA COM VALOR PENDENTE.</div>';
+    }else{
+      html+='<div class="invoiceMiniGrid">'+lista.map(f=>{
+        const c=f.cartao; const qtd=f.movs.length;
+        return `<button class="invoiceMiniCard" onclick="abrirDetalheFaturaCartao('${c.id}','${f.key}')"><h3>${c.icone||'💳'} ${c.nome||'CARTÃO'}</h3><small>${faturaLabelFromKey(f.key)} • FECHA ${c.fech||1} • VENCE ${c.venc||10}</small><small>${qtd} COMPRA${qtd==1?'':'S'} NESTA FATURA</small><strong>${fmt(f.total)}</strong><span class="invoiceMiniOpen">ABRIR ›</span></button>`;
+      }).join('')+'</div>';
+    }
+    modal.classList.add('show','moneyModal','invoiceModal');
+    modal.onclick=function(e){if(e.target===modal)closeModal();};
+    modalBody.innerHTML=html;
+  };
+  window.abrirDetalheFaturaCartao=function(id,faturaKey){
+    const c=(db.cartoes||[]).find(x=>x.id==id);
+    if(!c)return abrirFaturasFechadas();
+    const key=faturaKey||faturaKeyFrom(id,new Date().toISOString().slice(0,10),0);
+    const movs=movimentosCartaoAbertos(id,key).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+    const total=totalRestanteFatura(id,key);
+    let html='<div class="invoiceHeader"><h2>💳 FATURA DO CARTÃO</h2><button class="invoiceHeaderClose" onclick="closeModal()">×</button></div>';
+    html+=`<button class="invoiceBackBtn" onclick="abrirFaturasFechadas()">‹ VOLTAR PARA FATURAS</button><div class="invoiceCardGroup"><div class="invoiceCardTop"><div><h3>${c.icone||'💳'} ${c.nome||'CARTÃO'}</h3><small>${faturaLabelFromKey(key)} • FECHA ${c.fech||1} • VENCE ${c.venc||10} • ${movs.length} COMPRA${movs.length==1?'':'S'}</small></div><div class="invoiceTotal">${fmt(total)}</div></div><div class="invoiceSubBox"><div class="invoiceSubTitle"><b>COMPRAS DA FATURA</b><span>${fmt(total)}</span></div>${comprasFaturaHTML(movs,c.id)}<div class="invoiceActions compactTop"><button class="invoicePay" onclick="pagarFaturaCartao('${c.id}','${key}')">PAGAR FATURA</button><button class="invoiceAdvance" onclick="adiantarFaturaCartao('${c.id}','${key}')">ADIANTAR</button><button class="invoiceEdit" onclick="editarFaturaCartao('${c.id}','${key}')">EDITAR</button></div></div></div>`;
+    modal.classList.add('show','moneyModal','invoiceModal');
+    modal.onclick=function(e){if(e.target===modal)closeModal();};
+    modalBody.innerHTML=html;
+  };
+  window.apagarCompraDaFatura=function(id,cartaoId){
+    const key=faturaKeyMov((db.movs||[]).find(x=>x.id==id)||{});
+    pedirConfirmacao('APAGAR COMPRA','DESEJA APAGAR ESTA COMPRA DA FATURA?',()=>{
+      db.lixeira=db.lixeira||[];
+      const item=db.movs.find(x=>x.id==id);
+      if(item){db.lixeira.unshift({...item,apagadoEm:new Date().toISOString(),apagadoEmBR:new Date().toLocaleString('pt-BR')});db.movs=db.movs.filter(x=>x.id!=id);save();abrirDetalheFaturaCartao(cartaoId,key);}
+    });
+  };
+  window.abrirPagamentoFaturaCartao=function(id,tipo='pagar',faturaKey){
+    const c=(db.cartoes||[]).find(x=>x.id==id);
+    const key=faturaKey||'';
+    const total=totalRestanteFatura(id,key);
+    if(!c||total<=0)return alert('NENHUM VALOR PENDENTE NESTA FATURA.');
+    if(!(db.contas||[]).length)return alert('CADASTRE UMA CONTA PARA PAGAR A FATURA.');
+    let titulo=tipo==='adiantar'?'ADIANTAR FATURA':'PAGAR FATURA';
+    modal.classList.add('show','invoiceModal'); modal.onclick=function(e){if(e.target===modal)closeModal();};
+    modalBody.innerHTML=`<div class="invoiceHeader"><h2>💳 ${titulo}</h2><button class="invoiceHeaderClose" onclick="closeModal()">×</button></div><div class="form"><div class="card alertTotalBox"><b>${c.icone||'💳'} ${c.nome||'CARTÃO'} • ${faturaLabelFromKey(key)}</b><span>${fmt(total)}</span></div><label>CONTA PARA DESCONTAR</label><select id="contaPagamentoFatura">${contasOptions()}</select><label>VALOR A PAGAR</label><input id="valorPagamentoFatura" type="number" step="0.01" value="${total.toFixed(2)}" max="${total.toFixed(2)}"><button class="btn redBg" onclick="confirmarPagamentoFaturaCartao('${id}','${tipo}','${key}')">CONFIRMAR ${titulo}</button></div>`;
+  };
+  window.confirmarPagamentoFaturaCartao=function(id,tipo='pagar',faturaKey){
+    const c=(db.cartoes||[]).find(x=>x.id==id);
+    const contaId=document.getElementById('contaPagamentoFatura')?.value;
+    const contaObj=(db.contas||[]).find(x=>x.id==contaId);
+    let valor=Math.max(0,parseMoney(document.getElementById('valorPagamentoFatura')?.value));
+    const total=totalRestanteFatura(id,faturaKey);
+    if(!contaId)return alert('ESCOLHA UMA CONTA.');
+    if(valor<=0)return alert('INFORME UM VALOR.');
+    valor=Math.min(valor,total);
+    let restante=valor;
+    let pagamentos=[];
+    movimentosCartaoAbertos(id,faturaKey).sort((a,b)=>(a.data||'').localeCompare(b.data||'')).forEach(m=>{
+      if(restante<=0)return;
+      const aberto=restanteCompraCartao(m);
+      const abat=Math.min(aberto,restante);
+      m.valorPagoFatura=money(m.valorPagoFatura)+abat;
+      if(restanteCompraCartao(m)<=0.009)m.pago=true;
+      pagamentos.push({movId:m.id,valor:abat});
+      restante-=abat;
+    });
+    db.movs.push({id:uid(),grupo:uid(),origemTipo:'pagamentoFatura',tipo:'despesa',icone:'💳',conta:contaId,cartao:id,faturaKey:faturaKey,faturaLabel:faturaLabelFromKey(faturaKey),desc:`${tipo==='adiantar'?'ADIANTAMENTO':'PAGAMENTO'} DE FATURA - ${(c&&c.nome)||'CARTÃO'} - ${faturaLabelFromKey(faturaKey)}`,valor:valor,cat:'FATURA PAGA',data:new Date().toISOString().slice(0,10),pago:true,obs:`CARTÃO: ${(c&&c.nome)||''} • CONTA: ${(contaObj&&contaObj.nome)||''}`,pagamentos});
+    closeModal();
+    save();
+  };
+  window.pagarFaturaCartao=function(id,faturaKey){abrirPagamentoFaturaCartao(id,'pagar',faturaKey);};
+  window.adiantarFaturaCartao=function(id,faturaKey){abrirPagamentoFaturaCartao(id,'adiantar',faturaKey);};
+  window.editarFaturaCartao=function(id,faturaKey){
+    const mov=movimentosCartaoAbertos(id,faturaKey)[0];
+    if(!mov)return alert('NENHUMA COMPRA PENDENTE PARA EDITAR.');
+    closeModal(); openModal('editCompraCartao',mov.id);
+  };
+
+  window.totais=function(){
+    let rec=0,desp=0,cart=0,recPend=0,despPend=0;
+    (db.movs||[]).filter(dentroFiltroData).forEach(m=>{
+      let v=money(m.valor); if(m.ignorado)return;
+      if(m.tipo==='receita'){if(m.pago===false)recPend+=v; else rec+=v;}
+      if(m.tipo==='despesa'){if(m.pago===false)despPend+=v; else desp+=v;}
+      if(m.tipo==='cartao')cart+=restanteCompraCartao(m);
+    });
+    let contas=(db.contas||[]).reduce((a,c)=>a+money(c.saldo),0)+rec-desp;
+    let limiteCartoes=(db.cartoes||[]).reduce((a,c)=>a+money(c.limite),0);
+    return {rec,desp,cart,contas,saldo:contas-cart,recPend,despPend,limiteCartoes,receitasContas:contas};
+  };
+  window.renderCartoes=function(){
+    let limiteTotal=(db.cartoes||[]).reduce((a,c)=>a+money(c.limite),0);
+    let usadoTotal=(db.movs||[]).filter(m=>m.tipo==='cartao'&&dentroFiltroData(m)&&!m.ignorado).reduce((a,m)=>a+restanteCompraCartao(m),0);
+    if(typeof limiteTotalCartoes!='undefined')limiteTotalCartoes.innerText=fmt(limiteTotal);
+    if(typeof usadoTotalCartoes!='undefined')usadoTotalCartoes.innerText=fmt(usadoTotal);
+    listaCartoes.innerHTML=(db.cartoes||[]).map(c=>{let usado=(db.movs||[]).filter(m=>m.tipo==='cartao'&&m.cartao==c.id&&!m.ignorado).reduce((a,m)=>a+restanteCompraCartao(m),0), pct=c.limite?Math.min(100,usado/c.limite*100):0;let cor=c.cor||'#4c1d95';return `<div class="cardCredit cardCompact" style="--cartaoCor:${cor}"><input class="cardColorTiny" type="color" value="${cor}" onchange="mudarCorCartao('${c.id}',this.value)" title="Mudar cor"><div class="cardCompactTop"><div class="cardIconBig" onclick="abrirIconeCartao('${c.id}',event)">${c.icone||'💳'}</div><div class="cardCompactName">${c.nome}</div></div><div class="cardCompactValues"><div><small>LIMITE</small><b class="gold">${fmt(c.limite)}</b></div><div><small>GASTOU</small><b class="red">${fmt(usado)}</b></div><div><small>LIVRE</small><b class="green">${fmt((+c.limite||0)-usado)}</b></div></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div><div class="cardCompactFoot">${pct.toFixed(0)}% UTILIZADO • FECHA ${c.fech} • VENCE ${c.venc}</div></div>`}).join('')||'<div class="empty">Nenhum cartão cadastrado.</div>';
+  };
+  window.renderRelatorios=function(){let t=totais(); if(typeof relResumo!='undefined')relResumo.innerHTML=`<div class="grid"><div class="mini"><b>Total receitas</b><span class="green">${fmt(t.rec)}</span></div><div class="mini"><b>Total despesas</b><span class="red">${fmt(t.desp+t.cart)}</span></div><div class="mini"><b>Saldo</b><span class="blue">${fmt(t.saldo)}</span></div><div class="mini"><b>Cartão</b><span class="gold">${fmt(t.cart)}</span></div></div>`;};
+
+  const oldRenderFinal=window.render;
+  window.render=function(){
+    if(typeof oldRenderFinal==='function')oldRenderFinal();
+    const t=totais();
+    const recEl=document.getElementById('totalReceitas');
+    const limEl=document.getElementById('totalContas');
+    const cartEl=document.getElementById('totalCartoes');
+    if(recEl) recEl.innerText=fmt(t.receitasContas);
+    if(limEl) limEl.innerText=fmt(t.limiteCartoes);
+    if(cartEl) cartEl.innerText=fmt(t.cart);
+  };
+})();
+/* ===== FIM ATUALIZAÇÃO FATURAS ===== */
 
 </script>
 </body>
