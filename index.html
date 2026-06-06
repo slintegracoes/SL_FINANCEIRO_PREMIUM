@@ -537,6 +537,90 @@ body{margin:0;background:radial-gradient(circle at top,#10233b 0,#050b12 45%,#02
 .invoiceEdit{background:linear-gradient(145deg,#1f7aff,#06459e)}
 @media(max-width:380px){.histAlertRow{grid-template-columns:1fr!important}}
 
+
+/* AJUSTE FINAL: BOTÕES DA FRENTE COM METADE DA ALTURA */
+#inicio .histAlertRow{gap:7px!important;margin-top:8px!important}
+#inicio .histAlertRow .btn{
+  min-height:24px!important;
+  height:28px!important;
+  padding:3px 5px!important;
+  margin-top:0!important;
+  border-radius:10px!important;
+  font-size:9px!important;
+  line-height:1!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+#btnFaturasFechadas{white-space:nowrap!important}
+
+
+
+/* FATURAS POR CARTÃO COM LISTA DE COMPRAS */
+.invoiceCardGroup{border:2px solid #ff453a;border-radius:20px;padding:10px;margin-bottom:12px;background:#100708;box-shadow:0 0 16px #ff453a55,inset 0 0 12px #ffffff08}
+.invoiceCardTop{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.invoiceCardTop h3{margin:0!important;font-size:15px!important;color:#fff!important;line-height:1.15}
+.invoiceCardTop small{display:block;color:var(--muted);font-size:9px;margin-top:2px}
+.invoiceTotal{font-size:20px!important;font-weight:900!important;color:#ff453a!important;white-space:nowrap;text-shadow:0 0 10px #ff453a88}
+.invoiceSubBox{border:1.5px solid #f2b632;border-radius:16px;padding:8px;background:#0b1522;margin-top:8px;box-shadow:0 0 10px #f2b63233}
+.invoiceSubTitle{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+.invoiceSubTitle b{font-size:12px;color:#ffdf8a}.invoiceSubTitle span{font-size:12px;font-weight:900;color:#ff453a}
+.invoicePurchaseList{display:grid;gap:6px;margin-top:7px}
+.invoicePurchase{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid #26364b;border-radius:12px;background:#07111d;padding:7px}
+.invoicePurchase b{font-size:11px;color:#fff;display:block;line-height:1.15}.invoicePurchase small{font-size:9px;color:var(--muted);display:block;margin-top:2px}.invoicePurchase strong{font-size:12px;color:#ff453a;white-space:nowrap}
+.invoicePurchaseBtns{display:flex;gap:4px;justify-content:flex-end;margin-top:5px}.invoicePurchaseBtns button{border:0;border-radius:7px;padding:4px 5px;color:#fff;font-size:8px;font-weight:900;line-height:1;background:linear-gradient(145deg,#1f7aff,#06459e)}
+.invoiceActions.compactTop{margin-top:8px!important}
+
+/* CORREÇÃO: EDITAR FATURA FECHADA ABRE A COMPRA SEM ERRO */
+.invoiceActions button{min-height:15px!important;height:20px!important;padding:2px 4px!important;font-size:8.5px!important;border-radius:7px!important}
+
+
+/* FATURAS EM CARDS PEQUENOS + DETALHE COM COMPRAS */
+.invoiceMiniGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.invoiceMiniCard{border:1.7px solid #ff453a;border-radius:16px;padding:10px;background:#120809;box-shadow:0 0 13px #ff453a55;min-height:82px;text-align:left;cursor:pointer;position:relative;overflow:hidden}
+.invoiceMiniCard:active{transform:scale(.97)}
+.invoiceMiniCard h3{margin:0 0 5px!important;font-size:12px!important;line-height:1.1;color:#fff!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.invoiceMiniCard small{font-size:8.5px!important;color:var(--muted)!important;display:block;line-height:1.25}
+.invoiceMiniCard strong{font-size:17px!important;color:#ff453a!important;display:block;margin-top:7px;text-shadow:0 0 10px #ff453a88}
+.invoiceMiniOpen{position:absolute;right:8px;bottom:7px;font-size:15px;color:#ffdf8a}
+.invoiceBackBtn{border:0;border-radius:12px;background:linear-gradient(145deg,#374151,#111827);color:#fff;padding:8px 10px;font-weight:900;font-size:11px;margin-bottom:8px}
+.invoicePurchase{grid-template-columns:1fr auto auto!important}
+.invoicePurchaseDelete{width:26px;height:26px;border:0;border-radius:9px;background:linear-gradient(145deg,#ff453a,#8f1010);color:#fff;font-weight:900;font-size:14px;line-height:1;box-shadow:0 0 8px #ff453a88}
+@media(max-width:380px){.invoiceMiniGrid{grid-template-columns:1fr}.invoiceMiniCard{min-height:74px}}
+
+
+
+/* CORREÇÃO FINAL: HISTÓRICO, ALERTAS E FATURAS LADO A LADO */
+#inicio .histAlertRow{
+  display:grid!important;
+  grid-template-columns:repeat(3,1fr)!important;
+  gap:6px!important;
+  margin-top:8px!important;
+}
+#inicio .histAlertRow .btn{
+  height:42px!important;
+  min-height:42px!important;
+  padding:8px 5px!important;
+  margin:0!important;
+  border-radius:12px!important;
+  font-size:10px!important;
+  line-height:1.08!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  white-space:nowrap!important;
+}
+@media(max-width:380px){
+  #inicio .histAlertRow{grid-template-columns:repeat(3,1fr)!important}
+  #inicio .histAlertRow .btn{font-size:8.5px!important;padding:6px 2px!important;height:40px!important;min-height:40px!important}
+}
+
+/* AJUSTE DE TELA SALVO */
+:root{--uiScale:1}
+.app{zoom:var(--uiScale)}
+.screenAdjustPreview{border:1.5px solid var(--gold);border-radius:18px;padding:14px;background:#0b1522;margin:12px 0;text-align:center;box-shadow:0 0 14px #f2b63244}
+.screenControls{display:grid;grid-template-columns:54px 1fr 54px;gap:8px;align-items:center;margin:10px 0}.screenControls button{height:48px;border:0;border-radius:14px;background:#16263a;color:#fff;font-size:24px;font-weight:900}.screenControls strong{font-size:20px;color:var(--gold);text-align:center}.screenAdjustBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
 </style>
 </head>
 <body>
@@ -665,6 +749,7 @@ let db=JSON.parse(localStorage.getItem('financeiroPremium')||'null')||{
 };
 db.tema=db.tema||{bg:'#050b12',card:'#0d1724',blue:'#1f7aff',gold:'#f2b632',green:'#31d158',red:'#ff453a'};
 db.fonte=db.fonte||{size:15,family:'Arial, Helvetica, sans-serif'};
+db.tela=db.tela||{scale:1};
 db.logo=db.logo||{src:'',scale:1};
 db.temaAtual=db.temaAtual||'Neon Azul';
 db.categoriaIcones=db.categoriaIcones||{};
@@ -690,7 +775,7 @@ if(db.categorias && Array.isArray(db.categorias)){
   });
 }
 
-function applyTheme(){let t=db.tema||{}; for(let k in t){document.documentElement.style.setProperty('--'+k,t[k])} let f=db.fonte||{size:15,family:'Arial, Helvetica, sans-serif'}; document.documentElement.style.setProperty('--appFontSize',(f.size||15)+'px'); document.documentElement.style.setProperty('--appFontFamily',f.family||'Arial, Helvetica, sans-serif')}
+function applyTheme(){let t=db.tema||{}; for(let k in t){document.documentElement.style.setProperty('--'+k,t[k])} let f=db.fonte||{size:15,family:'Arial, Helvetica, sans-serif'}; document.documentElement.style.setProperty('--appFontSize',(f.size||15)+'px'); document.documentElement.style.setProperty('--appFontFamily',f.family||'Arial, Helvetica, sans-serif'); let tela=db.tela||{scale:1}; document.documentElement.style.setProperty('--uiScale',Math.max(.8,Math.min(1.25,+(tela.scale||1))))}
 function save(){localStorage.setItem('financeiroPremium',JSON.stringify(db));applyTheme();render()}
 function todayBR(){return new Date().toLocaleDateString('pt-BR')}
 document.getElementById('today').innerText='Hoje é '+todayBR();
@@ -907,11 +992,12 @@ const forms={
  categoria:()=>{let lista=catTipo=='receita'?db.categoriasReceitas:db.categoriasDespesas; let e=editId!==null?lista[editId]:''; let titulo=catTipo=='receita'?'Categoria de Receita':'Categoria de Despesa'; let ic=iconeCategoria(e,catTipo); return `<h2>${editId!==null?'Editar':'Nova'} ${titulo}</h2><div class="form"><label>Ícone</label><button id="iconeCatBtn" type="button" class="catIconBtn" onclick="abrirIcones('categoriaForm')">${ic}</button><input id="iconeCat" type="hidden" value="${ic}"><label>Nome da categoria</label><input id="nome" value="${e||''}"><button class="btn ${catTipo=='receita'?'greenBg':'redBg'}" onclick="salvarCategoria()">SALVAR</button></div>`},
  cartao:()=>{let e=db.cartoes.find(x=>x.id==editId)||{};let ic=e.icone||'💳';return `<h2>${editId?'Editar':'Novo'} Cartão</h2><div class="form"><label>Ícone</label><button id="iconeCartaoBtn" type="button" class="catIconBtn" onclick="abrirIcones('cartaoForm')">${ic}</button><input id="iconeCartao" type="hidden" value="${ic}"><label>Nome</label><input id="nome" value="${e.nome||''}"><label>Final do cartão</label><input id="final" maxlength="4" value="${e.final||''}"><label>Limite total</label><input id="limite" type="number" step="0.01" value="${e.limite||''}"><div class="row"><div><label>Fechamento</label><input id="fech" type="number" min="1" max="31" value="${e.fech||1}"></div><div><label>Vencimento</label><input id="venc" type="number" min="1" max="31" value="${e.venc||10}"></div></div><button class="btn" onclick="salvarCartao()">SALVAR</button></div>`},
  compraCartao:()=>`<h2>Compra no Cartão</h2><div class="form"><label>Cartão</label><select id="cartao">${cartoesOptions()}</select><label>Descrição</label><input id="desc"><label>Valor total</label><input id="valor" type="number" step="0.01"><label>Parcelas</label><input id="parcelas" type="number" min="1" value="1"><label>Categoria</label><select id="cat">${catsOptions('despesa')}</select><label>Data</label><input id="data" type="date" value="${new Date().toISOString().slice(0,10)}"><button class="btn goldBg" onclick="salvarCompraCartao()">SALVAR COMPRA</button></div>`,
- editCompraCartao:()=>{let e=db.movs.find(x=>x.id==editId)||{};return `<h2>Editar Compra do Cartão</h2><div class="form"><label>Cartão</label><select id="cartao">${cartoesOptions(e.cartao)}</select><label>Descrição</label><input id="desc" value="${e.desc||''}"><label>Valor</label><input id="valor" type="number" step="0.01" value="${e.valor||''}"><label>Categoria</label><select id="cat">${catsOptions(tipo,e.cat)}</select><label>Data</label><input id="data" type="date" value="${e.data||new Date().toISOString().slice(0,10)}"><label>Observação</label><textarea id="obs">${e.obs||''}</textarea><button class="btn goldBg" onclick="salvarCompraEditada()">SALVAR ALTERAÇÃO</button></div>`},
+ editCompraCartao:()=>{let e=db.movs.find(x=>x.id==editId)||{};return `<h2>Editar Compra do Cartão</h2><div class="form"><label>Cartão</label><select id="cartao">${cartoesOptions(e.cartao)}</select><label>Descrição</label><input id="desc" value="${e.desc||''}"><label>Valor</label><input id="valor" type="number" step="0.01" value="${e.valor||''}"><label>Categoria</label><select id="cat">${catsOptions('despesa',e.cat)}</select><label>Data</label><input id="data" type="date" value="${e.data||new Date().toISOString().slice(0,10)}"><label>Observação</label><textarea id="obs">${e.obs||''}</textarea><button class="btn goldBg" onclick="salvarCompraEditada()">SALVAR ALTERAÇÃO</button></div>`},
  backup:()=>`<h2>☁️ Backup</h2><div class="editorGroup"><h3>Dados do aplicativo</h3><div class="editorBtns"><button class="smallBtn" onclick="exportar()">📤 Exportar</button><label class="smallBtn" style="display:block;text-align:center">📥 Importar<input type="file" accept=".json" onchange="importar(event)" style="display:none"></label></div></div><button class="btn redBg" onclick="zerar()">🗑️ ZERAR TUDO</button>`,
- config:()=>`<h2>⚙️ Configurações</h2><div class="editorGroup"><h3>☁️ BACKUP FIREBASE</h3><div class="backupBtns"><button class="smallBtn backupNow" onclick="fazerBackupFirebaseManual()">☁️ FAZER BACKUP AGORA</button><button class="smallBtn restoreNow" onclick="restaurarUltimoBackupFirebase()">♻️ RESTAURAR ÚLTIMO BACKUP</button><button class="smallBtn datesNow" onclick="verDatasBackupsFirebase()">📅 VER DATAS DOS ÚLTIMOS BACKUPS</button></div></div><div class="editorGroup"><h3>🎨 Aparência</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal('temas')">🎨 Temas</button><button class="smallBtn" onclick="openModal('fonte')">🔠 Fonte</button></div></div><div class="editorGroup"><h3>📊 Relatórios</h3><div class="editorBtns"><button class="smallBtn" onclick="closeModal();showScreen('relatorios')">📊 Abrir Relatórios</button></div></div><div class="editorGroup"><h3>🛠️ Editor Geral</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal('editorCartoes')">💳 Cartões</button><button class="smallBtn" onclick="openModal('editorContas')">🏦 Contas</button><button class="smallBtn" onclick="openModal('editorCategorias')">📂 Categorias</button><button class="smallBtn" onclick="abrirLixeira()">🗑️ Lixeira</button></div></div><button class="btn redBg" onclick="zerar()">🗑️ ZERAR TUDO</button>`,
+ config:()=>`<h2>⚙️ Configurações</h2><div class="editorGroup"><h3>☁️ BACKUP FIREBASE</h3><div class="backupBtns"><button class="smallBtn backupNow" onclick="fazerBackupFirebaseManual()">☁️ FAZER BACKUP AGORA</button><button class="smallBtn restoreNow" onclick="restaurarUltimoBackupFirebase()">♻️ RESTAURAR ÚLTIMO BACKUP</button><button class="smallBtn datesNow" onclick="verDatasBackupsFirebase()">📅 VER DATAS DOS ÚLTIMOS BACKUPS</button></div></div><div class="editorGroup"><h3>🎨 Aparência</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal('temas')">🎨 Temas</button><button class="smallBtn" onclick="openModal('fonte')">🔠 Fonte</button><button class="smallBtn" onclick="openModal('ajusteTela')">📱 AJUSTE DE TELA</button></div></div><div class="editorGroup"><h3>📊 Relatórios</h3><div class="editorBtns"><button class="smallBtn" onclick="closeModal();showScreen('relatorios')">📊 Abrir Relatórios</button></div></div><div class="editorGroup"><h3>🛠️ Editor Geral</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal('editorCartoes')">💳 Cartões</button><button class="smallBtn" onclick="openModal('editorContas')">🏦 Contas</button><button class="smallBtn" onclick="openModal('editorCategorias')">📂 Categorias</button><button class="smallBtn" onclick="abrirLixeira()">🗑️ Lixeira</button></div></div><button class="btn redBg" onclick="zerar()">🗑️ ZERAR TUDO</button>`,
  temas:()=>temaModal(),
  fonte:()=>{let f=db.fonte||{size:15,family:'Arial, Helvetica, sans-serif'};let fontes=[['Arial, Helvetica, sans-serif','ARIAL'],['Verdana, Geneva, sans-serif','VERDANA'],['Tahoma, Geneva, sans-serif','TAHOMA'],['Trebuchet MS, Arial, sans-serif','TREBUCHET'],['Georgia, serif','GEORGIA'],['Courier New, monospace','COURIER']];return `<h2>🔠 Fonte</h2><div class="fontPreviewBox"><div style="font-family:${f.family};font-size:${f.size}px;font-weight:900">SL FINANCEIRO PREMIUM</div><small class="muted">PRÉVIA DA FONTE</small></div><div class="editorGroup"><h3>Tamanho da fonte</h3><div class="fontControls"><button type="button" onclick="ajustarFonteTemp(-1)">−</button><strong id="fontSizeView">${f.size||15}px</strong><button type="button" onclick="ajustarFonteTemp(1)">+</button></div></div><input id="fonteSize" type="hidden" value="${f.size||15}"><input id="fonteFamily" type="hidden" value="${f.family}"><div class="editorGroup"><h3>Fontes diferentes</h3><div class="fontSelectGrid">${fontes.map(([val,nome])=>`<button type="button" class="fontChoice ${f.family==val?'activeFont':''}" style="font-family:${val}" onclick="selecionarFonteTemp('${val.replace(/'/g,'&#39;')}',this)">${nome}</button>`).join('')}</div></div><button class="btn" onclick="salvarFonte()">SALVAR FONTE</button>`},
+ ajusteTela:()=>{let sc=+(db.tela&&db.tela.scale||1);let pct=Math.round(sc*100);return `<h2>📱 AJUSTE DE TELA</h2><div class="screenAdjustPreview"><div style="font-size:18px;font-weight:900">PRÉVIA DA INTERFACE</div><small class="muted">AUMENTA OU DIMINUI O TAMANHO GERAL DO APLICATIVO</small></div><div class="editorGroup"><h3>TAMANHO DA TELA</h3><div class="screenControls"><button type="button" onclick="ajustarTelaTemp(-.05)">−</button><strong id="screenScaleView">${pct}%</strong><button type="button" onclick="ajustarTelaTemp(.05)">+</button></div><input id="screenScale" type="hidden" value="${sc}"><div class="screenAdjustBtns"><button class="smallBtn" onclick="resetarTelaTemp()">PADRÃO</button><button class="smallBtn" onclick="openModal('config')">VOLTAR</button></div></div><button class="btn greenBg" onclick="salvarAjusteTela()">✅ SALVAR AJUSTE</button>`},
   cores:()=>`<h2>Editar Cores</h2><div class="form">${colorInput('bg','Fundo')}${colorInput('card','Cartões')}${colorInput('blue','Azul principal')}${colorInput('gold','Dourado')}${colorInput('green','Receitas')}${colorInput('red','Despesas')}<button class="btn" onclick="salvarCores()">SALVAR CORES</button></div>`,
  editorReceitas:()=>editorMovs('receita','Receitas'),
  editorDespesas:()=>editorMovs('despesa','Despesas'),
@@ -988,6 +1074,28 @@ function salvarFonte(){
   closeModal();
   save();
 }
+
+function ajustarTelaTemp(delta){
+  let inp=document.getElementById('screenScale');
+  if(!inp)return;
+  let v=Math.max(.8,Math.min(1.25,(+inp.value||1)+delta));
+  v=Math.round(v*100)/100;
+  inp.value=v;
+  let view=document.getElementById('screenScaleView'); if(view)view.innerText=Math.round(v*100)+'%';
+  document.documentElement.style.setProperty('--uiScale',v);
+}
+function resetarTelaTemp(){
+  let inp=document.getElementById('screenScale'); if(inp)inp.value=1;
+  let view=document.getElementById('screenScaleView'); if(view)view.innerText='100%';
+  document.documentElement.style.setProperty('--uiScale',1);
+}
+function salvarAjusteTela(){
+  db.tela=db.tela||{};
+  db.tela.scale=Math.max(.8,Math.min(1.25,+(document.getElementById('screenScale')?.value||1)));
+  closeModal();
+  save();
+}
+
 function colorInput(k,label){return `<div class="colorRow"><label>${label}</label><input id="cor_${k}" type="color" value="${(db.tema&&db.tema[k])||'#000000'}"></div>`}
 function salvarCores(){['bg','card','blue','gold','green','red'].forEach(k=>db.tema[k]=document.getElementById('cor_'+k).value); closeModal(); save()}
 function editorMovs(tipo,titulo){let arr=db.movs.filter(m=>m.tipo==tipo);return `<h2>Editar ${titulo}</h2><button class="btn ${tipo=='receita'?'greenBg':'redBg'}" onclick="openModal('${tipo}')">+ NOVA</button><div class="editList">${arr.map(m=>`<div class="item"><div><b>${m.desc}</b><small>${m.cat} • ${fmt(m.valor)}</small></div><div class="actions"><button onclick="openModal('${tipo}','${m.id}')">✏️</button><button onclick="excluir('${m.id}');openModal('editor${tipo=='receita'?'Receitas':'Despesas'}')">🗑️</button></div></div>`).join('')||'<div class="empty">Nada cadastrado.</div>'}</div>`}
@@ -1301,26 +1409,68 @@ function atualizarBotaoFaturasFechadas(){
   btn.classList.toggle('blinkInvoice',tem);
   btn.innerText=tem?'💳 FATURA FECHADA':'💳 FATURAS';
 }
-function abrirFaturasFechadas(){
+function dataBR(data){
+  if(!data)return '';
+  try{return new Date(data+'T00:00').toLocaleDateString('pt-BR')}catch(e){return data}
+}
+function comprasFaturaHTML(movs,cartaoId){
+  if(!movs.length)return '<div class="empty">NENHUMA COMPRA NESTA FATURA.</div>';
+  return '<div class="invoicePurchaseList">'+movs.map(m=>`<div class="invoicePurchase"><div><b>${m.desc||'COMPRA DO CARTÃO'}</b><small>${m.cat||'SEM CATEGORIA'} • ${dataBR(m.data)}${m.obs?' • '+m.obs:''}</small><div class="invoicePurchaseBtns"><button onclick="editarCompraDaFatura('${m.id}')">✏️ EDITAR COMPRA</button></div></div><strong>${fmt(m.valor)}</strong><button class="invoicePurchaseDelete" onclick="event.stopPropagation();apagarCompraDaFatura('${m.id}','${cartaoId}')">X</button></div>`).join('')+'</div>';
+}
+function listaCartoesComFatura(){
   const fechadas=(db.cartoes||[]).filter(faturaFechadaCartao);
   const todas=(db.cartoes||[]).filter(c=>movimentosCartaoAbertos(c.id).length>0);
-  const lista=fechadas.length?fechadas:todas;
+  return fechadas.length?fechadas:todas;
+}
+function abrirFaturasFechadas(){
+  const lista=listaCartoesComFatura();
   let html='<div class="invoiceHeader"><h2>💳 FATURAS FECHADAS</h2><button class="invoiceHeaderClose" onclick="closeModal()">×</button></div>';
   if(!lista.length){
     html+='<div class="empty">NENHUMA FATURA FECHADA OU ABERTA COM VALOR PENDENTE.</div>';
   }else{
-    html+=lista.map(c=>{
-      const movs=movimentosCartaoAbertos(c.id);
+    html+='<div class="invoiceMiniGrid">'+lista.map(c=>{
+      const movs=movimentosCartaoAbertos(c.id).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
       const total=movs.reduce((a,m)=>a+(+m.valor||0),0);
-      const status=faturaFechadaCartao(c)?'FATURA FECHADA':'FATURA AINDA ABERTA';
-      return `<div class="invoiceBox"><h3>${c.icone||'💳'} ${c.nome}</h3><small>${status} • FECHA ${c.fech} • VENCE ${c.venc}</small><b class="red" style="font-size:24px">${fmt(total)}</b><div class="invoiceActions"><button class="invoicePay" onclick="pagarFaturaCartao('${c.id}')">PAGAR FATURA</button><button class="invoiceAdvance" onclick="adiantarFaturaCartao('${c.id}')">ADIANTAR</button><button class="invoiceEdit" onclick="editarFaturaCartao('${c.id}')">EDITAR</button></div></div>`;
-    }).join('');
+      const status=faturaFechadaCartao(c)?'FECHADA':'ABERTA';
+      const qtd=movs.length;
+      return `<button class="invoiceMiniCard" onclick="abrirDetalheFaturaCartao('${c.id}')"><h3>${c.icone||'💳'} ${c.nome||'CARTÃO'}</h3><small>${status} • FECHA ${c.fech||1} • VENCE ${c.venc||10}</small><small>${qtd} COMPRA${qtd==1?'':'S'} NA FATURA</small><strong>${fmt(total)}</strong><span class="invoiceMiniOpen">ABRIR ›</span></button>`;
+    }).join('')+'</div>';
   }
   modal.classList.add('show');
   modal.classList.add('moneyModal');
   modal.classList.add('invoiceModal');
   modal.onclick=function(e){if(e.target===modal)closeModal();};
   modalBody.innerHTML=html;
+}
+function abrirDetalheFaturaCartao(id){
+  const c=(db.cartoes||[]).find(x=>x.id==id);
+  if(!c)return abrirFaturasFechadas();
+  const movs=movimentosCartaoAbertos(c.id).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  const total=movs.reduce((a,m)=>a+(+m.valor||0),0);
+  const status=faturaFechadaCartao(c)?'FATURA FECHADA':'FATURA AINDA ABERTA';
+  let html='<div class="invoiceHeader"><h2>💳 FATURA DO CARTÃO</h2><button class="invoiceHeaderClose" onclick="closeModal()">×</button></div>';
+  html+=`<button class="invoiceBackBtn" onclick="abrirFaturasFechadas()">‹ VOLTAR PARA FATURAS</button><div class="invoiceCardGroup"><div class="invoiceCardTop"><div><h3>${c.icone||'💳'} ${c.nome||'CARTÃO'}</h3><small>${status} • FECHA ${c.fech||1} • VENCE ${c.venc||10} • ${movs.length} COMPRA${movs.length==1?'':'S'}</small></div><div class="invoiceTotal">${fmt(total)}</div></div><div class="invoiceSubBox"><div class="invoiceSubTitle"><b>COMPRAS DA FATURA</b><span>${fmt(total)}</span></div>${comprasFaturaHTML(movs,c.id)}<div class="invoiceActions compactTop"><button class="invoicePay" onclick="pagarFaturaCartao('${c.id}')">PAGAR FATURA</button><button class="invoiceAdvance" onclick="adiantarFaturaCartao('${c.id}')">ADIANTAR</button><button class="invoiceEdit" onclick="editarFaturaCartao('${c.id}')">EDITAR</button></div></div></div>`;
+  modal.classList.add('show');
+  modal.classList.add('moneyModal');
+  modal.classList.add('invoiceModal');
+  modal.onclick=function(e){if(e.target===modal)closeModal();};
+  modalBody.innerHTML=html;
+}
+function editarCompraDaFatura(id){
+  closeModal();
+  openModal('editCompraCartao',id);
+}
+function apagarCompraDaFatura(id,cartaoId){
+  pedirConfirmacao('APAGAR COMPRA','DESEJA APAGAR ESTA COMPRA DA FATURA?',()=>{
+    db.lixeira=db.lixeira||[];
+    const item=db.movs.find(x=>x.id==id);
+    if(item){
+      db.lixeira.unshift({...item,apagadoEm:new Date().toISOString(),apagadoEmBR:new Date().toLocaleString('pt-BR')});
+      db.movs=db.movs.filter(x=>x.id!=id);
+      save();
+      abrirDetalheFaturaCartao(cartaoId);
+    }
+  });
 }
 function pagarFaturaCartao(id){
   const movs=movimentosCartaoAbertos(id);
@@ -1775,6 +1925,130 @@ function abrirIconeConta(id,event){if(event){event.stopPropagation();event.preve
 function abrirIconeCartao(id,event){if(event){event.stopPropagation();event.preventDefault();} abrirIcones({tipo:'cartao',id:id});}
 function abrirIconeCategoria(nome,event){if(event){event.stopPropagation();event.preventDefault();} abrirIcones({tipo:'categoria',nome:nome});}
 /* ===== FIM ÍCONES PELO TECLADO ===== */
+
+
+
+/* CORREÇÃO FINAL: BACKUP MAIS SEGURO COM FIREBASE + CÓPIA LOCAL */
+const LOCAL_BACKUP_LIST_KEY='slFinanceiroBackupsLocais';
+const LOCAL_BACKUP_LAST_KEY='slFinanceiroBackupUltimo';
+
+function criarPacoteBackupFinal(){
+  return {
+    app:'SL FINANCEIRO PREMIUM',
+    dataISO:new Date().toISOString(),
+    dataBR:new Date().toLocaleString('pt-BR'),
+    db:JSON.parse(JSON.stringify(db||{})),
+    ocultarValores:!!ocultarValores
+  };
+}
+
+function salvarBackupLocalFinal(pacote){
+  const key=(pacote.dataISO||new Date().toISOString()).replace(/[:.]/g,'-');
+  let lista={};
+  try{lista=JSON.parse(localStorage.getItem(LOCAL_BACKUP_LIST_KEY)||'{}')||{};}catch(e){lista={};}
+  lista[key]=pacote;
+  const keys=Object.keys(lista).sort((a,b)=>String(lista[b]?.dataISO||b).localeCompare(String(lista[a]?.dataISO||a)));
+  keys.slice(10).forEach(k=>delete lista[k]);
+  localStorage.setItem(LOCAL_BACKUP_LIST_KEY,JSON.stringify(lista));
+  localStorage.setItem(LOCAL_BACKUP_LAST_KEY,JSON.stringify(pacote));
+  return key;
+}
+
+function restaurarPacoteBackupFinal(pacote){
+  if(!pacote || !pacote.db)return false;
+  db=pacote.db;
+  ocultarValores=!!pacote.ocultarValores;
+  localStorage.setItem('financeiroPremium',JSON.stringify(db));
+  localStorage.setItem('ocultarValoresFinanceiro',JSON.stringify(ocultarValores));
+  if(document.getElementById('eyeBtn'))document.getElementById('eyeBtn').innerText=ocultarValores?'🙈':'👁️';
+  applyTheme();
+  renderLogo();
+  render();
+  return true;
+}
+
+async function salvarBackupFirebaseFinal(pacote,key){
+  try{
+    await firebaseRequest(FIREBASE_ULTIMO_PATH,'PUT',pacote);
+    await firebaseRequest(`${FIREBASE_LISTA_PATH}/${key}`,'PUT',pacote);
+    try{await limparBackupsAntigosFirebase();}catch(e){}
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+window.fazerBackupFirebaseManual=async function(){
+  const pacote=criarPacoteBackupFinal();
+  const key=salvarBackupLocalFinal(pacote);
+  await salvarBackupFirebaseFinal(pacote,key);
+  mostrarMsgBackup('✅ BACKUP REALIZADO COM SUCESSO');
+};
+
+window.restaurarUltimoBackupFirebase=function(){
+  pedirConfirmacao('RESTAURAR BACKUP','DESEJA RESTAURAR O ÚLTIMO BACKUP?',async()=>{
+    let pacote=null;
+    try{pacote=await firebaseRequest(FIREBASE_ULTIMO_PATH,'GET');}catch(e){}
+    if(!pacote || !pacote.db){
+      try{pacote=JSON.parse(localStorage.getItem(LOCAL_BACKUP_LAST_KEY)||'null');}catch(e){pacote=null;}
+    }
+    if(!restaurarPacoteBackupFinal(pacote)){
+      mostrarMsgBackup('❌ ERRO AO RESTAURAR BACKUP');
+      return;
+    }
+    closeModal();
+    mostrarMsgBackup('✅ BACKUP RESTAURADO COM SUCESSO');
+  });
+};
+
+window.restaurarBackupPorChaveFirebase=function(key,origem='local'){
+  pedirConfirmacao('RESTAURAR BACKUP','DESEJA RESTAURAR ESTE BACKUP?',async()=>{
+    let pacote=null;
+    if(origem==='firebase'){
+      try{pacote=await firebaseRequest(`${FIREBASE_LISTA_PATH}/${key}`,'GET');}catch(e){}
+    }else{
+      try{pacote=(JSON.parse(localStorage.getItem(LOCAL_BACKUP_LIST_KEY)||'{}')||{})[key];}catch(e){pacote=null;}
+    }
+    if(!restaurarPacoteBackupFinal(pacote)){
+      mostrarMsgBackup('❌ ERRO AO RESTAURAR BACKUP');
+      return;
+    }
+    document.getElementById('selectSheet')?.remove();
+    closeModal();
+    mostrarMsgBackup('✅ BACKUP RESTAURADO COM SUCESSO');
+  });
+};
+
+window.verDatasBackupsFirebase=async function(){
+  let listaFinal={};
+  try{
+    const fb=await firebaseRequest(FIREBASE_LISTA_PATH,'GET');
+    if(fb){Object.keys(fb).forEach(k=>listaFinal['firebase|'+k]=fb[k]);}
+  }catch(e){}
+  try{
+    const loc=JSON.parse(localStorage.getItem(LOCAL_BACKUP_LIST_KEY)||'{}')||{};
+    Object.keys(loc).forEach(k=>listaFinal['local|'+k]=loc[k]);
+  }catch(e){}
+  const keys=Object.keys(listaFinal).sort((a,b)=>String(listaFinal[b]?.dataISO||b).localeCompare(String(listaFinal[a]?.dataISO||a))).slice(0,10);
+  const html=keys.map((full,i)=>{
+    const b=listaFinal[full]||{};
+    const parts=full.split('|');
+    const origem=parts[0];
+    const key=parts.slice(1).join('|');
+    const tag=origem==='firebase'?'FIREBASE':'LOCAL';
+    return `<div class="backupListItem"><div><b>${i+1}. ${b.dataBR||key}</b><small>${tag} • ${key}</small></div><button onclick="restaurarBackupPorChaveFirebase('${key.replace(/'/g,"\'")}','${origem}')">RESTAURAR</button></div>`;
+  }).join('') || '<div class="empty">NENHUM BACKUP ENCONTRADO.</div>';
+  document.getElementById('selectSheet')?.remove();
+  document.body.insertAdjacentHTML('beforeend',`<div id="selectSheet" class="selectSheet show" onclick="if(event.target.id=='selectSheet')fecharSeletor()"><div class="selectBox"><h2>📅 ÚLTIMOS 10 BACKUPS</h2>${html}</div></div>`);
+};
+
+window.addEventListener('pagehide',function(){
+  try{
+    const pacote=criarPacoteBackupFinal();
+    const key=salvarBackupLocalFinal(pacote);
+    salvarBackupFirebaseFinal(pacote,key);
+  }catch(e){}
+});
 
 </script>
 </body>
