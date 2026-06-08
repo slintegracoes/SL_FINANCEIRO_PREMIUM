@@ -6835,5 +6835,190 @@ window.addEventListener('pagehide',function(){
 })();
 </script>
 
+
+
+<!-- ===== AJUSTES PONTUAIS: IGNORADOS, ARRASTAR, DESTAQUE CARTÕES ===== -->
+<style id="ajustes-pontuais-solicitados-css">
+.dragHandleSL{position:absolute;right:10px;top:10px;width:28px;height:28px;border-radius:10px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.18);display:grid;place-items:center;color:#fff;font-size:16px;cursor:grab;z-index:5;box-shadow:0 0 10px #0008;touch-action:none}
+.dragHandleSL:active{cursor:grabbing;transform:scale(.96)}
+.slContaDesign,.cardCredit.cardCompact{position:relative!important}
+.draggingSL{opacity:.45!important;transform:scale(.98)!important}
+.dropTargetSL{outline:2px dashed var(--gold)!important;outline-offset:3px!important}
+.cardCompactValues b,.cartaoValorDestaque{display:block!important;background:rgba(0,0,0,.34)!important;border:1px solid rgba(255,255,255,.18)!important;border-radius:14px!important;padding:8px 6px!important;margin-top:5px!important;text-align:center!important;font-size:15px!important;line-height:1.05!important;text-shadow:0 0 10px currentColor,0 2px 7px #000!important;box-shadow:inset 0 0 10px #0007,0 0 10px rgba(255,255,255,.08)!important}
+.cardCompactValues small{text-align:center!important;letter-spacing:.5px!important;font-size:9px!important;color:#e5e7eb!important}
+.cardCompactValues{gap:7px!important}
+.cardCompactValues>div{min-width:0!important}
+</style>
+<script id="ajustes-pontuais-solicitados-js">
+(function(){
+  'use strict';
+  function n(v){return Number(v)||0}
+  function moeda(v){try{return fmt(v)}catch(e){return n(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+  function contas(){return (typeof db!=='undefined'&&db&&Array.isArray(db.contas))?db.contas:[]}
+  function cartoes(){return (typeof db!=='undefined'&&db&&Array.isArray(db.cartoes))?db.cartoes:[]}
+  function movs(){return (typeof db!=='undefined'&&db&&Array.isArray(db.movs))?db.movs:[]}
+  function restante(m){return Math.max(0,n(m&&m.valor)-n(m&&m.valorPagoFatura))}
+  function dataNoFiltro(m){try{return typeof dentroFiltroData==='function'?dentroFiltroData(m):true}catch(e){return true}}
+  function cor1(c){return (c&&(c.cor1||c.cor||c.color))||'#4c1d95'}
+  function cor2(c){return (c&&c.cor2)||'#0b1220'}
+  function bgCartao(c){return c&&c.gradienteAtivo===false?cor1(c):'linear-gradient(135deg,'+cor1(c)+','+cor2(c)+')'}
+  function tipoConta(c){return String((c&&c.tipo)||'DINHEIRO').toUpperCase()}
+  function docConta(c){var d=String((c&&(c.docTipo||c.documento||c.doc))||'-').toUpperCase();return (d==='CPF'||d==='CNPJ')?d:'-'}
+  function saldoContaLocal(c){if(typeof window.saldoConta==='function'){try{return window.saldoConta(c)}catch(e){}}
+    var total=n(c&&c.saldo); movs().forEach(function(m){if(!m||m.ignorado||m.pago===false||m.conta!==(c&&c.id))return; if(m.tipo==='receita')total+=n(m.valor); if(m.tipo==='despesa')total-=n(m.valor);}); return total;
+  }
+
+  function normalizarOrdem(nome){
+    var a = nome==='contas'?contas():cartoes();
+    a.forEach(function(x,i){if(!x.ordem && x.ordem!==0)x.ordem=i+1});
+    a.sort(function(a,b){return n(a.ordem)-n(b.ordem)});
+  }
+  function moverItem(nome,idAntes,idDepois){
+    var a = nome==='contas'?contas():cartoes();
+    normalizarOrdem(nome);
+    var from=a.findIndex(function(x){return x.id==idAntes});
+    var to=a.findIndex(function(x){return x.id==idDepois});
+    if(from<0||to<0||from===to)return;
+    var item=a.splice(from,1)[0];
+    a.splice(to,0,item);
+    a.forEach(function(x,i){x.ordem=i+1});
+    try{save()}catch(e){try{localStorage.setItem('slFinanceiroPremium',JSON.stringify(db))}catch(_){}}
+    try{render()}catch(e){}
+  }
+  window.__slMoverItem=moverItem;
+  window.__slDragStart=function(ev,tipo,id){
+    try{ev.dataTransfer.setData('text/plain',tipo+'|'+id);ev.currentTarget.classList.add('draggingSL')}catch(e){}
+  };
+  window.__slDragEnd=function(ev){try{ev.currentTarget.classList.remove('draggingSL');document.querySelectorAll('.dropTargetSL').forEach(function(x){x.classList.remove('dropTargetSL')})}catch(e){}};
+  window.__slDragOver=function(ev){ev.preventDefault();try{ev.currentTarget.classList.add('dropTargetSL')}catch(e){}};
+  window.__slDragLeave=function(ev){try{ev.currentTarget.classList.remove('dropTargetSL')}catch(e){}};
+  window.__slDrop=function(ev,tipo,id){ev.preventDefault();try{ev.currentTarget.classList.remove('dropTargetSL');var p=(ev.dataTransfer.getData('text/plain')||'').split('|');if(p[0]===tipo)moverItem(tipo,p[1],id)}catch(e){console.error('reordenar:',e)}};
+
+  window.contaResumoHTML=function(c){
+    var saldo=saldoContaLocal(c), id=esc(c.id), ic=esc(c.icone||'🏦');
+    return '<div class="slContaDesign slContaProporcional" draggable="true" ondragstart="__slDragStart(event,\'contas\',\''+id+'\')" ondragend="__slDragEnd(event)" ondragover="__slDragOver(event)" ondragleave="__slDragLeave(event)" ondrop="__slDrop(event,\'contas\',\''+id+'\')">'+
+      '<span class="dragHandleSL">↕</span>'+
+      '<div class="slContaIcon clickIcon" onclick="abrirIconeConta(\''+id+'\',event)">'+ic+'</div>'+
+      '<div class="slContaInfo"><div class="slContaNome">'+esc(c.nome||'CONTA')+'</div><div class="slContaTags"><span class="slContaTag">'+esc(tipoConta(c))+'</span><span class="slContaTag">'+esc(docConta(c))+'</span></div></div>'+
+      '<div class="slContaRight"><div class="slContaSaldo '+(saldo>=0?'green':'red')+'">'+moeda(saldo)+'</div><div class="slContaBtns"><button class="plus" onclick="openModal(\'entradaConta\',\''+id+'\')">+</button><button class="minus" onclick="openModal(\'saidaConta\',\''+id+'\')">−</button></div></div></div>';
+  };
+  var contaHTMLAntiga=window.contaHTML;
+  window.renderContas=function(){
+    normalizarOrdem('contas');
+    var cs=contas();
+    var ci=document.getElementById('contasInicio');
+    var lc=document.getElementById('listaContas');
+    if(ci)ci.innerHTML=cs.map(window.contaResumoHTML).join('')||'<div class="empty">NENHUMA CONTA CADASTRADA.</div>';
+    if(lc)lc.innerHTML=(typeof contaHTMLAntiga==='function'?cs.map(contaHTMLAntiga).join(''):cs.map(window.contaResumoHTML).join(''))||'<div class="empty">NENHUMA CONTA CADASTRADA.</div>';
+  };
+
+  window.renderCartoes=function(){
+    normalizarOrdem('cartoes');
+    var alvo=document.getElementById('listaCartoes');
+    var lim=document.getElementById('limiteTotalCartoes');
+    var us=document.getElementById('usadoTotalCartoes');
+    var totalLim=cartoes().reduce(function(s,c){return s+n(c.limite)},0);
+    var gastoFiltro=movs().filter(function(m){return m&&m.tipo==='cartao'&&!m.ignorado&&dataNoFiltro(m)}).reduce(function(s,m){return s+n(m.valor)},0);
+    if(lim)lim.innerText=moeda(totalLim); if(us)us.innerText=moeda(gastoFiltro); if(!alvo)return;
+    alvo.innerHTML=cartoes().map(function(c){
+      var id=esc(c.id);
+      var aberto=movs().filter(function(m){return m&&m.tipo==='cartao'&&m.cartao===c.id&&!m.ignorado}).reduce(function(s,m){return s+restante(m)},0);
+      var mes=movs().filter(function(m){return m&&m.tipo==='cartao'&&m.cartao===c.id&&!m.ignorado&&dataNoFiltro(m)}).reduce(function(s,m){return s+n(m.valor)},0);
+      var pct=c.limite?Math.min(100,aberto/n(c.limite)*100):0;
+      return '<div class="cardCredit cardCompact cartaoPersonalizado" draggable="true" ondragstart="__slDragStart(event,\'cartoes\',\''+id+'\')" ondragend="__slDragEnd(event)" ondragover="__slDragOver(event)" ondragleave="__slDragLeave(event)" ondrop="__slDrop(event,\'cartoes\',\''+id+'\')" style="--cartaoBg:'+bgCartao(c)+';--cartaoBorder:'+cor1(c)+';--cartaoGlow:'+cor1(c)+'99">'+
+      '<span class="dragHandleSL">↕</span><div class="cardCompactTop"><div class="cardIconBig" onclick="abrirIconeCartao(\''+id+'\',event)">'+esc(c.icone||'💳')+'</div><div class="cardCompactName">'+esc(c.nome||'CARTÃO')+'</div></div>'+
+      '<div class="cardCompactValues"><div><small>LIMITE</small><b class="gold">'+moeda(c.limite)+'</b></div><div><small>JÁ GASTOU</small><b class="red">'+moeda(mes)+'</b></div><div><small>EM ABERTO</small><b class="blue">'+moeda(aberto)+'</b></div></div>'+
+      '<div class="progress"><div class="bar" style="width:'+pct+'%"></div></div><div class="cardCompactFoot">'+pct.toFixed(0)+'% UTILIZADO EM ABERTO • FECHA '+esc(c.fech||1)+' • VENCE '+esc(c.venc||10)+'</div></div>';
+    }).join('')||'<div class="empty">NENHUM CARTÃO CADASTRADO.</div>';
+  };
+
+  var salvarMovOriginal=window.salvarMov;
+  window.salvarMov=function(tipo){
+    var id=(typeof editId!=='undefined'&&editId)?editId:null;
+    var old=id?movs().find(function(x){return x.id==id}):null;
+    if(old && old.ignorado){
+      var pagoCheck=document.getElementById('pagoCheck');
+      var atualizado=Object.assign({},old,{
+        tipo:tipo||old.tipo,
+        desc:document.getElementById('desc')?.value||old.desc||'Sem descrição',
+        valor:n(document.getElementById('valor')?.value||old.valor),
+        cat:document.getElementById('cat')?.value||old.cat||'',
+        data:document.getElementById('data')?.value||old.data,
+        conta:document.getElementById('conta')?.value||old.conta||'',
+        obs:document.getElementById('obs')?.value||old.obs||'',
+        pago:pagoCheck?pagoCheck.checked:(old.pago!==false),
+        venc:document.getElementById('venc')?.value||old.venc||'',
+        fixa:!!document.getElementById('fixaCheck')?.checked,
+        repetir:!!document.getElementById('repetirCheck')?.checked,
+        ignorado:!!document.getElementById('ignorarCheck')?.checked,
+        icone:document.getElementById('iconeMov')?.value||old.icone
+      });
+      var idx=movs().findIndex(function(x){return x.id==id});
+      if(idx>=0)db.movs[idx]=atualizado;
+      try{closeModal()}catch(e){}
+      try{save()}catch(e){try{render()}catch(_){}}
+      return;
+    }
+    return salvarMovOriginal.apply(this,arguments);
+  };
+
+  var renderAntigo=window.render;
+  window.render=function(){try{if(typeof renderAntigo==='function')renderAntigo()}catch(e){console.error('render base:',e)} try{window.renderContas()}catch(e){console.error('render contas:',e)} try{window.renderCartoes()}catch(e){console.error('render cartoes:',e)}};
+  try{normalizarOrdem('contas');normalizarOrdem('cartoes');save();render();}catch(e){console.error('ajustes pontuais:',e)}
+})();
+
+
+/* SUPORTE AO BOTÃO VOLTAR DO CELULAR - ALTERAÇÃO ISOLADA */
+(function(){
+  if(window.__voltarCelularSLAtivo) return;
+  window.__voltarCelularSLAtivo=true;
+  let historicoTelas=['inicio'];
+  const showScreenOriginal=window.showScreen;
+  window.showScreen=function(id,btn){
+    const atual=document.querySelector('.screen.active');
+    const atualId=atual?atual.id:null;
+    if(id && atualId && id!==atualId){
+      const ultimo=historicoTelas[historicoTelas.length-1];
+      if(ultimo!==id) historicoTelas.push(id);
+    }
+    return showScreenOriginal.apply(this,arguments);
+  };
+  function temClasse(id,classe){const el=document.getElementById(id);return el&&el.classList.contains(classe)}
+  function fecharPrimeiroAberto(){
+    const modal=document.getElementById('modal');
+    if(modal&&modal.classList.contains('show')){ if(typeof closeModal==='function') closeModal(); else modal.classList.remove('show'); return true; }
+    const confirm=document.getElementById('confirmOverlay');
+    if(confirm&&confirm.classList.contains('show')){ confirm.classList.remove('show'); return true; }
+    const scope=document.getElementById('scopeOverlay');
+    if(scope&&scope.classList.contains('show')){ scope.classList.remove('show'); return true; }
+    const teclado=document.getElementById('iconKeyboardOverlay');
+    if(teclado&&teclado.classList.contains('show')){ if(typeof fecharTecladoIcone==='function') fecharTecladoIcone(); else teclado.classList.remove('show'); return true; }
+    const select=document.querySelector('.selectSheet.show,.iconSheet.show,.repeatSheet.show');
+    if(select){ select.classList.remove('show'); return true; }
+    return false;
+  }
+  function telaAtual(){const s=document.querySelector('.screen.active');return s?s.id:'inicio'}
+  function voltarInterno(){
+    if(fecharPrimeiroAberto()) return true;
+    const atual=telaAtual();
+    if(atual!=='inicio'){
+      historicoTelas.pop();
+      const anterior=historicoTelas.length?historicoTelas[historicoTelas.length-1]:'inicio';
+      if(anterior&&anterior!==atual&&document.getElementById(anterior)) showScreenOriginal(anterior);
+      else showScreenOriginal('inicio');
+      return true;
+    }
+    return false;
+  }
+  try{ history.replaceState({slFinanceiro:true},'',location.href); history.pushState({slFinanceiro:true},'',location.href); }catch(e){}
+  window.addEventListener('popstate',function(e){
+    const segurou=voltarInterno();
+    if(segurou){ try{ history.pushState({slFinanceiro:true},'',location.href); }catch(err){} }
+  });
+})();
+</script>
+<!-- ===== FIM AJUSTES PONTUAIS ===== -->
+
 </body>
 </html>
