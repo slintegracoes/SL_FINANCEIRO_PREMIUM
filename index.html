@@ -7473,5 +7473,118 @@ window.addEventListener('pagehide',function(){
 })();
 </script>
 
+
+
+<style>
+/* PATCH FINAL - CONTAS: ARRASTAR + VALOR/BOTÕES PROPORCIONAIS */
+#contasInicio .contaDragCard{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:58px minmax(0,1fr)!important;
+  grid-template-areas:"icon info" "actions actions"!important;
+  gap:10px 12px!important;
+  width:100%!important;
+  margin:10px 0!important;
+  padding:14px!important;
+  border-radius:24px!important;
+  border:1.7px solid rgba(255,255,255,.18)!important;
+  background:var(--contaBg,linear-gradient(145deg,#10223a,#07111d))!important;
+  box-shadow:0 0 18px rgba(0,229,255,.25), inset 0 0 18px rgba(255,255,255,.06)!important;
+  overflow:hidden!important;
+  cursor:grab!important;
+}
+#contasInicio .contaDragCard:active{cursor:grabbing!important;transform:scale(.99)!important}
+#contasInicio .contaDragCard.dragging{opacity:.55!important;outline:2px dashed var(--gold)!important}
+#contasInicio .contaDragIcon{
+  grid-area:icon!important;width:54px!important;height:54px!important;border-radius:19px!important;
+  display:grid!important;place-items:center!important;font-size:30px!important;
+  background:rgba(255,255,255,.13)!important;border:1px solid rgba(255,255,255,.20)!important;
+  box-shadow:0 0 14px rgba(0,0,0,.35)!important;
+}
+#contasInicio .contaDragInfo{grid-area:info!important;min-width:0!important;align-self:center!important}
+#contasInicio .contaDragName{font-size:16px!important;line-height:1.05!important;color:#fff!important;font-weight:950!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;letter-spacing:.2px!important}
+#contasInicio .contaDragMeta{display:inline-flex!important;margin-top:7px!important;padding:5px 9px!important;border-radius:999px!important;background:rgba(0,0,0,.23)!important;border:1px solid rgba(255,255,255,.14)!important;font-size:10px!important;color:#e2e8f0!important;max-width:100%!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#contasInicio .contaDragActions{grid-area:actions!important;display:grid!important;grid-template-columns:minmax(120px,1fr) 54px 54px!important;gap:10px!important;align-items:center!important;margin-top:4px!important}
+#contasInicio .contaDragSaldo{min-width:0!important;text-align:left!important;font-size:clamp(26px,7vw,38px)!important;line-height:1!important;font-weight:950!important;letter-spacing:-.8px!important;text-shadow:0 0 12px currentColor!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#contasInicio .contaDragBtns{display:contents!important}
+#contasInicio .contaDragBtns button{width:54px!important;height:54px!important;min-width:54px!important;max-width:54px!important;border:0!important;border-radius:16px!important;color:#fff!important;font-size:34px!important;font-weight:950!important;line-height:1!important;display:grid!important;place-items:center!important;padding:0!important;box-shadow:0 0 14px rgba(0,0,0,.45)!important}
+#contasInicio .contaDragBtns .plus{background:linear-gradient(145deg,#31d158,#0d7f2d)!important}
+#contasInicio .contaDragBtns .minus{background:linear-gradient(145deg,#ff453a,#9e1010)!important}
+#listaContas .contaConfigDrag{cursor:grab!important}
+#listaContas .contaConfigDrag.dragging{opacity:.55!important;outline:2px dashed var(--gold)!important}
+@media(max-width:380px){
+ #contasInicio .contaDragCard{grid-template-columns:50px minmax(0,1fr)!important;padding:12px!important;gap:8px 10px!important;border-radius:21px!important}
+ #contasInicio .contaDragIcon{width:48px!important;height:48px!important;font-size:27px!important;border-radius:17px!important}
+ #contasInicio .contaDragName{font-size:14px!important}
+ #contasInicio .contaDragMeta{font-size:8.8px!important;padding:4px 7px!important}
+ #contasInicio .contaDragActions{grid-template-columns:minmax(94px,1fr) 48px 48px!important;gap:8px!important}
+ #contasInicio .contaDragSaldo{font-size:clamp(22px,7vw,31px)!important}
+ #contasInicio .contaDragBtns button{width:48px!important;height:48px!important;min-width:48px!important;max-width:48px!important;font-size:30px!important;border-radius:15px!important}
+}
+</style>
+<script>
+/* PATCH FINAL - CONTAS: reordenar arrastando, salvar posição e manter valor/botões proporcionais */
+(function(){
+  function escConta(s){return String(s==null?'':s).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]||ch;});}
+  function fmtConta(v){try{return fmt(v)}catch(e){return (Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}}
+  function saldoContaSeguro(c){try{return typeof saldoConta==='function'?saldoConta(c):(+c.saldo||0)}catch(e){return +c.saldo||0;}}
+  function docContaSeguro(c){var d=(c&&(c.docTipo||c.documento||c.doc))||'-';d=String(d).toUpperCase();return (d==='CPF'||d==='CNPJ')?d:'-';}
+  function tipoContaSeguro(c){return ((c&&c.tipo)||'DINHEIRO').toString().toUpperCase();}
+  function contaBg(c){
+    var c1=c.cor1||c.cor||'#10223a', c2=c.cor2||'#07111d';
+    if(c.gradienteAtivo===false) return 'linear-gradient(145deg,'+c1+','+c1+')';
+    return 'radial-gradient(circle at 10% 0%, rgba(255,255,255,.22), transparent 30%), linear-gradient(145deg,'+c1+','+c2+')';
+  }
+  function salvarOrdemContas(){try{localStorage.setItem('financeiroPremium',JSON.stringify(db));}catch(e){}}
+  function moverConta(origemId, destinoId){
+    if(!origemId||!destinoId||origemId===destinoId||!db||!Array.isArray(db.contas)) return;
+    var from=db.contas.findIndex(function(c){return String(c.id)===String(origemId)});
+    var to=db.contas.findIndex(function(c){return String(c.id)===String(destinoId)});
+    if(from<0||to<0||from===to) return;
+    var item=db.contas.splice(from,1)[0];
+    db.contas.splice(to,0,item);
+    salvarOrdemContas();
+    try{renderContas();}catch(e){}
+  }
+  window.contaResumoHTML=function(c){
+    var saldo=saldoContaSeguro(c), id=escConta(c.id), nome=escConta(c.nome||'CONTA'), icon=escConta(c.icone||'🏦');
+    var meta=escConta(tipoContaSeguro(c)+' • '+docContaSeguro(c));
+    return '<div class="contaDragCard" draggable="true" data-conta-id="'+id+'" style="--contaBg:'+contaBg(c)+'">'+
+      '<div class="contaDragIcon clickIcon" onclick="abrirIconeConta(\''+id+'\',event)">'+icon+'</div>'+
+      '<div class="contaDragInfo"><div class="contaDragName">'+nome+'</div><div class="contaDragMeta">'+meta+'</div></div>'+
+      '<div class="contaDragActions"><div class="contaDragSaldo '+(saldo>=0?'blue':'red')+'">'+fmtConta(saldo)+'</div>'+
+      '<div class="contaDragBtns"><button class="plus" onclick="openModal(\'entradaConta\',\''+id+'\')">+</button><button class="minus" onclick="openModal(\'saidaConta\',\''+id+'\')">-</button></div></div>'+
+      '</div>';
+  };
+  window.contaHTML=function(c){
+    var saldo=saldoContaSeguro(c), id=escConta(c.id), nome=escConta(c.nome||'CONTA'), icon=escConta(c.icone||'🏦');
+    var meta=escConta(tipoContaSeguro(c)+' • '+docContaSeguro(c)+' • INICIAL '+fmtConta(c.saldo||0));
+    return '<div class="contaConfigCard contaConfigDrag" draggable="true" data-conta-id="'+id+'">'+
+      '<div class="contaModernIcon clickIcon" onclick="abrirIconeConta(\''+id+'\',event)">'+icon+'</div>'+
+      '<div><div class="contaConfigTop"><div style="min-width:0"><div class="contaConfigName">'+nome+'</div><div class="contaConfigMeta">'+meta+'</div></div><div class="contaConfigSaldo '+(saldo>=0?'blue':'red')+'">'+fmtConta(saldo)+'</div></div></div>'+
+      '<div class="contaConfigActions"><button class="edit" onclick="openModal(\'conta\',\''+id+'\')">✏️ EDITAR</button><button class="delete" onclick="excluirConta(\''+id+'\')">EXCLUIR</button></div>'+
+      '</div>';
+  };
+  window.renderContas=function(){
+    var contas=(typeof db!=='undefined'&&db&&Array.isArray(db.contas))?db.contas:[];
+    var lc=document.getElementById('listaContas'), ci=document.getElementById('contasInicio');
+    if(ci) ci.innerHTML=contas.map(window.contaResumoHTML).join('')||'<div class="empty">Nenhuma conta cadastrada.</div>';
+    if(lc) lc.innerHTML=contas.map(window.contaHTML).join('')||'<div class="empty">Nenhuma conta cadastrada.</div>';
+    ativarDragContas();
+  };
+  window.ativarDragContas=function(){
+    ['contasInicio','listaContas'].forEach(function(containerId){
+      var box=document.getElementById(containerId); if(!box) return;
+      box.querySelectorAll('[data-conta-id]').forEach(function(el){
+        el.addEventListener('dragstart',function(e){el.classList.add('dragging'); e.dataTransfer.setData('text/plain',el.getAttribute('data-conta-id'));});
+        el.addEventListener('dragend',function(){el.classList.remove('dragging');});
+        el.addEventListener('dragover',function(e){e.preventDefault();});
+        el.addEventListener('drop',function(e){e.preventDefault(); var origem=e.dataTransfer.getData('text/plain'); var destino=el.getAttribute('data-conta-id'); moverConta(origem,destino);});
+      });
+    });
+  };
+  try{renderContas();}catch(e){console.error('Erro no patch de contas arrastáveis',e);}
+})();
+</script>
 </body>
 </html>
