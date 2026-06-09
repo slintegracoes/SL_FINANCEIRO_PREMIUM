@@ -1049,7 +1049,7 @@ const forms={
  compraCartao:()=>{const hoje=new Date().toISOString().slice(0,10); const primeiro=(db.cartoes&&db.cartoes[0]&&db.cartoes[0].id)||''; return `<h2>COMPRA NO CARTÃO</h2><div class="form"><label>CARTÃO</label><select id="cartao" onchange="atualizarFaturasDestino()">${cartoesOptions()}</select><label>📅 MÊS DA FATURA</label><select id="faturaDestino" class="faturaDestinoSelect">${typeof faturaOptionsHTML==='function'?faturaOptionsHTML(primeiro,hoje,0):'<option value="0">MÊS DA COMPRA</option>'}</select><label>DESCRIÇÃO</label><input id="desc"><label>VALOR TOTAL</label><input id="valor" type="number" step="0.01"><label>PARCELAS</label><input id="parcelas" type="number" min="1" value="1"><label>CATEGORIA</label><select id="cat">${catsOptions('despesa')}</select><label>DATA DA COMPRA</label><input id="data" type="date" value="${hoje}" onchange="atualizarFaturasDestino()"><button class="btn goldBg" onclick="salvarCompraCartao()">SALVAR COMPRA</button></div>`},
  editCompraCartao:()=>{let e=db.movs.find(x=>x.id==editId)||{};return `<h2>Editar Compra do Cartão</h2><div class="form"><label>Cartão</label><select id="cartao">${cartoesOptions(e.cartao)}</select><label>Descrição</label><input id="desc" value="${e.desc||''}"><label>Valor</label><input id="valor" type="number" step="0.01" value="${e.valor||''}"><label>Categoria</label><select id="cat">${catsOptions('despesa',e.cat)}</select><label>Data</label><input id="data" type="date" value="${e.data||new Date().toISOString().slice(0,10)}"><label>Observação</label><textarea id="obs">${e.obs||''}</textarea><button class="btn goldBg" onclick="salvarCompraEditada()">SALVAR ALTERAÇÃO</button></div>`},
  backup:()=>`<h2>☁️ Backup</h2><div class="editorGroup"><h3>Dados do aplicativo</h3><div class="editorBtns"><button class="smallBtn" onclick="exportar()">📤 Exportar</button><label class="smallBtn" style="display:block;text-align:center">📥 Importar<input type="file" accept=".json" onchange="importar(event)" style="display:none"></label></div></div><button class="btn redBg" onclick="zerar()">🗑️ ZERAR TUDO</button>`,
- config:()=>`<h2>⚙️ Configurações</h2><div class="editorGroup"><h3>☁️ BACKUP FIREBASE</h3><div class="backupBtns"><button class="smallBtn backupNow" onclick="fazerBackupFirebaseManual()">☁️ FAZER BACKUP AGORA</button><button class="smallBtn restoreNow" onclick="restaurarUltimoBackupFirebase()">♻️ RESTAURAR ÚLTIMO BACKUP</button><button class="smallBtn datesNow" onclick="verDatasBackupsFirebase()">📅 VER DATAS DOS ÚLTIMOS BACKUPS</button></div></div><div class="editorGroup"><h3>🎨 Aparência</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal('temas')">🎨 Temas</button><button class="smallBtn" onclick="openModal('fonte')">🔠 Fonte</button><button class="smallBtn" onclick="openModal('ajusteTela')">📱 AJUSTE DE TELA</button></div></div><div class="editorGroup"><h3>📊 Relatórios</h3><div class="editorBtns"><button class="smallBtn" onclick="closeModal();showScreen('relatorios')">📊 Abrir Relatórios</button></div></div><div class="editorGroup"><h3>🛠️ Editor Geral</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal('editorCartoes')">💳 Cartões</button><button class="smallBtn" onclick="openModal('editorContas')">🏦 Contas</button><button class="smallBtn" onclick="openModal('editorCategorias')">📂 Categorias</button><button class="smallBtn" onclick="abrirLixeira()">🗑️ Lixeira</button></div></div><button class="btn redBg" onclick="zerar()">🗑️ ZERAR TUDO</button>`,
+ config:()=>`<h2>⚙️ Configurações</h2><div class="editorGroup"><h3>☁️ BACKUP FIREBASE</h3><div class="backupBtns"><button class="smallBtn backupNow" onclick="fazerBackupFirebaseManual()">☁️ FAZER BACKUP AGORA</button><button class="smallBtn restoreNow" onclick="restaurarUltimoBackupFirebase()">♻️ RESTAURAR ÚLTIMO BACKUP</button><button class="smallBtn datesNow" onclick="verDatasBackupsFirebase()">📅 VER DATAS DOS ÚLTIMOS BACKUPS</button></div></div><div class="editorGroup"><h3>🎨 Aparência</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal('temas')">🎨 Temas</button><button class="smallBtn" onclick="openModal('fonte')">🔠 Fonte</button><button class="smallBtn" onclick="openModal('ajusteTela')">📱 AJUSTE DE TELA</button></div></div><div class="editorGroup"><h3>📊 Relatórios</h3><div class="editorBtns"><button class="smallBtn" onclick="closeModal();showScreen('relatorios')">📊 Abrir Relatórios</button></div></div><div class="editorGroup"><h3>🛠️ Editor Geral</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal('editorCartoes')">💳 Cartões</button><button class="smallBtn" onclick="openModal('editorContas')">🏦 Contas</button><button class="smallBtn" onclick="openModal('editorCategorias')">📂 Categorias</button></div></div><button class="btn redBg" onclick="zerar()">🗑️ ZERAR TUDO</button>`,
  temas:()=>temaModal(),
  fonte:()=>{let f=db.fonte||{size:15,family:'Arial, Helvetica, sans-serif'};let fontes=[['Arial, Helvetica, sans-serif','ARIAL'],['Verdana, Geneva, sans-serif','VERDANA'],['Tahoma, Geneva, sans-serif','TAHOMA'],['Trebuchet MS, Arial, sans-serif','TREBUCHET'],['Georgia, serif','GEORGIA'],['Courier New, monospace','COURIER']];return `<h2>🔠 Fonte</h2><div class="fontPreviewBox"><div style="font-family:${f.family};font-size:${f.size}px;font-weight:900">SL FINANCEIRO PREMIUM</div><small class="muted">PRÉVIA DA FONTE</small></div><div class="editorGroup"><h3>Tamanho da fonte</h3><div class="fontControls"><button type="button" onclick="ajustarFonteTemp(-1)">−</button><strong id="fontSizeView">${f.size||15}px</strong><button type="button" onclick="ajustarFonteTemp(1)">+</button></div></div><input id="fonteSize" type="hidden" value="${f.size||15}"><input id="fonteFamily" type="hidden" value="${f.family}"><div class="editorGroup"><h3>Fontes diferentes</h3><div class="fontSelectGrid">${fontes.map(([val,nome])=>`<button type="button" class="fontChoice ${f.family==val?'activeFont':''}" style="font-family:${val}" onclick="selecionarFonteTemp('${val.replace(/'/g,'&#39;')}',this)">${nome}</button>`).join('')}</div></div><button class="btn" onclick="salvarFonte()">SALVAR FONTE</button>`},
  ajusteTela:()=>{let sc=+(db.tela&&db.tela.scale||1);let pct=Math.round(sc*100);return `<h2>📱 AJUSTE DE TELA</h2><div class="screenAdjustPreview"><div style="font-size:18px;font-weight:900">PRÉVIA DA INTERFACE</div><small class="muted">AUMENTA OU DIMINUI O TAMANHO GERAL DO APLICATIVO</small></div><div class="editorGroup"><h3>TAMANHO DA TELA</h3><div class="screenControls"><button type="button" onclick="ajustarTelaTemp(-.05)">−</button><strong id="screenScaleView">${pct}%</strong><button type="button" onclick="ajustarTelaTemp(.05)">+</button></div><input id="screenScale" type="hidden" value="${sc}"><div class="screenAdjustBtns"><button class="smallBtn" onclick="resetarTelaTemp()">PADRÃO</button><button class="smallBtn" onclick="openModal('config')">VOLTAR</button></div></div><button class="btn greenBg" onclick="salvarAjusteTela()">✅ SALVAR AJUSTE</button>`},
@@ -7019,6 +7019,459 @@ window.addEventListener('pagehide',function(){
 })();
 </script>
 <!-- ===== FIM AJUSTES PONTUAIS ===== -->
+
+
+
+<!-- CORREÇÃO PONTUAL: ATENÇÃO SÓ PARA FIXA/REPETIDA/PARCELADA + EDIÇÃO SEM DUPLICAR -->
+<script>
+(function(){
+  'use strict';
+  function getEditId(){
+    try{ if(typeof editId!=='undefined' && editId) return editId; }catch(e){}
+    return window.editId||null;
+  }
+  function setEditId(v){
+    try{ if(typeof editId!=='undefined') editId=v||null; }catch(e){}
+    window.editId=v||null;
+  }
+  function money(v){
+    if(typeof parseMoney==='function') return parseMoney(v);
+    return Number(String(v||'').replace(/\./g,'').replace(',','.'))||0;
+  }
+  function hojeISO(){
+    if(typeof hoje==='function') return hoje();
+    return new Date().toISOString().slice(0,10);
+  }
+  function addMes(data,n){
+    if(typeof isoAddMonths==='function') return isoAddMonths(data,n);
+    if(typeof addMonthsISO==='function') return addMonthsISO(data,n);
+    var d=new Date((data||hojeISO())+'T12:00:00');
+    var dia=d.getDate(); d.setDate(1); d.setMonth(d.getMonth()+Number(n||0));
+    var ult=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+    d.setDate(Math.min(dia,ult));
+    return d.toISOString().slice(0,10);
+  }
+  function isRD(m){return !!m && (m.tipo==='receita'||m.tipo==='despesa');}
+  function isAtencao(m){
+    if(!isRD(m)) return false;
+    return !!(
+      m.fixa===true || m.repetir===true || m.parcelar===true ||
+      m.origemTipo==='fixa' || m.origemTipo==='repetida' || m.origemTipo==='repetir' || m.origemTipo==='parcelada' ||
+      Number(m.parcelaTotal||0)>1
+    );
+  }
+  window.movimentoTemGrupo=isAtencao;
+  function pendente(m){return m && (m.pago===false || m.pago===0 || m.pendente===true);}
+  function mesmoGrupo(x,old){
+    if(!x||!old) return false;
+    if(old.grupo) return x.grupo===old.grupo;
+    return x.id===old.id;
+  }
+  function confirmar(t,msg,ok){
+    if(typeof pedirConfirmacao==='function') return pedirConfirmacao(t,msg,ok);
+    if(confirm(msg)) ok&&ok();
+  }
+  function pedirEscopo(modo,cb){
+    if(typeof prepararTextoEscopo==='function') prepararTextoEscopo(modo);
+    if(modo==='excluir' && typeof pedirEscopoExclusao==='function') return pedirEscopoExclusao(cb);
+    if(typeof pedirEscopoEdicao==='function') return pedirEscopoEdicao(cb);
+    cb('esta');
+  }
+  function baseMov(tipo,old){
+    var pagoCheck=document.getElementById('pagoCheck');
+    var fixa=!!document.getElementById('fixaCheck')?.checked;
+    var repetir=!!document.getElementById('repetirCheck')?.checked;
+    var parcelar=!!document.getElementById('parcelarCheck')?.checked;
+    var qtd=Number(document.getElementById('repQtd')?.value||1);
+    if(parcelar && qtd<2){ alert('PARCELAR SÓ PODE SER USADO COM 2 PARCELAS OU MAIS'); return null; }
+    var idAtual=getEditId();
+    var desc=(document.getElementById('desc')?.value||'Sem descrição').replace(/\s+\d+\/\d+$/,'');
+    var origem=fixa?'fixa':(repetir?'repetida':(parcelar?'parcelada':'normal'));
+    return {
+      id:(old&&old.id)||idAtual||uid(),
+      grupo:(old&&old.grupo)||idAtual||uid(),
+      origemTipo:origem,
+      tipo:tipo,
+      desc:desc,
+      descBase:desc,
+      valor:money(document.getElementById('valor')?.value),
+      cat:document.getElementById('cat')?.value,
+      data:document.getElementById('data')?.value||hojeISO(),
+      conta:document.getElementById('conta')?.value,
+      obs:document.getElementById('obs')?.value||'',
+      pago:pagoCheck?pagoCheck.checked:(old&&old.pago!==undefined?old.pago:true),
+      venc:document.getElementById('venc')?.value||'',
+      fixa:fixa,
+      repetir:repetir,
+      parcelar:parcelar,
+      repQtd:qtd,
+      repPeriodo:document.getElementById('repPeriodo')?.value||'Mensal',
+      ignorado:document.getElementById('ignorarCheck')?!!document.getElementById('ignorarCheck').checked:!!(old&&old.ignorado),
+      icone:document.getElementById('iconeMov')?.value||(old&&old.icone)||(tipo==='receita'?'💰':'🛒')
+    };
+  }
+  function alterarGrupo(base,old,escopo){
+    db.movs=(db.movs||[]).map(function(x){
+      if(!mesmoGrupo(x,old)) return x;
+      if(escopo==='esta' && x.id!==old.id) return x;
+      if(escopo==='pendentes' && !pendente(x)) return x;
+      var nx=Object.assign({},x,base,{id:x.id,grupo:x.grupo||old.grupo||old.id});
+      if(x.origemTipo==='parcelada'||base.parcelar||Number(x.parcelaTotal||0)>1){
+        nx.origemTipo='parcelada'; nx.parcelar=true; nx.fixa=false; nx.repetir=false;
+        nx.parcelaAtual=x.parcelaAtual||base.parcelaAtual||1;
+        nx.parcelaTotal=x.parcelaTotal||base.parcelaTotal||base.repQtd||2;
+        nx.desc=(base.descBase||base.desc)+' '+nx.parcelaAtual+'/'+nx.parcelaTotal;
+      }
+      if(escopo!=='esta') nx.data=x.data;
+      return nx;
+    });
+  }
+  function excluirGrupo(old,escopo){
+    db.lixeira=db.lixeira||[];
+    var removidos=[];
+    db.movs=(db.movs||[]).filter(function(x){
+      var rm=false;
+      if(escopo==='esta') rm=x.id===old.id;
+      else if(mesmoGrupo(x,old)) rm=(escopo==='todas')||(escopo==='pendentes'&&pendente(x));
+      if(rm) removidos.push(Object.assign({},x,{apagadoEm:new Date().toISOString(),apagadoEmBR:new Date().toLocaleString('pt-BR')}));
+      return !rm;
+    });
+    if(removidos.length) db.lixeira.unshift.apply(db.lixeira,removidos);
+  }
+  window.salvarMov=function(tipo){
+    var idAtual=getEditId();
+    var old=idAtual?(db.movs||[]).find(function(x){return x.id==idAtual;}):null;
+    var base=baseMov(tipo,old);
+    if(!base) return;
+    if(!base.valor) return alert('DIGITE UM VALOR');
+    if(old){
+      if(isAtencao(old)){
+        return pedirEscopo('editar',function(escopo){
+          if(!escopo) return;
+          alterarGrupo(base,old,escopo);
+          setEditId(null); closeModal(); save();
+        });
+      }
+      // Lançamento normal: edita o mesmo registro. Não cria nova operação e mantém ignorado se já era ignorado.
+      var substituto=Object.assign({},old,base,{id:old.id,grupo:old.grupo||old.id,origemTipo:'normal',fixa:false,repetir:false,parcelar:false,parcelaAtual:null,parcelaTotal:null,ignorado:base.ignorado});
+      db.movs=(db.movs||[]).map(function(x){return x.id==old.id?substituto:x;});
+      setEditId(null); closeModal(); save(); return;
+    }
+    if(base.parcelar){
+      var grupo=uid(), total=Math.max(2,base.repQtd), valorParcela=base.valor/total;
+      for(var i=1;i<=total;i++){
+        db.movs.push(Object.assign({},base,{id:uid(),grupo:grupo,origemTipo:'parcelada',fixa:false,repetir:false,parcelar:true,valor:valorParcela,data:addMes(base.data,i-1),parcelaAtual:i,parcelaTotal:total,desc:base.descBase+' '+i+'/'+total}));
+      }
+    }else if(base.fixa||base.repetir){
+      var grupo2=uid(), totalRep=Math.max(1,base.repQtd||12);
+      for(var j=1;j<=totalRep;j++){
+        db.movs.push(Object.assign({},base,{id:uid(),grupo:grupo2,origemTipo:base.fixa?'fixa':'repetida',parcelar:false,parcelaAtual:null,parcelaTotal:null,data:addMes(base.data,j-1),desc:base.descBase}));
+      }
+    }else{
+      base.origemTipo='normal'; base.grupo=base.id; db.movs.push(base);
+    }
+    setEditId(null); closeModal(); save();
+  };
+  window.excluir=function(id){
+    var item=(db.movs||[]).find(function(x){return x.id==id;});
+    if(!item) return;
+    if(item.origemTipo==='pagamentoFatura' && typeof desfazerPagamentoFatura==='function'){
+      return confirmar('EXCLUIR FATURA PAGA','DESEJA EXCLUIR ESTE PAGAMENTO DO HISTÓRICO E DESFAZER A BAIXA DA FATURA?',function(){
+        desfazerPagamentoFatura(item);
+        db.lixeira=db.lixeira||[]; db.lixeira.unshift(Object.assign({},item,{apagadoEm:new Date().toISOString(),apagadoEmBR:new Date().toLocaleString('pt-BR')}));
+        db.movs=(db.movs||[]).filter(function(x){return x.id!=id;}); save();
+      });
+    }
+    if(isAtencao(item)) return pedirEscopo('excluir',function(escopo){ if(!escopo) return; excluirGrupo(item,escopo); save(); });
+    // Normal/pendente comum: exclui direto com confirmação simples, sem janela de atenção.
+    confirmar('EXCLUIR LANÇAMENTO','DESEJA EXCLUIR ESTE LANÇAMENTO?',function(){
+      db.lixeira=db.lixeira||[]; db.lixeira.unshift(Object.assign({},item,{apagadoEm:new Date().toISOString(),apagadoEmBR:new Date().toLocaleString('pt-BR')}));
+      db.movs=(db.movs||[]).filter(function(x){return x.id!=id;}); save();
+    });
+  };
+})();
+</script>
+
+
+
+<!-- AJUSTE FINAL: SEM SETAS, ÍCONES NO HISTÓRICO E FILTRO POR CONTA -->
+<style id="ajuste-historico-conta-icones-css">
+  .dragHandleSL{display:none!important;visibility:hidden!important;width:0!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
+  .histContaFilterBox{background:linear-gradient(145deg,#07111d,#0d1724);border:1.5px solid var(--blue);border-radius:16px;padding:10px;margin:0 0 12px;box-shadow:0 0 12px #1f7aff44}
+  .histContaFilterBox label{display:block;color:var(--muted);font-size:10px;margin-bottom:6px;font-weight:900}
+  .histContaFilterBox select{width:100%;padding:12px;border-radius:13px;background:#0a1420;border:1px solid #29435f;color:#fff;font-weight:900}
+  .item .ico.histCatIcon{box-shadow:0 0 12px #1f7aff55!important;border:1px solid #ffffff22!important}
+</style>
+<script id="ajuste-historico-conta-icones-js">
+(function(){
+  'use strict';
+  function by(id){return document.getElementById(id)}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+  function contas(){try{return Array.isArray(db.contas)?db.contas:[]}catch(e){return []}}
+  function iconeAtualMov(m){
+    try{
+      if(!m) return '💰';
+      if(m.tipo==='cartao' || m.origemTipo==='pagamentoFatura') return '💳';
+      if((m.tipo==='receita'||m.tipo==='despesa') && typeof iconeCategoria==='function') return iconeCategoria(m.cat||'Sem categoria',m.tipo);
+      return m.icone || '💰';
+    }catch(e){return (m&&m.icone)||'💰'}
+  }
+
+  // 1) Ícone do histórico acompanha sempre o ícone atual da categoria.
+  var movHTMLBase = window.movHTML;
+  window.movHTML = function(m){
+    var html = (typeof movHTMLBase==='function') ? movHTMLBase(m) : '';
+    var ic = esc(iconeAtualMov(m));
+    if(html){
+      return html.replace(/<div class="ico">[\s\S]*?<\/div>/, '<div class="ico histCatIcon">'+ic+'</div>');
+    }
+    return '<div class="item"><div class="itemLeft"><div class="ico histCatIcon">'+ic+'</div><div><b>'+esc(m&&m.desc||'LANÇAMENTO')+'</b><small>'+esc(m&&m.cat||'')+'</small></div></div></div>';
+  };
+
+  // 2) Filtro por conta no histórico geral.
+  window.__slFiltroContaHistorico = window.__slFiltroContaHistorico || 'todos';
+  window.__slMudarFiltroContaHistorico=function(v){window.__slFiltroContaHistorico=v||'todos'; try{render()}catch(e){}};
+  function filtroContaHTML(){
+    var opts='<option value="todos">TODAS AS CONTAS</option>'+contas().map(function(c){
+      return '<option value="'+esc(c.id)+'" '+(window.__slFiltroContaHistorico==c.id?'selected':'')+'>'+esc((c.icone||'🏦')+' '+(c.nome||'CONTA'))+'</option>';
+    }).join('');
+    return '<div id="histContaFilterBox" class="histContaFilterBox"><label>FILTRAR HISTÓRICO POR CONTA</label><select onchange="__slMudarFiltroContaHistorico(this.value)">'+opts+'</select></div>';
+  }
+
+  var movsFiltradosBase = window.movsFiltradosAtuais;
+  window.movsFiltradosAtuais=function(){
+    var arr = (typeof movsFiltradosBase==='function') ? movsFiltradosBase() : [];
+    var conta = window.__slFiltroContaHistorico || 'todos';
+    if(conta && conta!=='todos' && !window.filtroPendencia && window.filtro!=='ignorados'){
+      arr = (arr||[]).filter(function(m){return m && String(m.conta||'')===String(conta)});
+    }
+    return arr;
+  };
+
+  var renderMovsBase = window.renderMovs;
+  window.renderMovs=function(){
+    if(typeof renderMovsBase==='function') renderMovsBase();
+    var lista=by('listaHistorico');
+    if(!lista) return;
+    var deveMostrar = !window.filtroPendencia && window.filtro!=='ignorados';
+    var box=by('histContaFilterBox');
+    if(deveMostrar){
+      if(box) box.remove();
+      lista.insertAdjacentHTML('beforebegin',filtroContaHTML());
+    }else if(box){box.remove();}
+  };
+})();
+</script>
+
+
+
+<!-- AJUSTE FINAL: PERSONALIZAR CONTAS COM COR/GRADIENTE IGUAL CARTÕES -->
+<style id="contas-gradiente-final-css">
+  .contaColorGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+  .contaColorGrid input[type="color"]{width:100%;height:48px;padding:4px;border-radius:14px;background:#0a1420;border:1.5px solid #29435f}
+  .contaGradientToggle{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#0b1522;border:1.5px solid #29435f;border-radius:16px;padding:12px;margin-top:10px}
+  .contaGradientToggle b{font-size:12px;color:#fff}.contaGradientToggle small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+  .contaPreviewGradient{height:74px;border-radius:20px;border:1.5px solid rgba(255,255,255,.18);margin:12px 0 2px;display:grid;place-items:center;color:#fff;font-weight:950;box-shadow:0 0 16px rgba(0,0,0,.45);overflow:hidden}
+  #contasInicio .contaNeoCard.contaGradientCard,
+  #listaContas .contaListaGradientCard{
+    border-color:var(--contaCor1,#00e5ff)!important;
+    background:var(--contaBg)!important;
+    box-shadow:0 0 18px color-mix(in srgb, var(--contaCor1,#00e5ff) 45%, transparent), inset 0 0 16px rgba(255,255,255,.07)!important;
+  }
+  #contasInicio .contaNeoCard.contaGradientCard:before{background:linear-gradient(180deg,var(--contaCor1,#00e5ff),var(--contaCor2,#31d158))!important;box-shadow:0 0 14px var(--contaCor1,#00e5ff)!important}
+  #contasInicio .contaNeoCard.contaGradientCard .contaNeoIcon{box-shadow:0 0 13px color-mix(in srgb, var(--contaCor1,#00e5ff) 50%, transparent)!important}
+  #listaContas .contaListaGradientCard{border-radius:18px!important;overflow:hidden!important}
+</style>
+<script id="contas-gradiente-final-js">
+(function(){
+  'use strict';
+  const TIPOS_FIXOS=['Dinheiro','Máquina de Cartão','Corrente','Poupança','Emergência','Receber Pix'];
+  const DOCS_FIXOS=['-','CPF','CNPJ'];
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
+  function by(id){return document.getElementById(id)}
+  function getEditId(){try{return (typeof editId!=='undefined')?editId:window.editId}catch(e){return window.editId||null}}
+  function setEditId(v){try{if(typeof editId!=='undefined') editId=v}catch(e){} window.editId=v}
+  function opts(lista,sel){sel=String(sel||'');return lista.map(x=>'<option value="'+esc(x)+'" '+(String(x)===sel?'selected':'')+'>'+esc(x)+'</option>').join('')}
+  function contaAtual(){let id=getEditId();return (db.contas||[]).find(c=>String(c.id)===String(id))||{}}
+  function normCor(v,p){v=String(v||'').trim();return /^#[0-9a-fA-F]{6}$/.test(v)?v:p}
+  function contaBg(c){let c1=normCor(c&&c.cor1,'#0d1724'), c2=normCor(c&&c.cor2,'#111827');return (c&&c.gradienteAtivo!==false)?`linear-gradient(145deg,${c1},${c2})`:c1}
+  function docConta(c){let d=(c&&(c.docTipo||c.documento||c.doc))||'-';d=String(d).toUpperCase();return (d==='CPF'||d==='CNPJ')?d:'-'}
+  function tipoConta(c){return (c&&c.tipo)?String(c.tipo).toUpperCase():'DINHEIRO'}
+  function safeFmt(v){try{return fmt(v)}catch(e){return 'R$ '+(Number(v)||0).toFixed(2).replace('.',',')}}
+  function saveLocal(){try{localStorage.setItem('financeiroPremium',JSON.stringify(db))}catch(e){} try{render()}catch(e){}}
+
+  window.atualizarPreviewContaGradient=function(){
+    let p=by('contaPreviewGradient'); if(!p)return;
+    let c1=normCor(by('cor1Conta')?.value,'#0d1724'), c2=normCor(by('cor2Conta')?.value,'#111827');
+    let grad=!!by('gradienteConta')?.checked;
+    p.style.background=grad?`linear-gradient(145deg,${c1},${c2})`:c1;
+  };
+
+  window.formsContaFixa=function(){
+    let e=contaAtual(), ic=e.icone||'🏦', doc=e.docTipo||e.documento||e.doc||'-';
+    let tipo=TIPOS_FIXOS.includes(e.tipo)?e.tipo:'Dinheiro';
+    let c1=normCor(e.cor1||e.cor,'#0d1724'), c2=normCor(e.cor2,'#111827');
+    let grad=e.gradienteAtivo!==false;
+    return '<h2>'+(getEditId()?'EDITAR':'NOVA')+' CONTA</h2><div class="form">'+
+      '<label>ÍCONE</label><button id="iconeContaBtn" type="button" class="catIconBtn" onclick="abrirIcones(\'contaForm\')">'+esc(ic)+'</button><input id="iconeConta" type="hidden" value="'+esc(ic)+'">'+
+      '<label>NOME</label><input id="nome" value="'+esc(e.nome||'')+'" placeholder="EX: CARTEIRA">'+
+      '<div class="row"><div><label>TIPO</label><select id="tipoContaSelect">'+opts(TIPOS_FIXOS,tipo)+'</select></div><div><label>DOCUMENTO</label><select id="docContaSelect">'+opts(DOCS_FIXOS,doc)+'</select></div></div>'+
+      '<label>SALDO INICIAL</label><input id="saldo" type="number" step="0.01" value="'+esc(e.saldo||0)+'">'+
+      '<label>PERSONALIZAR CONTA</label><div class="contaColorGrid"><div><label>COR 1</label><input id="cor1Conta" type="color" value="'+esc(c1)+'" oninput="atualizarPreviewContaGradient()"></div><div><label>COR 2</label><input id="cor2Conta" type="color" value="'+esc(c2)+'" oninput="atualizarPreviewContaGradient()"></div></div>'+
+      '<div class="contaGradientToggle"><div><b>🌈 GRADIENTE</b><small>APLICAR VISUAL IGUAL AOS CARTÕES</small></div><label class="switch"><input id="gradienteConta" type="checkbox" '+(grad?'checked':'')+' onchange="atualizarPreviewContaGradient()"><span class="slider"></span></label></div>'+
+      '<div id="contaPreviewGradient" class="contaPreviewGradient" style="background:'+(grad?`linear-gradient(145deg,${c1},${c2})`:c1)+'">PRÉVIA DA CONTA</div>'+
+      '<button class="btn" onclick="salvarConta()">SALVAR</button></div>';
+  };
+
+  window.salvarConta=function(){
+    if(!db.contas) db.contas=[];
+    let id=getEditId()||uid();
+    let antiga=(db.contas||[]).find(c=>String(c.id)===String(id))||{};
+    let nome=((by('nome')||{}).value||'').trim()||'Conta';
+    let tipo=(by('tipoContaSelect')||{}).value||'Dinheiro'; if(!TIPOS_FIXOS.includes(tipo)) tipo='Dinheiro';
+    let doc=(by('docContaSelect')||{}).value||'-'; if(!DOCS_FIXOS.includes(doc)) doc='-';
+    let saldo=Number((by('saldo')||{}).value||0);
+    let icone=((by('iconeConta')||{}).value)||antiga.icone||'🏦';
+    let cor1=normCor(by('cor1Conta')?.value||antiga.cor1||antiga.cor,'#0d1724');
+    let cor2=normCor(by('cor2Conta')?.value||antiga.cor2,'#111827');
+    let gradienteAtivo=by('gradienteConta')?!!by('gradienteConta').checked:(antiga.gradienteAtivo!==false);
+    let obj=Object.assign({},antiga,{id,nome,tipo,docTipo:doc,documento:doc,saldo,icone,cor1,cor2,gradienteAtivo});
+    let achou=false; db.contas=db.contas.map(c=>{if(String(c.id)===String(id)){achou=true;return obj}return c});
+    if(!achou) db.contas.push(obj);
+    setEditId(null); if(typeof closeModal==='function') closeModal(); saveLocal();
+  };
+
+  window.contaResumoHTML=function(c){
+    let saldo=(typeof saldoConta==='function')?saldoConta(c):(+c.saldo||0);
+    let id=esc(c.id), nome=esc(c.nome||'CONTA'), icon=esc(c.icone||'🏦'), meta=esc(tipoConta(c)+' • '+docConta(c));
+    let c1=normCor(c.cor1||c.cor,'#00e5ff'), c2=normCor(c.cor2,'#31d158');
+    let bg=contaBg(c);
+    return '<div class="contaNeoCard contaGradientCard" style="--contaCor1:'+esc(c1)+';--contaCor2:'+esc(c2)+';--contaBg:'+esc(bg)+'">'+
+      '<div class="contaNeoIcon clickIcon" onclick="abrirIconeConta(\''+id+'\',event)">'+icon+'</div>'+
+      '<div class="contaNeoInfo"><div class="contaNeoName">'+nome+'</div><div class="contaNeoMeta">'+meta+'</div></div>'+
+      '<div class="contaNeoRight"><div class="contaNeoSaldo '+(saldo>=0?'blue':'red')+'">'+safeFmt(saldo)+'</div>'+
+      '<div class="contaNeoBtns"><button class="plus" onclick="openModal(\'entradaConta\',\''+id+'\')">+</button><button class="minus" onclick="openModal(\'saidaConta\',\''+id+'\')">-</button></div></div></div>';
+  };
+
+  window.contaHTML=function(c){
+    let saldo=(typeof saldoConta==='function')?saldoConta(c):(+c.saldo||0);
+    let info=tipoConta(c)+' • '+docConta(c), c1=normCor(c.cor1||c.cor,'#00e5ff'), c2=normCor(c.cor2,'#31d158'), bg=contaBg(c);
+    return `<div class="item contaListaGradientCard" style="--contaCor1:${esc(c1)};--contaCor2:${esc(c2)};--contaBg:${esc(bg)}"><div class="itemLeft"><div class="ico clickIcon" onclick="abrirIconeConta('${esc(c.id)}',event)">${esc(c.icone||'🏦')}</div><div><b>${esc(c.nome||'CONTA')}</b><small>${esc(info)} • INICIAL ${safeFmt(c.saldo||0)}</small></div></div><div style="text-align:right"><b class="${saldo>=0?'blue':'red'}">${safeFmt(saldo)}</b><div class="actions"><button onclick="openModal('conta','${esc(c.id)}')">✏️ EDITAR</button><button onclick="excluirConta('${esc(c.id)}')">🗑️</button></div></div></div>`;
+  };
+
+  window.formsEditorContasFixo=function(){
+    let lista=(db.contas||[]).map(window.contaHTML).join('');
+    return '<h2>🏦 CONTAS</h2><p class="muted">EDITE NOME, TIPO, DOCUMENTO, COR E GRADIENTE DAS CONTAS.</p><button class="btn greenBg" onclick="openModal(\'conta\')">+ NOVA CONTA</button><div class="editList" style="margin-top:12px">'+(lista||'<div class="empty">NENHUMA CONTA.</div>')+'</div>';
+  };
+
+  if(typeof forms!=='undefined'){
+    forms.conta=window.formsContaFixa;
+    forms.editorContas=window.formsEditorContasFixo;
+  }
+  if(typeof renderContas==='function') renderContas();
+})();
+</script>
+
+
+
+<!-- AJUSTE FINAL: REMOVER LIXEIRA / EXCLUSÃO PERMANENTE E USAR EXCLUSÃO DIRETA -->
+<style id="sem-lixeira-css">
+  button[onclick*="abrirLixeira"],
+  .trashRestoreBtn,
+  .trashDeleteBtn{display:none!important;visibility:hidden!important;pointer-events:none!important}
+</style>
+<script id="sem-lixeira-exclusao-direta-js">
+(function(){
+  'use strict';
+  function agoraISO(){return new Date().toISOString()}
+  function removerMovimentos(listaIds){
+    var ids=(listaIds||[]).map(String);
+    db.movs=(db.movs||[]).filter(function(x){return ids.indexOf(String(x.id))<0});
+  }
+  function mesmoGrupoDireto(x, old){
+    if(!x||!old) return false;
+    if(old.grupo) return x.grupo===old.grupo;
+    return x.id===old.id;
+  }
+  function pendenteDireto(m){return m && (m.pago===false || m.pago===0 || m.pendente===true)}
+
+  // Lixeira desativada: não abre mais lista, não restaura, não apaga permanente.
+  window.abrirLixeira=function(){
+    alert('LIXEIRA REMOVIDA. AGORA A EXCLUSÃO É DIRETA.');
+  };
+  window.restaurarDaLixeira=function(){};
+  window.excluirDefinitivoLixeira=function(){};
+
+  // Exclusão de grupos agora remove direto, sem enviar para lixeira.
+  window.aplicarExclusaoGrupo=function(old, escopo){
+    if(!old || !escopo) return;
+    db.movs=(db.movs||[]).filter(function(x){
+      if(escopo==='esta') return x.id!==old.id;
+      if(!mesmoGrupoDireto(x,old)) return true;
+      if(escopo==='pendentes') return !pendenteDireto(x);
+      if(escopo==='todas') return false;
+      return true;
+    });
+  };
+
+  // Excluir lançamento: mantém atenção para fixa/repetida/parcelada, mas apaga direto.
+  window.excluir=function(id){
+    var item=(db.movs||[]).find(function(x){return String(x.id)===String(id)});
+    if(!item) return;
+
+    if(item.origemTipo==='pagamentoFatura' && typeof desfazerPagamentoFatura==='function'){
+      return pedirConfirmacao('EXCLUIR FATURA PAGA','DESEJA EXCLUIR ESTE PAGAMENTO E DESFAZER A BAIXA DA FATURA?',function(){
+        desfazerPagamentoFatura(item);
+        removerMovimentos([id]);
+        save();
+      });
+    }
+
+    if(typeof ehEspecial==='function' && ehEspecial(item)){
+      return pedirEscopoExclusao(function(escopo){
+        if(!escopo) return;
+        window.aplicarExclusaoGrupo(item,escopo);
+        save();
+      });
+    }
+
+    pedirConfirmacao('EXCLUIR LANÇAMENTO','DESEJA EXCLUIR ESTE LANÇAMENTO?',function(){
+      removerMovimentos([id]);
+      save();
+    });
+  };
+
+  // Excluir compra da fatura: remove direto e recalcula a fatura.
+  window.apagarCompraDaFatura=function(id,cartaoId){
+    var item=(db.movs||[]).find(function(x){return String(x.id)===String(id)});
+    var key='';
+    try{ key=(typeof movKey==='function')?movKey(item||{}):(item&&item.faturaKey)||''; }catch(e){ key=(item&&item.faturaKey)||''; }
+    pedirConfirmacao('EXCLUIR COMPRA','DESEJA EXCLUIR ESTA COMPRA DA FATURA?',function(){
+      removerMovimentos([id]);
+      save();
+      try{
+        if(typeof abrirDetalheFaturaCartao==='function') abrirDetalheFaturaCartao(cartaoId,key);
+      }catch(e){}
+    });
+  };
+
+  // Remove menções visuais antigas de lixeira/permanente se alguma tela for renderizada por código antigo.
+  function limparTextosLixeira(){
+    try{
+      document.querySelectorAll('button').forEach(function(b){
+        var t=(b.textContent||'').toUpperCase();
+        if(t.includes('LIXEIRA') || t.includes('APAGAR DEFINITIVO') || t.includes('PERMANENTE')) b.remove();
+      });
+    }catch(e){}
+  }
+  var renderBase=window.render;
+  window.render=function(){
+    if(typeof renderBase==='function') renderBase.apply(this,arguments);
+    limparTextosLixeira();
+  };
+  document.addEventListener('DOMContentLoaded',limparTextosLixeira);
+})();
+</script>
 
 </body>
 </html>
