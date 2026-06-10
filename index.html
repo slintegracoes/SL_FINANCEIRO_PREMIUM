@@ -668,6 +668,97 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
 <style>
 .faturaDestinoSelect,#faturaDestino{border:2px solid #f2b632!important;box-shadow:0 0 14px #f2b63266!important;background:#07111d!important;color:#fff!important;font-weight:900!important;}
 </style>
+
+
+<style id="ajuste-info-contas-cartoes-maior-final">
+/* AJUSTE FINAL: informações abaixo do nome das contas maiores e cartões mais legíveis */
+#contasInicio .contaUltraTipo,
+#contasInicio .accountCardType,
+#contasInicio .accountCard .accountCardType,
+#contasInicio .accountTextLine .accountCardType,
+#contasInicio small.accountCardType,
+#contasInicio .item small{
+  font-size:13.5px!important;
+  line-height:1.18!important;
+  font-weight:950!important;
+  letter-spacing:.45px!important;
+  color:#eaf3ff!important;
+  opacity:1!important;
+  text-shadow:0 0 8px rgba(255,255,255,.18)!important;
+  margin-top:5px!important;
+}
+#contasInicio .contaUltraNome,
+#contasInicio .accountCardName,
+#contasInicio .accountTextLine .accountCardName{
+  font-size:16.5px!important;
+  line-height:1.1!important;
+  font-weight:950!important;
+  margin-bottom:2px!important;
+}
+#contasInicio .contaUltraValor,
+#contasInicio .accountValueSide,
+#contasInicio .accountCardValue{
+  color:#ffffff!important;
+  font-size:24px!important;
+  font-weight:950!important;
+  text-shadow:0 0 11px rgba(255,255,255,.38)!important;
+}
+
+/* Cartões: títulos e números maiores */
+#listaCartoes .cardCompactValues small,
+#listaCartoes .cardCredit .cardCompactValues small,
+.cardCredit.cardCompact .cardCompactValues small{
+  font-size:11px!important;
+  line-height:1.15!important;
+  font-weight:950!important;
+  color:#eef6ff!important;
+  opacity:1!important;
+  letter-spacing:.25px!important;
+}
+#listaCartoes .cardCompactValues b,
+#listaCartoes .cardCredit .cardCompactValues b,
+.cardCredit.cardCompact .cardCompactValues b{
+  font-size:17px!important;
+  line-height:1.16!important;
+  font-weight:950!important;
+  color:#ffffff!important;
+  text-shadow:0 0 9px rgba(255,255,255,.28)!important;
+  margin-top:3px!important;
+}
+#listaCartoes .cardCompactName,
+.cardCredit.cardCompact .cardCompactName{
+  font-size:17px!important;
+  line-height:1.1!important;
+  font-weight:950!important;
+}
+#listaCartoes .cardCompactValues,
+.cardCredit.cardCompact .cardCompactValues{
+  gap:9px!important;
+  margin-top:11px!important;
+}
+#listaCartoes .cardCompactFoot,
+.cardCredit.cardCompact .cardCompactFoot{
+  font-size:11px!important;
+  line-height:1.2!important;
+  color:#f8fbff!important;
+  opacity:.95!important;
+}
+
+/* Resumos de cartões no topo */
+#limiteTotalCartoes,
+#usadoTotalCartoes,
+#creditoTotalCartoes,
+.destaqueCartao span{
+  font-size:27px!important;
+  font-weight:950!important;
+  text-shadow:0 0 10px currentColor!important;
+}
+.destaqueCartao b{
+  font-size:13.5px!important;
+  color:#f8fbff!important;
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -701,7 +792,7 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
   <span id="today" style="display:none"></span>
 
   <section id="inicio" class="screen active">
-    <div class="card balance"><div class="balanceTop"><div class="label">SALDO GERAL</div><div class="balanceControls"><button id="eyeBtn" class="eyeInside" onclick="toggleValores()">👁️</button><button class="gearInside" onclick="openModal('config')">⚙️</button></div></div><div id="saldoGeral" class="value">R$ 0,00</div><div id="saldoStatus" class="green">↗ Positivo</div><div class="histAlertRow"><button class="btn" onclick="abrirHistoricoTodos()">📜 HISTÓRICO</button><button class="btn alertBtn" onclick="abrirAlertas()">⚠️ ALERTAS</button><button id="btnFaturasFechadas" class="btn invoiceBtn" onclick="abrirFaturas()">💳 FATURAS</button></div></div>
+    <div class="card balance"><div class="balanceTop"><div class="label">SALDO GERAL</div><div class="balanceControls"><button id="eyeBtn" class="eyeInside" onclick="toggleValores()">👁️</button><button class="gearInside" onclick="openModal('config')">⚙️</button></div></div><div id="saldoGeral" class="value">R$ 0,00</div><div id="saldoStatus" class="green">↗ Positivo</div><div class="histAlertRow"><button id="btnHistorico" class="btn histBtn" onclick="abrirHistoricoTodos()">📜 HISTÓRICO</button><button class="btn alertBtn" onclick="abrirAlertas()">⚠️ ALERTAS</button><button id="btnFaturasFechadas" class="btn invoiceBtn" onclick="abrirFaturas()">💳 FATURAS</button></div></div>
     <div class="grid">
       <div class="mini click" onclick="abrirCategoria('receita',true)"><b>⏳ Receitas Pendentes</b><span id="receitasPendentes" class="gold">R$ 0,00</span></div>
       <div class="mini click" onclick="abrirCategoria('despesa',true)"><b>⚠️ Despesas Pendentes</b><span id="despesasPendentes" class="red">R$ 0,00</span></div>
@@ -8350,6 +8441,25 @@ window.addEventListener('pagehide',function(){
 }
 </style>
 
+
+<style id="botao-historico-azul-final">
+/* BOTÃO HISTÓRICO AZUL DEFINITIVO */
+#inicio .histAlertRow #btnHistorico,
+#inicio .histAlertRow .histBtn,
+#inicio .histAlertRow button:first-child{
+  background:linear-gradient(to top,#003b9e 0%,#1f7aff 58%,#4da3ff 100%)!important;
+  color:#ffffff!important;
+  border:2px solid #4da3ff!important;
+  box-shadow:0 0 16px #1f7affaa, inset 0 0 8px #ffffff22!important;
+}
+#inicio .histAlertRow #btnHistorico:active,
+#inicio .histAlertRow .histBtn:active,
+#inicio .histAlertRow button:first-child:active{
+  filter:brightness(1.15)!important;
+  transform:scale(.98)!important;
+}
+</style>
+
 </body>
 </html>
 
@@ -8884,5 +8994,98 @@ window.addEventListener('pagehide',function(){
   };
   document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){try{window.renderContas()}catch(e){}},50)});
   setTimeout(function(){try{window.renderContas()}catch(e){}},100);
+})();
+</script>
+
+
+<style id="PATCH_VISUAL_RETO_FINAL_SEGURO">
+/* PATCH SEGURO: cantos retos, contas/cartões retos, valor das contas branco, alerta amarelo */
+:root{--radiusReto:4px!important;}
+*{border-radius:var(--radiusReto)!important;}
+body,.app{border-radius:0!important;}
+.card,.mini,.item,.btn,.smallBtn,.iconBtn,.gearInside,.eyeInside,.box,.modal,.form input,.form select,.form textarea,
+.editorGroup,.dateFilterBox,.mesAnoControl,.tab,.fab,.chip,.selectPill,.selectBox,.iconBox,.confirmBox,
+.cardCredit,.cardCredit.cardCompact,.accountCard,.accountCardCompact,.slContaOficial,.contaUltraCard,
+.invoiceBox,.invoiceMiniCard,.invoiceCardGroup,.invoiceSubBox,.invoicePurchase,.pendingItem,.pendingTools,.alertTools{
+  border-radius:4px!important;
+}
+/* Gradientes de baixo para cima */
+.card,.mini,.balance,.btn,.smallBtn,.cardCredit,.cardCredit.cardCompact,.accountCard,.accountCardCompact,.slContaOficial,
+#contasInicio .slContaOficial,#contasInicio .contaUltraCard,.invoiceBtn,.alertBtn,.greenBg,.redBg,.goldBg{
+  background-image:linear-gradient(to top,rgba(5,11,18,.98),rgba(13,32,56,.98))!important;
+}
+/* CONTAS: card reto e valor branco */
+#contasInicio .slContaOficial,
+#contasInicio .contaUltraCard,
+#contasInicio .accountCard,
+#contasInicio .accountCardCompact{
+  border-radius:4px!important;
+  border:1.5px solid rgba(31,122,255,.85)!important;
+  box-shadow:0 0 10px rgba(31,122,255,.28)!important;
+  background:linear-gradient(to top,rgba(5,11,18,.98),rgba(9,28,49,.98))!important;
+}
+#contasInicio .slContaOficialValor,
+#contasInicio .contaUltraValor,
+#contasInicio .accountCardValue,
+#contasInicio .accountValueSide{
+  color:#ffffff!important;
+  text-shadow:0 0 12px rgba(255,255,255,.35)!important;
+  font-weight:950!important;
+}
+#contasInicio .slContaOficialValor.neg,
+#contasInicio .contaUltraValor.negativo{color:#ffffff!important;}
+#contasInicio .slContaOficialBtn,
+#contasInicio .contaUltraBtn,
+#contasInicio .accountMiniBtns button,
+#contasInicio .accountBtns button{
+  border-radius:4px!important;
+}
+/* CARTÕES: card e botões retos */
+.cardCredit,.cardCredit.cardCompact,#listaCartoes .cardCredit{
+  border-radius:4px!important;
+  background:linear-gradient(to top,var(--cartaoCor,#07111d),#0b2342)!important;
+}
+.cardCredit *,.cardCompactTop .cardIconBig,.cardColorTiny{border-radius:4px!important;}
+/* ALERTAS amarelo com degradê de baixo para cima */
+.alertBtn{
+  background:linear-gradient(to top,#a96500 0%,#f2b632 55%,#ffd86b 100%)!important;
+  border:1px solid #f2b632!important;
+  color:#ffffff!important;
+  box-shadow:0 0 14px rgba(242,182,50,.75), inset 0 0 8px rgba(255,255,255,.18)!important;
+}
+/* Forçar cantos retos nos componentes mais teimosos */
+[style*="border-radius"]{border-radius:4px!important;}
+</style>
+
+<script id="PATCH_VOLTA_CONFIG_SEGURO">
+(function(){
+  if(window.__patchVoltarConfigSeguro) return; window.__patchVoltarConfigSeguro=true;
+  window.__ultimaTelaApp='inicio';
+  var oldShow=window.showScreen;
+  window.showScreen=function(id){
+    if(typeof oldShow==='function') oldShow(id);
+    window.__ultimaTelaApp=id||'inicio';
+    try{history.replaceState({screen:window.__ultimaTelaApp},'',location.href);}catch(e){}
+  };
+  function fecharAberto(){
+    var modal=document.getElementById('modal');
+    if(modal&&modal.classList.contains('show')){try{closeModal()}catch(e){modal.classList.remove('show')} return true;}
+    var overlays=document.querySelectorAll('.selectSheet.show,.iconSheet.show,.scopeOverlay.show,.confirmOverlay.show,.iconKeyboardOverlay.show');
+    if(overlays.length){overlays.forEach(function(o){o.classList.remove('show')});return true;}
+    var ativa=document.querySelector('.screen.active');
+    if(ativa&&ativa.id&&ativa.id!=='inicio'){try{showScreen('inicio')}catch(e){} return true;}
+    return false;
+  }
+  try{history.replaceState({screen:'inicio'},'',location.href);}catch(e){}
+  window.addEventListener('popstate',function(ev){ if(fecharAberto()){try{history.pushState({screen:window.__ultimaTelaApp||'inicio'},'',location.href)}catch(e){}} });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') fecharAberto(); });
+  /* Evita que salvamentos em configurações derrubem para a tela inicial quando já estiver em config */
+  var oldRender=window.render;
+  window.render=function(){
+    var screenBefore=document.querySelector('.screen.active');
+    var idBefore=screenBefore&&screenBefore.id;
+    if(typeof oldRender==='function') oldRender.apply(this,arguments);
+    if(idBefore==='config'){var cfg=document.getElementById('config'); if(cfg){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')}); cfg.classList.add('active');}}
+  };
 })();
 </script>
