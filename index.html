@@ -9762,179 +9762,236 @@ body{font-size:calc(15px * var(--fontScale,1))!important}
 </script>
 
 
-<!-- CORREÇÃO FINAL: RECEITAS/DESPESAS FIXAS MENSAIS ATÉ DESATIVAR -->
-<script id="fixas-mensais-continuas-final-js">
+
+
+
+<!-- REGRA FINAL ÚNICA: FIXAS EM 12 VEZES + DESLIGAR PAGO/RECEBIDO AO TROCAR DATA -->
+<script id="sl-regra-final-fixas-12-data-status">
 (function(){
-  'use strict';
-  if(window.__slFixasContinuasAtivo) return;
-  window.__slFixasContinuasAtivo=true;
+'use strict';
+if(window.__SL_REGRA_FIXAS_12__)return;
+window.__SL_REGRA_FIXAS_12__=true;
 
-  function arr(v){return Array.isArray(v)?v:[]}
-  function editAtual(){try{return (typeof editId!=='undefined'&&editId)?editId:(window.editId||null)}catch(e){return window.editId||null}}
-  function hojeISO(){try{return typeof hoje==='function'?hoje():new Date().toISOString().slice(0,10)}catch(e){return new Date().toISOString().slice(0,10)}}
-  function moedaNum(v){
-    if(typeof parseMoney==='function') return parseMoney(v);
-    var s=String(v==null?'':v).trim();
-    if(s.indexOf(',')>=0) s=s.replace(/\./g,'').replace(',','.');
-    return Number(s)||0;
+function campo(id){return document.getElementById(id)}
+function hojeISO(){return new Date().toISOString().slice(0,10)}
+function novoId(){return typeof uid==='function'?uid():('ID_'+Date.now()+'_'+Math.random().toString(36).slice(2))}
+function addMes(data,n){
+  var d=new Date((data||hojeISO())+'T12:00:00'), dia=d.getDate();
+  d.setDate(1); d.setMonth(d.getMonth()+n);
+  d.setDate(Math.min(dia,new Date(d.getFullYear(),d.getMonth()+1,0).getDate()));
+  return d.toISOString().slice(0,10);
+}
+function valorNumero(v){
+  var s=String(v==null?'':v).trim();
+  if(s.indexOf(',')>=0)s=s.replace(/\./g,'').replace(',','.');
+  return Number(s)||0;
+}
+function desligarStatusAoTrocarData(){
+  var chk=campo('pagoCheck');
+  if(!chk)return;
+  chk.checked=false;
+  var tipo=campo('tipoForm')?.value||'despesa';
+  var txt=campo('statusText');
+  if(txt)txt.innerText=tipo==='receita'?'Não foi recebido':'Não foi pago';
+}
+window.desligarStatusAoTrocarData=desligarStatusAoTrocarData;
+
+/* O input de data usa esta função no onchange. */
+var dataManualBase=window.dataManualSelecionada;
+window.dataManualSelecionada=function(){
+  try{if(typeof dataManualBase==='function')dataManualBase.apply(this,arguments)}catch(e){}
+  desligarStatusAoTrocarData();
+};
+try{dataManualSelecionada=window.dataManualSelecionada}catch(e){}
+
+/* Os botões Hoje/Ontem também alteram a data. */
+var quickDateBase=window.quickDate;
+window.quickDate=function(opt){
+  var antes=campo('data')?.value||'';
+  var r=typeof quickDateBase==='function'?quickDateBase.apply(this,arguments):undefined;
+  var depois=campo('data')?.value||'';
+  if(opt!=='outros' && depois!==antes)desligarStatusAoTrocarData();
+  return r;
+};
+try{quickDate=window.quickDate}catch(e){}
+
+/* Segurança adicional para qualquer alteração direta no campo de data. */
+document.addEventListener('change',function(ev){
+  if(ev.target && ev.target.id==='data' && campo('tipoForm'))desligarStatusAoTrocarData();
+},true);
+
+/* Remove/desativa regras automáticas antigas para não recriar novos meses. */
+try{
+  if(typeof db!=='undefined' && db){
+    if(Array.isArray(db.regrasFixas))db.regrasFixas.forEach(function(r){if(r)r.ativa=false});
   }
-  function addMes(data,n){
-    if(typeof addMonthsISO==='function') return addMonthsISO(data,n);
-    if(typeof isoAddMonths==='function') return isoAddMonths(data,n);
-    var d=new Date((data||hojeISO())+'T12:00:00');
-    var dia=d.getDate(); d.setDate(1); d.setMonth(d.getMonth()+Number(n||0));
-    var ult=new Date(d.getFullYear(),d.getMonth()+1,0).getDate(); d.setDate(Math.min(dia,ult));
-    return d.toISOString().slice(0,10);
-  }
-  function chaveMes(data){return String(data||'').slice(0,7)}
-  function compararMes(a,b){return chaveMes(a).localeCompare(chaveMes(b))}
-  function alvoAtual(){
-    var fim=document.getElementById('dataFim')?.value;
-    if(fim) return fim;
-    try{
-      if(typeof histAno!=='undefined'&&typeof histMes!=='undefined'){
-        var m=String(Number(histMes)+1).padStart(2,'0');
-        var ult=new Date(Number(histAno),Number(histMes)+1,0).getDate();
-        return String(histAno)+'-'+m+'-'+String(ult).padStart(2,'0');
-      }
-    }catch(e){}
-    return hojeISO();
-  }
-  function templateDeMov(m){
-    return {
-      tipo:m.tipo, descBase:m.descBase||m.desc||'Sem descrição', valor:Number(m.valor)||0,
-      cat:m.cat||'', conta:m.conta||'', obs:m.obs||'', pago:m.pago!==false,
-      venc:m.venc||'', ignorado:!!m.ignorado, icone:m.icone||(m.tipo==='receita'?'💰':'🛒')
-    };
-  }
-  function garantirEstrutura(){
-    if(!window.db) return;
-    db.recorrenciasFixas=arr(db.recorrenciasFixas);
-    db.movs=arr(db.movs);
-  }
-  function migrarFixasAntigas(){
-    garantirEstrutura();
-    var grupos={};
-    db.movs.forEach(function(m){
-      if(!m || !(m.tipo==='receita'||m.tipo==='despesa')) return;
-      if(!(m.fixa===true || m.origemTipo==='fixa')) return;
-      var g=String(m.grupo||m.id);
-      (grupos[g]||(grupos[g]=[])).push(m);
-    });
-    Object.keys(grupos).forEach(function(g){
-      if(db.recorrenciasFixas.some(function(r){return String(r.grupo)===g})) return;
-      var lista=grupos[g].slice().sort(function(a,b){return String(a.data||'').localeCompare(String(b.data||''))});
-      var primeiro=lista[0]; if(!primeiro) return;
-      db.recorrenciasFixas.push({
-        id:'RF_'+g, grupo:g, ativo:true, inicio:primeiro.data||hojeISO(),
-        criadoEm:new Date().toISOString(), template:templateDeMov(primeiro)
-      });
-    });
-  }
-  function sincronizarAtivas(){
-    migrarFixasAntigas();
-    db.recorrenciasFixas.forEach(function(r){
-      var itens=db.movs.filter(function(m){return String(m.grupo||'')===String(r.grupo)});
-      if(!itens.length){ r.ativo=false; return; }
-      var fixos=itens.filter(function(m){return m.fixa===true || m.origemTipo==='fixa'});
-      if(!fixos.length){ r.ativo=false; return; }
-      // Mantém a série ativa e usa o primeiro lançamento como modelo da série.
-      r.ativo=true;
-      var modelo=fixos.slice().sort(function(a,b){return String(a.data||'').localeCompare(String(b.data||''))})[0];
-      if(modelo) r.template=Object.assign({},r.template||{},templateDeMov(modelo));
-      if(!r.inicio && modelo) r.inicio=modelo.data;
-    });
-  }
-  function existeMes(grupo,data){
-    var k=chaveMes(data);
-    return db.movs.some(function(m){return String(m.grupo||'')===String(grupo) && (m.fixa===true||m.origemTipo==='fixa') && chaveMes(m.data)===k});
-  }
-  function gerarAte(limite){
-    sincronizarAtivas();
-    var mudou=false;
-    db.recorrenciasFixas.forEach(function(r){
-      if(!r || r.ativo===false || !r.inicio || !r.template) return;
-      var cursor=r.inicio, seguranca=0;
-      while(compararMes(cursor,limite)<=0 && seguranca<1200){
-        if(!existeMes(r.grupo,cursor)){
-          var t=r.template;
-          db.movs.push({
-            id:uid(), grupo:r.grupo, origemTipo:'fixa', tipo:t.tipo,
-            desc:t.descBase||'Sem descrição', descBase:t.descBase||'Sem descrição',
-            valor:Number(t.valor)||0, cat:t.cat||'', data:cursor, conta:t.conta||'', obs:t.obs||'',
-            pago:t.pago!==false, venc:t.venc||'', fixa:true, repetir:false, repetirAtivo:true,
-            parcelar:false, parcelarAtivo:false, parcelada:false, repQtd:1, repPeriodo:'Mensal',
-            ignorado:!!t.ignorado, icone:t.icone||(t.tipo==='receita'?'💰':'🛒'),
-            recorrenciaFixaId:r.id, recorrenciaAtiva:true, parcelaAtual:null, parcelaTotal:null
-          });
-          mudou=true;
-        }
-        cursor=addMes(cursor,1); seguranca++;
-      }
-    });
-    if(mudou){
-      try{localStorage.setItem('financeiroPremium',JSON.stringify(db))}catch(e){}
-    }
-    return mudou;
-  }
-  function novaFixa(tipo){
-    var fixa=!!document.getElementById('fixaCheck')?.checked;
-    var parcelar=!!document.getElementById('parcelarCheck')?.checked;
-    if(!fixa || parcelar || editAtual()) return false;
-    garantirEstrutura();
-    var valor=moedaNum(document.getElementById('valor')?.value);
-    if(valor<=0){alert('DIGITE UM VALOR');return true;}
-    var grupo=uid();
-    var data=document.getElementById('data')?.value||hojeISO();
-    var desc=document.getElementById('desc')?.value||'Sem descrição';
-    var pagoCheck=document.getElementById('pagoCheck');
-    var tpl={
-      tipo:tipo, descBase:desc, valor:valor, cat:document.getElementById('cat')?.value||'',
-      conta:document.getElementById('conta')?.value||'', obs:document.getElementById('obs')?.value||'',
-      pago:pagoCheck?pagoCheck.checked:true, venc:document.getElementById('venc')?.value||'',
-      ignorado:!!document.getElementById('ignorarCheck')?.checked,
-      icone:document.getElementById('iconeMov')?.value||(tipo==='receita'?'💰':'🛒')
-    };
-    var rid='RF_'+grupo;
-    db.recorrenciasFixas.push({id:rid,grupo:grupo,ativo:true,inicio:data,criadoEm:new Date().toISOString(),template:tpl});
-    db.movs.push({
-      id:uid(),grupo:grupo,origemTipo:'fixa',tipo:tipo,desc:desc,descBase:desc,valor:valor,
-      cat:tpl.cat,data:data,conta:tpl.conta,obs:tpl.obs,pago:tpl.pago,venc:tpl.venc,
-      fixa:true,repetir:false,repetirAtivo:true,parcelar:false,parcelarAtivo:false,parcelada:false,
-      repQtd:1,repPeriodo:'Mensal',ignorado:tpl.ignorado,icone:tpl.icone,
-      recorrenciaFixaId:rid,recorrenciaAtiva:true,parcelaAtual:null,parcelaTotal:null
-    });
-    gerarAte(alvoAtual());
-    try{if(typeof closeModal==='function')closeModal()}catch(e){}
-    try{localStorage.setItem('financeiroPremium',JSON.stringify(db))}catch(e){}
-    try{if(typeof render==='function')render()}catch(e){}
-    return true;
+}catch(e){}
+
+var salvarBase=window.salvarMov;
+window.salvarMov=function(tipo){
+  var fixa=!!campo('fixaCheck')?.checked;
+  var parcelar=!!campo('parcelarCheck')?.checked;
+  var editando=false; try{editando=!!editId}catch(e){}
+
+  /* Para movimentos normais, parcelados ou edição, mantém a rotina original. */
+  if(!fixa || parcelar || editando){
+    return typeof salvarBase==='function'?salvarBase.apply(this,arguments):undefined;
   }
 
-  migrarFixasAntigas();
-  gerarAte(alvoAtual());
+  if(typeof db==='undefined' || !db)return alert('ERRO: BANCO DE DADOS NÃO CARREGADO');
+  if(!Array.isArray(db.movs))db.movs=[];
 
-  var salvarMovAnterior=window.salvarMov;
-  window.salvarMov=function(tipo){
-    if(novaFixa(tipo)) return;
-    return salvarMovAnterior.apply(this,arguments);
+  var v=valorNumero(campo('valor')?.value);
+  if(v<=0)return alert('DIGITE UM VALOR');
+
+  var grupo=novoId();
+  var dataInicial=campo('data')?.value||hojeISO();
+  var desc=campo('desc')?.value||'Sem descrição';
+  var pagoPrimeiro=campo('pagoCheck')?campo('pagoCheck').checked:true;
+  var base={
+    grupo:grupo,
+    origemTipo:'fixa',
+    tipo:tipo,
+    descBase:desc,
+    valor:v,
+    cat:campo('cat')?.value||'',
+    conta:campo('conta')?.value||'',
+    obs:campo('obs')?.value||'',
+    venc:campo('venc')?.value||'',
+    fixa:true,
+    repetir:false,
+    repetirAtivo:false,
+    parcelar:false,
+    parcelarAtivo:false,
+    parcelada:false,
+    repQtd:12,
+    repPeriodo:'Mensal',
+    ignorado:!!campo('ignorarCheck')?.checked,
+    icone:campo('iconeMov')?.value||(tipo==='receita'?'💰':'🛒'),
+    recorrenciaAtiva:false,
+    totalFixas:12
   };
 
-  var renderAnterior=window.render;
-  window.render=function(){
-    try{gerarAte(alvoAtual())}catch(e){console.error('FIXAS MENSAIS:',e)}
-    return renderAnterior.apply(this,arguments);
-  };
+  /* Exatamente 12 lançamentos. Não cria mais nenhum depois. */
+  for(var i=0;i<12;i++){
+    db.movs.push(Object.assign({},base,{
+      id:novoId(),
+      data:addMes(dataInicial,i),
+      desc:desc+' ('+(i+1)+'/12)',
+      numeroFixa:i+1,
+      pago:i===0?pagoPrimeiro:false
+    }));
+  }
 
-  var saveAnterior=window.save;
-  window.save=function(){
-    try{sincronizarAtivas();gerarAte(alvoAtual())}catch(e){console.error('FIXAS SAVE:',e)}
-    return saveAnterior.apply(this,arguments);
-  };
+  try{
+    localStorage.setItem('financeiroPremium',JSON.stringify(db));
+  }catch(err){
+    console.error(err);
+    return alert('ERRO AO SALVAR: '+err.message);
+  }
+  try{closeModal()}catch(e){}
+  try{render()}catch(e){console.error(e)}
+};
+try{salvarMov=window.salvarMov}catch(e){}
 })();
 </script>
 
-</body>
+
+<!-- PATCH FINAL: CONFIRMAÇÃO DE EXCLUSÃO + LIXEIRA 48H -->
+<style id="sl-lixeira-48h-css">
+button[onclick*="abrirLixeira"],.trashRestoreBtn,.trashDeleteBtn{display:inline-flex!important;visibility:visible!important;pointer-events:auto!important;width:auto!important;height:auto!important;align-items:center;justify-content:center}
+.slTrashInfo{padding:10px;border:1px solid #f2b632;border-radius:12px;background:#111a26;color:#e5e7eb;margin-bottom:10px;font-weight:800}
+.slTrashItem{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px;margin:8px 0;border:1px solid #29435f;border-radius:14px;background:#09131f}
+.slTrashItem small{display:block;color:#aeb9c7;margin-top:4px}.slTrashActions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+</style>
+<script id="sl-lixeira-48h-js">
+(function(){
+'use strict';
+if(window.__SL_LIXEIRA_48H__)return;window.__SL_LIXEIRA_48H__=true;
+function banco(){try{return (typeof db!=='undefined'&&db)?db:null}catch(e){return null}}
+function uidTrash(){return 'trash_'+Date.now()+'_'+Math.random().toString(36).slice(2,9)}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function moeda(v){try{return typeof fmt==='function'?fmt(v):Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}catch(e){return 'R$ '+Number(v||0).toFixed(2).replace('.',',')}}
+function salvar(){try{if(typeof save==='function'){save();return}var b=banco();localStorage.setItem('financeiroPremium',JSON.stringify(b))}catch(e){alert('ERRO AO SALVAR A LIXEIRA: '+e.message)}}
+function expiraEm(item){var t=Date.parse(item.apagadoEm||item.excluidoEm||0);return isFinite(t)?t+48*60*60*1000:0}
+function limparExpirados(){var b=banco();if(!b)return 0;b.lixeira=Array.isArray(b.lixeira)?b.lixeira:[];var antes=b.lixeira.length,agora=Date.now();b.lixeira=b.lixeira.filter(function(x){var e=expiraEm(x);return !e||e>agora});if(b.lixeira.length!==antes){salvar()}return antes-b.lixeira.length}
+window.slLimparLixeiraExpirada=limparExpirados;
+function paraLixeira(item){var agora=new Date();return Object.assign({},item,{__trashId:uidTrash(),apagadoEm:agora.toISOString(),apagadoEmBR:agora.toLocaleString('pt-BR'),expiraEm:new Date(agora.getTime()+48*60*60*1000).toISOString()})}
+function ehSerie(m){return !!m&&(m.tipo==='receita'||m.tipo==='despesa')&&(m.fixa===true||m.repetir===true||m.parcelar===true||['fixa','repetida','repetir','parcelada'].indexOf(String(m.origemTipo||'').toLowerCase())>=0||Number(m.parcelaTotal||0)>1)}
+function mesmoGrupo(a,b){if(!a||!b)return false;if(b.grupo)return String(a.grupo)===String(b.grupo);return String(a.id)===String(b.id)}
+function pendente(m){return !(m&&m.pago===true)}
+window.prepararTextoEscopo=function(modo){
+ var box=document.querySelector('#scopeOverlay .scopeBox');if(!box)return;var p=box.querySelector('p'),btns=box.querySelectorAll('.scopeBtns button');
+ if(p)p.innerHTML='<b>ATENÇÃO!</b><br><br>ESTA É UMA TRANSAÇÃO FIXA, REPETIDA OU PARCELADA.<br><br>VOCÊ DESEJA:';
+ if(btns.length>=4){var excluir=modo==='excluir';btns[0].textContent=(excluir?'EXCLUIR':'ALTERAR')+' SOMENTE ESTA';btns[1].textContent=(excluir?'EXCLUIR':'ALTERAR')+' TODAS PENDENTES';btns[2].textContent=(excluir?'EXCLUIR':'ALTERAR')+' TODAS, INCLUINDO EFETIVADAS';btns[3].textContent='CANCELAR'}
+};
+function removerEscopo(item,escopo){var b=banco();if(!b)return;b.movs=Array.isArray(b.movs)?b.movs:[];b.lixeira=Array.isArray(b.lixeira)?b.lixeira:[];var removidos=[];b.movs=b.movs.filter(function(x){var rm=escopo==='esta'?String(x.id)===String(item.id):(mesmoGrupo(x,item)&&(escopo==='todas'||(escopo==='pendentes'&&pendente(x))));if(rm)removidos.push(paraLixeira(x));return !rm});if(removidos.length)b.lixeira.unshift.apply(b.lixeira,removidos);salvar()}
+window.excluir=function(id){var b=banco();if(!b)return alert('ERRO: BANCO DE DADOS NÃO CARREGADO');var item=(b.movs||[]).find(function(x){return String(x.id)===String(id)});if(!item)return;
+ if(ehSerie(item)){window.prepararTextoEscopo('excluir');if(typeof pedirEscopoExclusao==='function')return pedirEscopoExclusao(function(escopo){if(escopo)removerEscopo(item,escopo)});}
+ var ok=function(){removerEscopo(item,'esta')};if(typeof pedirConfirmacao==='function')return pedirConfirmacao('EXCLUIR LANÇAMENTO','DESEJA ENVIAR ESTE LANÇAMENTO PARA A LIXEIRA?',ok);if(confirm('DESEJA ENVIAR ESTE LANÇAMENTO PARA A LIXEIRA?'))ok();
+};
+try{excluir=window.excluir}catch(e){}
+function restante(item){var ms=Math.max(0,expiraEm(item)-Date.now()),h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000);return h+'H '+m+'MIN'}
+window.abrirLixeira=function(){limparExpirados();var b=banco();if(!b)return;var itens=(b.lixeira||[]).slice().sort(function(a,c){return String(c.apagadoEm||'').localeCompare(String(a.apagadoEm||''))});var html='<h2>🗑️ LIXEIRA</h2>'+(itens.length?itens.map(function(x){return '<div class="slTrashItem"><div><b>'+esc(x.desc||'SEM DESCRIÇÃO')+'</b><small>'+esc((x.tipo||'').toUpperCase())+' • '+moeda(x.valor)+' • EXCLUIDO '+esc(x.apagadoEmBR||'')+'<br>EXPIRA EM '+restante(x)+'</small></div><div class="slTrashActions"><button class="trashRestoreBtn" onclick="restaurarDaLixeira(\''+esc(x.__trashId||x.id)+'\')">♻️ RESTAURAR</button><button class="trashDeleteBtn" onclick="excluirDefinitivoLixeira(\''+esc(x.__trashId||x.id)+'\')">🗑️ APAGAR</button></div></div>'}).join(''):'<div class="empty">LIXEIRA VAZIA.</div>');var modal=document.getElementById('modal'),body=document.getElementById('modalBody');if(modal&&body){body.innerHTML=html;modal.classList.add('show')}};
+window.restaurarDaLixeira=function(chave){var b=banco();if(!b)return;limparExpirados();var idx=(b.lixeira||[]).findIndex(function(x){return String(x.__trashId||x.id)===String(chave)});if(idx<0)return alert('ESTE ITEM NÃO ESTÁ MAIS NA LIXEIRA.');var item=b.lixeira.splice(idx,1)[0];delete item.__trashId;delete item.apagadoEm;delete item.apagadoEmBR;delete item.expiraEm;if((b.movs||[]).some(function(x){return String(x.id)===String(item.id)}))item.id=(typeof uid==='function'?uid():('mov_'+Date.now()));b.movs=b.movs||[];b.movs.push(item);salvar();window.abrirLixeira();try{if(typeof render==='function')render()}catch(e){}};
+window.excluirDefinitivoLixeira=function(chave){var fazer=function(){var b=banco();b.lixeira=(b.lixeira||[]).filter(function(x){return String(x.__trashId||x.id)!==String(chave)});salvar();window.abrirLixeira()};if(typeof pedirConfirmacao==='function')return pedirConfirmacao('APAGAR DEFINITIVAMENTE','ESTE ITEM NÃO PODERÁ SER RECUPERADO. DESEJA CONTINUAR?',fazer);if(confirm('APAGAR DEFINITIVAMENTE?'))fazer()};
+function configHTML(){return '<h2>⚙️ CONFIGURAÇÕES</h2><div class="editorGroup"><h3>🗑️ LIXEIRA</h3><div class="editorBtns"><button class="smallBtn" onclick="abrirLixeira()">🗑️ ABRIR LIXEIRA</button></div><small>Itens excluídos são removidos automaticamente após 48 horas.</small></div><div class="editorGroup"><h3>☁️ BACKUP FIREBASE</h3><div class="backupBtns"><button class="smallBtn backupNow" onclick="fazerBackupFirebaseManual()">☁️ FAZER BACKUP AGORA</button><button class="smallBtn restoreNow" onclick="restaurarUltimoBackupFirebase()">♻️ RESTAURAR ÚLTIMO BACKUP</button><button class="smallBtn datesNow" onclick="verDatasBackupsFirebase()">📅 VER DATAS DOS ÚLTIMOS BACKUPS</button></div></div><div class="editorGroup"><h3>🎨 APARÊNCIA</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal(\'fonte\')">🔠 FONTE</button><button class="smallBtn" onclick="openModal(\'ajusteTela\')">📱 AJUSTE DE TELA</button></div></div><div class="editorGroup"><h3>🛠️ EDITOR GERAL</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal(\'editorCartoes\')">💳 CARTÕES</button><button class="smallBtn" onclick="openModal(\'editorContas\')">🏦 CONTAS</button><button class="smallBtn" onclick="openModal(\'editorCategorias\')">📂 CATEGORIAS</button></div></div><button class="btn redBg" onclick="zerar()">🗑️ ZERAR TUDO</button>'}
+var openAnt=window.openModal;window.openModal=function(tipo,id){if(tipo==='config'){limparExpirados();var m=document.getElementById('modal'),body=document.getElementById('modalBody');if(m&&body){body.innerHTML=configHTML();m.classList.add('show');return}}return openAnt.apply(this,arguments)};
+function iniciar(){limparExpirados();setInterval(limparExpirados,15*60*1000)}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',iniciar);else setTimeout(iniciar,0);
+})();
+</script>
+
+
+<!-- PATCH FINAL: LIXEIRA VISÍVEL NAS CONFIGURAÇÕES -->
+<style id="sl-lixeira-config-final-css">
+.slTrashConfigBox{border:2px solid #e6b84a!important;border-radius:16px!important;padding:14px!important;background:linear-gradient(145deg,#15100a,#20180d)!important;box-shadow:0 0 18px rgba(230,184,74,.25)!important;margin-bottom:14px!important}
+.slTrashConfigBox h3{margin:0 0 8px!important;color:#ffd76a!important}
+.slTrashConfigBox p{margin:4px 0 10px!important;color:#eee!important;font-size:13px!important}
+.slTrashConfigBox .smallBtn{display:inline-flex!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;width:100%!important;min-height:44px!important;align-items:center!important;justify-content:center!important}
+#slTrashCount{display:inline-block;background:#b91c1c;color:#fff;border-radius:999px;padding:2px 8px;margin-left:6px;font-weight:900}
+</style>
+<script id="sl-lixeira-config-final-js">
+(function(){
+  'use strict';
+  function banco(){try{return (typeof db!=='undefined'&&db)?db:(window.db||null)}catch(e){return window.db||null}}
+  function qtdLixeira(){var b=banco();return b&&Array.isArray(b.lixeira)?b.lixeira.length:0}
+  function htmlConfig(){
+    return '<h2>⚙️ CONFIGURAÇÕES</h2>'+
+      '<div class="editorGroup"><h3>☁️ BACKUP FIREBASE</h3><div class="backupBtns"><button class="smallBtn backupNow" onclick="fazerBackupFirebaseManual()">☁️ FAZER BACKUP AGORA</button><button class="smallBtn restoreNow" onclick="restaurarUltimoBackupFirebase()">♻️ RESTAURAR ÚLTIMO BACKUP</button><button class="smallBtn datesNow" onclick="verDatasBackupsFirebase()">📅 VER DATAS DOS ÚLTIMOS BACKUPS</button></div></div>'+
+      '<div class="editorGroup"><h3>🎨 APARÊNCIA</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal(\'fonte\')">🔠 FONTE</button><button class="smallBtn" onclick="openModal(\'ajusteTela\')">📱 AJUSTE DE TELA</button></div></div>'+
+      '<div class="editorGroup"><h3>📊 RELATÓRIOS</h3><div class="editorBtns"><button class="smallBtn" onclick="closeModal();showScreen(\'relatorios\')">📊 ABRIR RELATÓRIOS</button></div></div>'+
+      '<div class="editorGroup"><h3>🛠️ EDITOR GERAL</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal(\'editorCartoes\')">💳 CARTÕES</button><button class="smallBtn" onclick="openModal(\'editorContas\')">🏦 CONTAS</button><button class="smallBtn" onclick="openModal(\'editorCategorias\')">📂 CATEGORIAS</button></div></div>'+
+      '<div class="editorBtns" style="margin-top:14px">'+
+        '<button class="btn goldBg" style="margin-top:0" type="button" onclick="abrirLixeira()">🗑️ LIXEIRA <span id="slTrashCount">('+qtdLixeira()+')</span></button>'+
+        '<button class="btn redBg" style="margin-top:0" type="button" onclick="zerar()">🗑️ APAGAR TUDO</button>'+
+      '</div>';
+  }
+  window.__slConfigSemTemasHTML=htmlConfig;
+  var anterior=window.openModal;
+  window.openModal=function(type,id){
+    if(type==='temas') type='config';
+    if(type==='config'){
+      try{if(typeof window.slLimparLixeiraExpirada==='function')window.slLimparLixeiraExpirada()}catch(e){}
+      var m=document.getElementById('modal'),b=document.getElementById('modalBody');
+      if(m&&b){
+        try{if(typeof editId!=='undefined')editId=id||null}catch(e){window.editId=id||null}
+        m.classList.remove('moneyModal');m.classList.add('show');
+        var c=m.querySelector('.close');if(c)c.style.display='';
+        b.innerHTML=htmlConfig();
+        return;
+      }
+    }
+    return anterior.apply(this,arguments);
+  };
+  document.addEventListener('click',function(e){
+    var t=e.target;
+    if(t&&t.matches&&t.matches('[onclick*="openModal(\\\'config\\\')"], [onclick*="openModal(\\\"config\\\")"]')){
+      setTimeout(function(){var b=document.getElementById('modalBody');if(b&&/CONFIGURAÇÕES/i.test(b.textContent||''))b.innerHTML=htmlConfig()},0);
+    }
+  },true);
+})();
+</script>
+<button onclick="abrirLixeira()" class="secondary">🗑️ Lixeira</button></body>
 </html>
 
 <style>
@@ -10533,34 +10590,88 @@ body,.app{border-radius:0!important;}
 
 <script id="PATCH_VOLTA_CONFIG_SEGURO">
 (function(){
-  if(window.__patchVoltarConfigSeguro) return; window.__patchVoltarConfigSeguro=true;
-  window.__ultimaTelaApp='inicio';
-  var oldShow=window.showScreen;
-  window.showScreen=function(id){
-    if(typeof oldShow==='function') oldShow(id);
-    window.__ultimaTelaApp=id||'inicio';
-    try{history.replaceState({screen:window.__ultimaTelaApp},'',location.href);}catch(e){}
-  };
-  function fecharAberto(){
+  'use strict';
+  if(window.__slVoltarAndroidV2) return;
+  window.__slVoltarAndroidV2=true;
+
+  var armando=false;
+
+  function telaAtiva(){
+    return document.querySelector('.screen.active');
+  }
+
+  function removerOverlay(el){
+    if(!el) return false;
+    try{
+      if(el.id==='selectSheet' || el.classList.contains('selectSheet')) el.remove();
+      else {
+        el.classList.remove('show','active','open');
+        if(el.parentNode && (el.classList.contains('confirmOverlay') || el.classList.contains('scopeOverlay') || el.classList.contains('iconKeyboardOverlay'))) el.remove();
+      }
+    }catch(e){ try{el.remove()}catch(_e){} }
+    return true;
+  }
+
+  function voltarDentroDoApp(){
+    /* 1. Fecha caixas de seleção, Lixeira e confirmações. */
+    var overlay=document.querySelector(
+      '#selectSheet, .selectSheet.show, .iconSheet.show, .scopeOverlay.show, .confirmOverlay.show, .iconKeyboardOverlay.show'
+    );
+    if(overlay) return removerOverlay(overlay);
+
+    /* 2. Fecha o modal aberto (menu, configurações, editores etc.). */
     var modal=document.getElementById('modal');
-    if(modal&&modal.classList.contains('show')){try{closeModal()}catch(e){modal.classList.remove('show')} return true;}
-    var overlays=document.querySelectorAll('.selectSheet.show,.iconSheet.show,.scopeOverlay.show,.confirmOverlay.show,.iconKeyboardOverlay.show');
-    if(overlays.length){overlays.forEach(function(o){o.classList.remove('show')});return true;}
-    var ativa=document.querySelector('.screen.active');
-    if(ativa&&ativa.id&&ativa.id!=='inicio'){try{showScreen('inicio')}catch(e){} return true;}
+    if(modal && modal.classList.contains('show')){
+      try{ if(typeof closeModal==='function') closeModal(); else modal.classList.remove('show'); }
+      catch(e){ modal.classList.remove('show'); }
+      return true;
+    }
+
+    /* 3. Em qualquer tela interna, volta para a tela inicial. */
+    var ativa=telaAtiva();
+    if(ativa && ativa.id && ativa.id!=='inicio'){
+      try{ if(typeof showScreen==='function') showScreen('inicio'); }
+      catch(e){
+        document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+        var inicio=document.getElementById('inicio'); if(inicio) inicio.classList.add('active');
+      }
+      return true;
+    }
+
+    /* Na tela inicial, sem nada aberto, permite o Android sair. */
     return false;
   }
-  try{history.replaceState({screen:'inicio'},'',location.href);}catch(e){}
-  window.addEventListener('popstate',function(ev){ if(fecharAberto()){try{history.pushState({screen:window.__ultimaTelaApp||'inicio'},'',location.href)}catch(e){}} });
-  document.addEventListener('keydown',function(e){ if(e.key==='Escape') fecharAberto(); });
-  /* Evita que salvamentos em configurações derrubem para a tela inicial quando já estiver em config */
-  var oldRender=window.render;
-  window.render=function(){
-    var screenBefore=document.querySelector('.screen.active');
-    var idBefore=screenBefore&&screenBefore.id;
-    if(typeof oldRender==='function') oldRender.apply(this,arguments);
-    if(idBefore==='config'){var cfg=document.getElementById('config'); if(cfg){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')}); cfg.classList.add('active');}}
-  };
+
+  function armarHistorico(){
+    if(armando) return;
+    armando=true;
+    try{ history.pushState({slBackGuard:true},'',location.href); }catch(e){}
+    setTimeout(function(){armando=false},0);
+  }
+
+  /* Cria uma posição de histórico para o gesto voltar não encerrar imediatamente. */
+  try{
+    history.replaceState({slAppBase:true},'',location.href);
+    armarHistorico();
+  }catch(e){}
+
+  window.addEventListener('popstate',function(){
+    if(voltarDentroDoApp()) armarHistorico();
+    /* sem tela/modal aberto: não rearma e deixa o sistema sair */
+  });
+
+  /* Cordova/WebView Android. */
+  document.addEventListener('backbutton',function(e){
+    if(voltarDentroDoApp()){
+      try{e.preventDefault()}catch(_e){}
+      armarHistorico();
+    }
+  },false);
+
+  /* Tecla ESC no computador segue o mesmo comportamento. */
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape' && voltarDentroDoApp()) e.preventDefault();
+  });
 })();
 </script>
 
@@ -11343,5 +11454,89 @@ button[onclick="openModal('temas')"],button[onclick='openModal("temas")']{displa
   corrigirBotoes();
   var antigoRender=window.render;
   if(typeof antigoRender==='function') window.render=function(){var r=antigoRender.apply(this,arguments);corrigirBotoes();return r;};
+})();
+</script>
+
+
+
+
+<!-- AJUSTE FINAL DOS RÓTULOS: FIXA / REPETIDA / PARCELA -->
+<script id="sl-rotulos-fixa-repetida-parcela">
+(function(){
+'use strict';
+if(window.__SL_ROTULOS_MOVIMENTOS__)return;
+window.__SL_ROTULOS_MOVIMENTOS__=true;
+
+function limparRotulo(texto){
+  return String(texto==null?'':texto)
+    .replace(/\s*\((?:FIXA|REPETIDA\s+\d+\/\d+|PARCELA\s+\d+\/\d+|\d+\/\d+)\)\s*$/i,'')
+    .replace(/\s+(?:REPETIDA|PARCELA)\s+\d+\/\d+\s*$/i,'')
+    .replace(/\s+\d+\/\d+\s*$/,'')
+    .trim();
+}
+function banco(){
+  try{return (typeof db!=='undefined'&&db)?db:null}catch(e){return null}
+}
+function normalizarRotulos(salvar){
+  var b=banco();
+  if(!b||!Array.isArray(b.movs))return false;
+  var grupos={};
+  b.movs.forEach(function(m){
+    if(!m)return;
+    var g=String(m.grupo||m.id||'');
+    if(!grupos[g])grupos[g]=[];
+    grupos[g].push(m);
+  });
+  var mudou=false;
+  Object.keys(grupos).forEach(function(g){
+    var lista=grupos[g].slice().sort(function(a,b){return String(a.data||'').localeCompare(String(b.data||''));});
+    var total=lista.length;
+    lista.forEach(function(m,idx){
+      var base=limparRotulo(m.descBase||m.desc||'Sem descrição');
+      var tipo=String(m.origemTipo||'').toLowerCase();
+      var novo=base;
+      if(m.fixa===true||tipo==='fixa'){
+        novo=base+' (FIXA)';
+      }else if(tipo==='repetida'||tipo==='repetir'||(m.repetir===true&&!m.parcelar&&!m.parcelada)){
+        var atual=Number(m.repeticaoAtual||m.numeroRepeticao||0)||(idx+1);
+        var tot=Number(m.repeticaoTotal||m.repQtd||0)||total;
+        novo=base+' (REPETIDA '+atual+'/'+tot+')';
+        m.repeticaoAtual=atual; m.repeticaoTotal=tot;
+      }else if(tipo==='parcelada'||m.parcelar===true||m.parcelada===true||m.parcelaTotal){
+        var pa=Number(m.parcelaAtual||0)||(idx+1);
+        var pt=Number(m.parcelaTotal||0)||total;
+        novo=base+' (PARCELA '+pa+'/'+pt+')';
+        m.parcelaAtual=pa; m.parcelaTotal=pt;
+      }
+      if(m.desc!==novo){m.desc=novo;mudou=true;}
+      if(m.descBase!==base){m.descBase=base;mudou=true;}
+    });
+  });
+  if(mudou&&salvar){
+    try{localStorage.setItem('financeiroPremium',JSON.stringify(b));}catch(e){console.error('Erro ao salvar rótulos:',e);}
+  }
+  return mudou;
+}
+window.slNormalizarRotulos=normalizarRotulos;
+
+var salvarAnterior=window.salvarMov;
+window.salvarMov=function(){
+  var r=typeof salvarAnterior==='function'?salvarAnterior.apply(this,arguments):undefined;
+  try{normalizarRotulos(true);if(typeof render==='function')render();}catch(e){console.error('Rótulos:',e);}
+  return r;
+};
+try{salvarMov=window.salvarMov}catch(e){}
+
+var renderAnterior=window.render;
+window.render=function(){
+  try{normalizarRotulos(false);}catch(e){}
+  return typeof renderAnterior==='function'?renderAnterior.apply(this,arguments):undefined;
+};
+try{render=window.render}catch(e){}
+
+function iniciar(){
+  try{if(normalizarRotulos(true)&&typeof render==='function')render();}catch(e){console.error('Rótulos iniciais:',e);}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',iniciar);else setTimeout(iniciar,0);
 })();
 </script>
