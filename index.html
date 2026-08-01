@@ -663,6 +663,38 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
 #contasInicio .contaUltraBtn.minus{background:linear-gradient(145deg,#ff3b30,#8f1010)!important;border-color:#ff453a!important}
 @media(max-width:380px){#contasInicio .contaUltraCard{grid-template-columns:38px 1fr!important;padding:10px!important}.contaUltraIcon{width:38px!important;height:38px!important}.contaUltraNome{font-size:calc(13px * var(--fontScale,1))!important}.contaUltraValor{font-size:calc(18px * var(--fontScale,1))!important}.contaUltraBtns{grid-template-columns:45px 45px!important}.contaUltraBtn{width:45px!important;height:34px!important;min-width:45px!important}}
 
+
+
+/* AJUSTE: UM ÚNICO VALOR TOTAL NA FATURA, CENTRALIZADO E DESTACADO */
+.invoiceCardTop{justify-content:center!important;text-align:center!important}
+.invoiceCardTop>div{width:100%!important}
+.invoiceSubTitle.invoiceSubTitleCentered{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+  text-align:center!important;
+  margin:2px 0 12px!important;
+  padding:13px 10px!important;
+  border:2px solid #ff453a!important;
+  border-radius:16px!important;
+  background:linear-gradient(145deg,#24090b,#100708)!important;
+  box-shadow:0 0 18px #ff453a77,inset 0 0 12px #ff453a22!important;
+}
+.invoiceSubTitle.invoiceSubTitleCentered b{
+  font-size:calc(11px * var(--fontScale,1))!important;
+  color:#ffb4ae!important;
+  letter-spacing:.8px!important;
+}
+.invoiceSubTitle.invoiceSubTitleCentered span{
+  font-size:calc(28px * var(--fontScale,1))!important;
+  line-height:1!important;
+  color:#ff453a!important;
+  font-weight:900!important;
+  text-shadow:0 0 14px #ff453aaa!important;
+}
+
 </style>
 
 <style>
@@ -857,8 +889,13 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
   </section>
 
   <section id="relatorios" class="screen">
-    <div class="sectionTitle"><h2>📊 Relatórios</h2><button onclick="showScreen('inicio')">Voltar</button></div>
-    <div class="card"><h2>📈 Resumo</h2><p class="muted">Receitas, despesas, cartões e saldo são atualizados automaticamente.</p><div id="relResumo"></div></div>
+    <div class="sectionTitle"><h2>📊 RELATÓRIOS</h2><button onclick="showScreen('inicio')">VOLTAR</button></div>
+    <div class="card relPremiumCard">
+      <div class="relCardTitle"><h2>📈 RESUMO GERAL</h2><small>ATUALIZAÇÃO AUTOMÁTICA PELO PERÍODO SELECIONADO</small></div>
+      <div id="relResumo"></div>
+    </div>
+    <div id="relGraficos"></div>
+    <div id="relDetalhes"></div>
   </section>
 
   <section id="historico" class="screen">
@@ -1744,7 +1781,7 @@ function abrirDetalheFaturaCartao(id){
   const total=totalRestanteFatura(c.id);
   const status=faturaFechadaCartao(c)?'FATURA FECHADA':'FATURA AINDA ABERTA';
   let html='<div class="invoiceHeader"><h2>💳 FATURA DO CARTÃO</h2><button class="invoiceHeaderClose" onclick="closeModal()">×</button></div>';
-  html+=`<button class="invoiceBackBtn" onclick="abrirFaturasFechadas()">‹ VOLTAR PARA FATURAS</button><div class="invoiceCardGroup ${fechada?'invoiceGroupClosed':'invoiceGroupOpen'}"><div class="invoiceCardTop"><div><h3>${c.icone||'💳'} ${c.nome||'CARTÃO'}</h3><small>${status} • FECHA ${c.fech||1} • VENCE ${c.venc||10} • ${movs.length} COMPRA${movs.length==1?'':'S'}</small></div><div class="invoiceTotal">${fmt(total)}</div></div><div class="invoiceSubBox"><div class="invoiceSubTitle"><b>COMPRAS DA FATURA</b><span>${fmt(total)}</span></div>${comprasFaturaHTML(movs,c.id)}<div class="invoiceActions compactTop"><button class="invoicePay" onclick="pagarFaturaCartao('${c.id}')">PAGAR FATURA</button><button class="invoiceAdvance" onclick="adiantarFaturaCartao('${c.id}')">ADIANTAR</button></div></div></div>`;
+  html+=`<button class="invoiceBackBtn" onclick="abrirFaturasFechadas()">‹ VOLTAR PARA FATURAS</button><div class="invoiceCardGroup ${fechada?'invoiceGroupClosed':'invoiceGroupOpen'}"><div class="invoiceCardTop"><div><h3>${c.icone||'💳'} ${c.nome||'CARTÃO'}</h3><small>${status} • FECHA ${c.fech||1} • VENCE ${c.venc||10} • ${movs.length} COMPRA${movs.length==1?'':'S'}</small></div></div><div class="invoiceSubBox"><div class="invoiceSubTitle invoiceSubTitleCentered"><b>VALOR TOTAL DA FATURA</b><span>${fmt(total)}</span></div>${comprasFaturaHTML(movs,c.id)}<div class="invoiceActions compactTop"><button class="invoicePay" onclick="pagarFaturaCartao('${c.id}')">PAGAR FATURA</button><button class="invoiceAdvance" onclick="adiantarFaturaCartao('${c.id}')">ADIANTAR</button></div></div></div>`;
   modal.classList.add('show');
   modal.classList.add('moneyModal');
   modal.classList.add('invoiceModal');
@@ -3418,7 +3455,7 @@ window.addEventListener('pagehide',function(){
   window.abrirCompraCartaoDireta=function(id){
     try{
       editId=id||null;
-      var e=id && window.db && db.movs ? (db.movs.find(function(x){return x.id==id;})||{}) : {};
+      var e=(id && typeof db!=='undefined' && db && Array.isArray(db.movs)) ? (db.movs.find(function(x){return String(x.id)===String(id);})||{}) : {};
       var editando=!!id;
       var data=e.data||hoje();
       var cartaoSel=e.cartao||((db.cartoes&&db.cartoes[0]&&db.cartoes[0].id)||'');
@@ -11417,7 +11454,7 @@ button[onclick="openModal('temas')"],button[onclick='openModal("temas")']{displa
   window.abrirCompraCartaoDireta=function(id){
     try{
       editId=id||null;
-      var e=id && window.db && db.movs ? (db.movs.find(function(x){return x.id==id;})||{}) : {};
+      var e=(id && typeof db!=='undefined' && db && Array.isArray(db.movs)) ? (db.movs.find(function(x){return String(x.id)===String(id);})||{}) : {};
       var editando=!!id;
       var data=e.data||hoje();
       var cartaoSel=e.cartao||((db.cartoes&&db.cartoes[0]&&db.cartoes[0].id)||'');
@@ -11538,5 +11575,176 @@ function iniciar(){
   try{if(normalizarRotulos(true)&&typeof render==='function')render();}catch(e){console.error('Rótulos iniciais:',e);}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',iniciar);else setTimeout(iniciar,0);
+})();
+</script>
+
+<!-- CORREÇÃO FINAL: VALOR DA COMPRA DO CARTÃO AO EDITAR -->
+<script id="sl-correcao-editar-compra-cartao-valor">
+(function(){
+  'use strict';
+  function numeroCompra(v){
+    if(typeof v==='number' && Number.isFinite(v)) return v;
+    var s=String(v==null?'':v).trim().replace(/\s/g,'');
+    if(!s) return 0;
+    if(s.indexOf(',')>=0) s=s.replace(/\./g,'').replace(',','.');
+    var n=Number(s);
+    return Number.isFinite(n)?n:0;
+  }
+  function acharCompra(id){
+    var movs=(typeof db!=='undefined' && db && Array.isArray(db.movs))?db.movs:[];
+    return movs.find(function(x){return String(x.id)===String(id);}) ||
+           movs.find(function(x){return String(x.grupo)===String(id);}) || {};
+  }
+  function valorOriginal(item){
+    var campos=['valor','valorParcela','valorTotal','total','amount'];
+    for(var i=0;i<campos.length;i++){
+      var n=numeroCompra(item&&item[campos[i]]);
+      if(n>0) return n;
+    }
+    return 0;
+  }
+  var abrirAnterior=window.abrirCompraCartaoDireta;
+  if(typeof abrirAnterior!=='function') return;
+  window.abrirCompraCartaoDireta=function(id){
+    var realId=id||window.editId||null;
+    if(realId){
+      var item=acharCompra(realId);
+      if(item&&item.id) window.editId=item.id;
+      abrirAnterior(item&&item.id?item.id:realId);
+      var input=document.getElementById('valor');
+      if(input){
+        var valor=valorOriginal(item);
+        if(valor>0){
+          input.value=String(valor);
+          input.defaultValue=String(valor);
+        }
+      }
+      return;
+    }
+    abrirAnterior(null);
+  };
+  var openAnterior=window.openModal;
+  window.openModal=function(type,id){
+    if(type==='editCompraCartao'){
+      window.abrirCompraCartaoDireta(id||window.editId||null);
+      return;
+    }
+    return openAnterior.apply(this,arguments);
+  };
+})();
+</script>
+
+<!-- CORREÇÃO DEFINITIVA: REMOVER VALOR SUPERIOR DUPLICADO DA FATURA E DESTACAR SOMENTE O TOTAL INFERIOR -->
+<style id="sl-correcao-total-unico-fatura">
+/* Remove o valor duplicado no cabeçalho da fatura aberta */
+#modal.invoiceModal .invoiceCardTop > .invoiceTotal,
+#modal .invoiceCardGroup .invoiceCardTop > .invoiceTotal{
+  display:none!important;
+  visibility:hidden!important;
+  width:0!important;
+  height:0!important;
+  padding:0!important;
+  margin:0!important;
+  overflow:hidden!important;
+}
+
+/* Mantém o cabeçalho do cartão bem alinhado sem o valor da direita */
+#modal.invoiceModal .invoiceCardTop,
+#modal .invoiceCardGroup .invoiceCardTop{
+  display:block!important;
+  text-align:center!important;
+}
+#modal.invoiceModal .invoiceCardTop > div:first-child,
+#modal .invoiceCardGroup .invoiceCardTop > div:first-child{
+  width:100%!important;
+  text-align:center!important;
+}
+
+/* Total único, inferior, centralizado e destacado */
+#modal.invoiceModal .invoiceSubTitle,
+#modal .invoiceCardGroup .invoiceSubTitle{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:7px!important;
+  width:100%!important;
+  padding:14px 10px!important;
+  margin:0 auto 12px!important;
+  border:2px solid #f2b632!important;
+  border-radius:16px!important;
+  background:linear-gradient(145deg,#171008,#0b1522)!important;
+  box-shadow:0 0 18px #f2b63277,inset 0 0 12px #f2b63222!important;
+  text-align:center!important;
+}
+#modal.invoiceModal .invoiceSubTitle b,
+#modal .invoiceCardGroup .invoiceSubTitle b{
+  display:block!important;
+  width:100%!important;
+  color:#ffdf8a!important;
+  font-size:calc(12px * var(--fontScale,1))!important;
+  text-align:center!important;
+  letter-spacing:.5px!important;
+}
+#modal.invoiceModal .invoiceSubTitle span,
+#modal .invoiceCardGroup .invoiceSubTitle span{
+  display:block!important;
+  width:100%!important;
+  color:#f2b632!important;
+  font-size:calc(30px * var(--fontScale,1))!important;
+  font-weight:900!important;
+  line-height:1.05!important;
+  text-align:center!important;
+  text-shadow:0 0 14px #f2b632aa!important;
+}
+</style>
+
+
+<!-- RELATÓRIOS PREMIUM: CATEGORIAS, CONTAS, PORCENTAGENS E GRÁFICOS REDONDOS -->
+<style id="sl-relatorios-premium-css">
+.relPremiumCard{overflow:hidden}.relCardTitle{margin-bottom:12px}.relCardTitle h2{margin:0 0 4px;font-size:calc(17px * var(--fontScale,1));color:#fff}.relCardTitle small{color:var(--muted);font-size:calc(9px * var(--fontScale,1))}
+.relSummaryGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.relSummaryBox{border:1.7px solid #1f7aff;border-radius:16px;padding:12px;background:#081421;text-align:center;box-shadow:0 0 12px #1f7aff44}.relSummaryBox b{display:block;color:var(--muted);font-size:calc(10px * var(--fontScale,1));margin-bottom:7px}.relSummaryBox strong{display:block;font-size:calc(20px * var(--fontScale,1));text-shadow:0 0 10px currentColor}.relSummaryBox.receita{border-color:#31d158;box-shadow:0 0 12px #31d15855}.relSummaryBox.despesa{border-color:#ff453a;box-shadow:0 0 12px #ff453a55}.relSummaryBox.saldo{border-color:#33a0ff;box-shadow:0 0 12px #33a0ff55}.relSummaryBox.percentual{border-color:#f2b632;box-shadow:0 0 12px #f2b63255}
+.relChartGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.relChartCard{background:linear-gradient(145deg,#0e1826,#07111d);border:1.7px solid #00e5ff;border-radius:18px;padding:11px;box-shadow:0 0 13px #00e5ff44;min-width:0}.relChartCard h3{font-size:calc(11px * var(--fontScale,1));text-align:center;margin:0 0 9px;color:#fff;line-height:1.25}.relDonutWrap{display:grid;place-items:center;margin:2px auto 10px}.relDonut{width:126px;height:126px;border-radius:50%;position:relative;display:grid;place-items:center;box-shadow:0 0 18px #0009}.relDonut:after{content:"";position:absolute;width:72px;height:72px;border-radius:50%;background:#08111d;border:1px solid #29435f;box-shadow:inset 0 0 12px #000}.relDonutCenter{position:relative;z-index:2;text-align:center;width:66px}.relDonutCenter b{display:block;font-size:calc(8px * var(--fontScale,1));color:var(--muted)}.relDonutCenter strong{display:block;font-size:calc(12px * var(--fontScale,1));color:#fff;margin-top:3px}.relLegend{display:grid;gap:5px}.relLegendRow{display:grid;grid-template-columns:10px 1fr auto;gap:5px;align-items:center;font-size:calc(8.5px * var(--fontScale,1));min-width:0}.relLegendDot{width:9px;height:9px;border-radius:50%}.relLegendName{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#e5e7eb}.relLegendValue{white-space:nowrap;color:#fff}.relNoData{text-align:center;color:var(--muted);padding:28px 5px;font-size:calc(10px * var(--fontScale,1))}
+.relDetailCard{border:1.7px solid #1f7aff;border-radius:18px;padding:11px;margin-bottom:12px;background:linear-gradient(145deg,#0e1826,#07111d);box-shadow:0 0 13px #1f7aff44}.relDetailCard h3{margin:0 0 9px;font-size:calc(13px * var(--fontScale,1));color:#fff}.relDetailHead,.relDetailRow,.relDetailTotal{display:grid;grid-template-columns:minmax(0,1fr) 42px 72px 45px;gap:5px;align-items:center}.relDetailHead{color:var(--muted);font-size:calc(8px * var(--fontScale,1));padding:0 6px 6px}.relDetailRow{background:#0b1522;border:1px solid #203751;border-radius:12px;padding:8px 6px;margin-bottom:5px;font-size:calc(9px * var(--fontScale,1))}.relDetailRow b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.relDetailRow span{text-align:right;white-space:nowrap}.relDetailPct{color:#f2b632}.relDetailTotal{padding:10px 6px 2px;border-top:1px solid #29435f;margin-top:7px;font-size:calc(10px * var(--fontScale,1));color:#fff}.relDetailTotal strong{text-align:right;grid-column:3/5}.relBar{height:5px;background:#16263a;border-radius:9px;overflow:hidden;margin-top:5px}.relBar i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#1f7aff,#00e5ff)}
+@media(max-width:390px){.relChartGrid{grid-template-columns:1fr}.relDonut{width:145px;height:145px}.relSummaryBox strong{font-size:calc(18px * var(--fontScale,1))}}
+</style>
+<script id="sl-relatorios-premium-js">
+(function(){
+  const cores=['#31d158','#ff453a','#1f7aff','#f2b632','#9b5cff','#00e5ff','#ff7a00','#ff4fa3','#8bd450','#7c9cff','#ffcf5c','#00b894'];
+  function esc(v){return String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));}
+  function movimentosRelatorio(){return (db.movs||[]).filter(m=>dentroFiltroData(m)&&!m.ignorado&&((m.tipo==='receita'&&m.pago!==false)||(m.tipo==='despesa'&&m.pago!==false)||m.tipo==='cartao'));}
+  function nomeConta(id){const c=(db.contas||[]).find(x=>String(x.id)===String(id));return c?.nome||((id)?'CONTA NÃO ENCONTRADA':'SEM CONTA');}
+  function agrupar(tipo,campo){
+    const mapa={};
+    movimentosRelatorio().filter(m=>tipo==='despesa'?(m.tipo==='despesa'||m.tipo==='cartao'):m.tipo==='receita').forEach(m=>{
+      let nome=campo==='conta'?nomeConta(m.conta):(m.cat||'SEM CATEGORIA');
+      if(m.tipo==='cartao'&&campo==='conta'){
+        const c=(db.cartoes||[]).find(x=>String(x.id)===String(m.cartao));
+        nome=c?.nome?('CARTÃO '+c.nome):'CARTÃO';
+      }
+      mapa[nome]=mapa[nome]||{nome,valor:0,qtd:0};mapa[nome].valor+=(+m.valor||0);mapa[nome].qtd++;
+    });
+    const arr=Object.values(mapa).sort((a,b)=>b.valor-a.valor), total=arr.reduce((a,x)=>a+x.valor,0);
+    arr.forEach(x=>x.pct=total?(x.valor/total*100):0);return {arr,total};
+  }
+  function donutHTML(titulo,dados,classe){
+    if(!dados.arr.length||!dados.total)return `<div class="relChartCard"><h3>${titulo}</h3><div class="relNoData">SEM DADOS NO PERÍODO</div></div>`;
+    let acum=0,partes=[];dados.arr.forEach((x,i)=>{const ini=acum,fim=acum+x.pct;partes.push(`${cores[i%cores.length]} ${ini.toFixed(2)}% ${fim.toFixed(2)}%`);acum=fim;});
+    const legenda=dados.arr.map((x,i)=>`<div class="relLegendRow"><i class="relLegendDot" style="background:${cores[i%cores.length]}"></i><span class="relLegendName">${esc(x.nome)}</span><span class="relLegendValue">${x.pct.toFixed(1)}% · ${fmt(x.valor)}</span></div>`).join('');
+    return `<div class="relChartCard ${classe||''}"><h3>${titulo}</h3><div class="relDonutWrap"><div class="relDonut" style="background:conic-gradient(${partes.join(',')})"><div class="relDonutCenter"><b>TOTAL</b><strong>${fmt(dados.total)}</strong></div></div></div><div class="relLegend">${legenda}</div></div>`;
+  }
+  function detalheHTML(titulo,dados){
+    let linhas=dados.arr.map(x=>`<div class="relDetailRow"><div><b>${esc(x.nome)}</b><div class="relBar"><i style="width:${Math.max(1,x.pct).toFixed(2)}%"></i></div></div><span>${x.qtd}</span><span>${fmt(x.valor)}</span><span class="relDetailPct">${x.pct.toFixed(1)}%</span></div>`).join('');
+    if(!linhas)linhas='<div class="relNoData">SEM DADOS NO PERÍODO</div>';
+    return `<div class="relDetailCard"><h3>${titulo}</h3><div class="relDetailHead"><span>NOME</span><span>QTD.</span><span>VALOR</span><span>%</span></div>${linhas}<div class="relDetailTotal"><b>SOMA TOTAL</b><strong>${fmt(dados.total)}</strong></div></div>`;
+  }
+  window.renderRelatorios=function(){
+    const t=totais(),despesas=t.desp+t.cart,saldo=t.rec-despesas,pct=t.rec?saldo/t.rec*100:0;
+    const rc=agrupar('receita','categoria'),dc=agrupar('despesa','categoria'),rco=agrupar('receita','conta'),dco=agrupar('despesa','conta');
+    const resumo=document.getElementById('relResumo'); if(resumo)resumo.innerHTML=`<div class="relSummaryGrid"><div class="relSummaryBox receita"><b>TOTAL RECEITAS</b><strong class="green">${fmt(t.rec)}</strong></div><div class="relSummaryBox despesa"><b>TOTAL DESPESAS</b><strong class="red">${fmt(despesas)}</strong></div><div class="relSummaryBox saldo"><b>RECEITAS − DESPESAS</b><strong class="${saldo>=0?'green':'red'}">${fmt(saldo)}</strong></div><div class="relSummaryBox percentual"><b>PERCENTUAL DO RESULTADO</b><strong class="${pct>=0?'gold':'red'}">${pct.toFixed(1)}%</strong></div></div>`;
+    const graficos=document.getElementById('relGraficos'); if(graficos)graficos.innerHTML=`<div class="relChartGrid">${donutHTML('💰 RECEITAS POR CATEGORIA',rc)}${donutHTML('🛒 DESPESAS POR CATEGORIA',dc)}${donutHTML('🏦 RECEITAS POR CONTA',rco)}${donutHTML('🏦 DESPESAS POR CONTA',dco)}</div>`;
+    const detalhes=document.getElementById('relDetalhes'); if(detalhes)detalhes.innerHTML=detalheHTML('💰 RECEITAS POR CATEGORIA — DETALHADO',rc)+detalheHTML('🛒 DESPESAS POR CATEGORIA — DETALHADO',dc)+detalheHTML('🏦 RECEITAS POR CONTA — DETALHADO',rco)+detalheHTML('🏦 DESPESAS POR CONTA — DETALHADO',dco);
+  };
+  setTimeout(()=>{try{window.renderRelatorios()}catch(e){console.error('Relatórios:',e)}},0);
 })();
 </script>
