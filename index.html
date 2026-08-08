@@ -860,7 +860,7 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
   <span id="today" style="display:none"></span>
 
   <section id="inicio" class="screen active">
-    <div class="card balance"><div class="balanceTop"><div class="label">SALDO GERAL</div><div class="balanceControls"><button id="eyeBtn" class="eyeInside" onclick="toggleValores()">👁️</button><button class="gearInside" onclick="openModal('config')">⚙️</button></div></div><div id="saldoGeral" class="value">R$ 0,00</div><div id="saldoStatus" class="green">↗ Positivo</div><div class="histAlertRow"><button id="btnHistorico" class="btn histBtn" onclick="abrirHistoricoTodos()">📜 HISTÓRICO</button><button class="btn alertBtn" onclick="abrirAlertas()">⚠️ ALERTAS</button><button id="btnFaturasFechadas" class="btn invoiceBtn" onclick="abrirFaturas()">💳 FATURAS</button></div></div>
+    <div class="card balance"><div class="balanceTop"><div class="label">RESUMO DE SALDO</div><div class="balanceControls"><button id="eyeBtn" class="eyeInside" onclick="toggleValores()">👁️</button><button class="gearInside" onclick="openModal('config')">⚙️</button></div></div><div id="saldoGeral" class="value">R$ 0,00</div><div id="saldoStatus" class="green">↗ Positivo</div><div class="histAlertRow"><button id="btnHistorico" class="btn histBtn" onclick="abrirHistoricoTodos()">📜 HISTÓRICO</button><button class="btn alertBtn" onclick="abrirAlertas()">⚠️ ALERTAS</button><button id="btnFaturasFechadas" class="btn invoiceBtn" onclick="abrirFaturas()">💳 FATURAS</button></div></div>
     <div class="grid">
       <div class="mini click" onclick="abrirCategoria('receita',true)"><b>⏳ Receitas Pendentes</b><span id="receitasPendentes" class="gold">R$ 0,00</span></div>
       <div class="mini click" onclick="abrirCategoria('despesa',true)"><b>⚠️ Despesas Pendentes</b><span id="despesasPendentes" class="red">R$ 0,00</span></div>
@@ -870,6 +870,11 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
       <div class="mini click cardRedMini" onclick="abrirCategoria('cartao')"><b><span id="iconeCardCartoes" onclick="event.stopPropagation();abrirIcones('homeCartoes')" style="cursor:pointer;font-size:calc(18px * var(--fontScale,1));margin-right:4px">💳</span> GASTOS COM CARTÕES</b><span id="totalCartoes" class="red">R$ 0,00</span></div>
     </div>
     <div class="sectionTitle"><h2>🏦 Todas as contas</h2></div>
+    <div id="saldoContasResumo" class="card saldoContasResumoCard">
+      <div class="saldoContasResumoLabel">🏦 SALDO DAS CONTAS</div>
+      <div id="saldoContasTotal" class="saldoContasResumoValor green">R$ 0,00</div>
+      <div id="saldoContasStatus" class="saldoContasResumoStatus green">↗ POSITIVO</div>
+    </div>
     <div id="contasInicio"></div>
   </section>
 
@@ -880,7 +885,7 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
   </section>
 
   <section id="cartoes" class="screen">
-    <div class="sectionTitle"><h2>Meus Cartões</h2><button onclick="showScreen('inicio')">VOLTAR</button></div>
+    <div class="sectionTitle"><h2>Meus Cartões</h2><button onclick="if(window.voltarAppSL){voltarAppSL()}else{showScreen('inicio')}">⬅️ VOLTAR</button></div>
     <button class="btn redBg" onclick="openModal('compraCartao')" style="margin-bottom:12px">LANÇAR COMPRA NO CARTÃO</button>
     <div class="grid cartoesResumo">
       <div class="mini destaqueCartao"><b>💳 Limite Total</b><span id="limiteTotalCartoes" class="gold">R$ 0,00</span></div>
@@ -890,7 +895,7 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
   </section>
 
   <section id="relatorios" class="screen">
-    <div class="sectionTitle"><h2>📊 RELATÓRIOS</h2><button onclick="showScreen('inicio')">VOLTAR</button></div>
+    <div class="sectionTitle"><h2>📊 RELATÓRIOS</h2><button onclick="if(window.voltarAppSL){voltarAppSL()}else{showScreen('inicio')}">⬅️ VOLTAR</button></div>
     <div class="card relPremiumCard">
       <div class="relCardTitle"><h2>📈 RESUMO GERAL</h2><small>ATUALIZAÇÃO AUTOMÁTICA PELO PERÍODO SELECIONADO</small></div>
       <div id="relResumo"></div>
@@ -900,7 +905,7 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
   </section>
 
   <section id="historico" class="screen">
-    <div class="sectionTitle"><h2 id="historicoTitulo">📜 Histórico</h2><button onclick="showScreen('inicio')">Voltar</button></div>
+    <div class="sectionTitle"><h2 id="historicoTitulo">📜 Histórico</h2><button onclick="if(window.voltarAppSL){voltarAppSL()}else{showScreen('inicio')}">⬅️ VOLTAR</button></div>
     <p id="historicoSubtitulo" class="muted" style="margin-top:-6px;margin-bottom:12px"></p>
 
     <input id="busca" oninput="render()" placeholder="Buscar por nome ou categoria" style="width:100%;padding:13px;border-radius:12px;border:1px solid var(--line);background:#0a1420;color:white;margin-bottom:12px">
@@ -2986,7 +2991,7 @@ window.addEventListener('pagehide',function(){
     }
     return `<div class="compraCartaoFinal">
       <div class="moneyHeader">
-        <div class="backTitle"><button type="button" onclick="closeModal()">‹</button><span>${edit?'EDITAR COMPRA':'COMPRA NO CARTÃO'}</span><div class="formBadge">💳</div></div>
+        <div class="backTitle"><button type="button" onclick="closeModal()">⬅️</button><span>${edit?'EDITAR COMPRA':'COMPRA NO CARTÃO'}</span><div class="formBadge">💳</div></div>
         <div class="moneyLabel">VALOR DA COMPRA</div>
         <div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" inputmode="decimal" step="0.01" value="${(e&&e.valor)||''}" placeholder="0,00"><span class="currency">BRL</span></div>
       </div>
@@ -3085,7 +3090,7 @@ window.addEventListener('pagehide',function(){
     const offset=findOffset(cartaoSel,data,e?.faturaKey);
     return `<div class="compraCartaoClean">
       <div class="moneyHeader">
-        <div class="backTitle"><button type="button" onclick="closeModal()">‹</button><span>${editando?'EDITAR COMPRA':'COMPRA NO CARTÃO'}</span><div class="formBadge">💳</div></div>
+        <div class="backTitle"><button type="button" onclick="closeModal()">⬅️</button><span>${editando?'EDITAR COMPRA':'COMPRA NO CARTÃO'}</span><div class="formBadge">💳</div></div>
         <div class="moneyLabel">VALOR TOTAL</div>
         <div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="${esc(e?.valor||'')}" placeholder="0,00"><span class="currency">BRL</span></div>
       </div>
@@ -3213,7 +3218,7 @@ window.addEventListener('pagehide',function(){
     const offset=offsetFromKey(cartaoSel,data,e?.faturaKey);
     return `<div class="compraCartaoClean">
       <div class="moneyHeader">
-        <div class="backTitle"><button type="button" onclick="closeModal()">‹</button><span>${editando?'EDITAR COMPRA':'COMPRA NO CARTÃO'}</span><div class="formBadge">💳</div></div>
+        <div class="backTitle"><button type="button" onclick="closeModal()">⬅️</button><span>${editando?'EDITAR COMPRA':'COMPRA NO CARTÃO'}</span><div class="formBadge">💳</div></div>
         <div class="moneyLabel">VALOR TOTAL</div>
         <div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="${esc(e?.valor||'')}" placeholder="0,00"><span class="currency">BRL</span></div>
       </div>
@@ -3324,7 +3329,7 @@ window.addEventListener('pagehide',function(){
   function compraCartaoForm(e){
     e=e||null; const editando=!!e; const data=e?.data||hoje(); const cartaoSel=e?.cartao||((db.cartoes&&db.cartoes[0]&&db.cartoes[0].id)||''); const offset=offsetFromKey(cartaoSel,data,e?.faturaKey);
     return `<div class="compraCartaoSelectFinal">
-      <div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">‹</button><span>${editando?'EDITAR COMPRA':'COMPRA NO CARTÃO'}</span><div class="formBadge">💳</div></div><div class="moneyLabel">VALOR TOTAL</div><div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="${esc(e?.valor||'')}" placeholder="0,00"><span class="currency">BRL</span></div></div>
+      <div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">⬅️</button><span>${editando?'EDITAR COMPRA':'COMPRA NO CARTÃO'}</span><div class="formBadge">💳</div></div><div class="moneyLabel">VALOR TOTAL</div><div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="${esc(e?.valor||'')}" placeholder="0,00"><span class="currency">BRL</span></div></div>
       <div class="form"><div class="compraCardSection"><label>CARTÃO</label><select id="cartao" onchange="atualizarFaturasDestino()">${cartoesOptions(cartaoSel)}</select></div><div class="compraCardSection" id="faturaMesBox"><label>📅 MÊS DA FATURA</label>${faturaSelectHTML(offset,cartaoSel,data)}</div><div class="compraCardSection"><label>DESCRIÇÃO</label><input id="desc" value="${esc(e?.desc||'')}"></div>${editando?'':`<div class="compraCardSection"><label>PARCELAS</label><input id="parcelas" type="number" min="1" value="1"></div>`}<div class="compraCardSection"><select id="cat">${catsOptions('despesa',e?.cat)}</select></div><div class="compraCardSection"><label>DATA DA COMPRA</label><input id="data" type="date" value="${data}" onchange="atualizarFaturasDestino()"></div>${editando?`<div class="compraCardSection"><label>OBSERVAÇÃO</label><textarea id="obs">${esc(e?.obs||'')}</textarea></div>`:''}<button class="btn goldBg" onclick="${editando?'salvarCompraEditada()':'salvarCompraCartao()'}">${editando?'SALVAR ALTERAÇÃO':'SALVAR COMPRA'}</button></div>
     </div>`;
   }
@@ -3405,7 +3410,7 @@ window.addEventListener('pagehide',function(){
   function offsetFromKey(cartaoId,data,key){for(let i=0;i<18;i++){if(keyFrom(cartaoId,data,i)===key)return i;}return 0;}
   function faturaSelectHTML(sel,cartaoId,data){let html='<div class="faturaSelectWrap"><select id="faturaDestino">';for(let i=0;i<12;i++){let key=keyFrom(cartaoId,data,i);let nome=labelFrom(key).replace(/^FATURA\s*/i,'');html+='<option value="'+i+'" '+(Number(sel)===i?'selected':'')+'>'+nome+'</option>';}return html+'</select></div>';}
   window.atualizarFaturasDestino=function(){let box=document.getElementById('faturaMesBox');if(!box)return;let old=Number(document.getElementById('faturaDestino')?.value||0);let cartaoId=document.getElementById('cartao')?.value||((db.cartoes&&db.cartoes[0]&&db.cartoes[0].id)||'');let data=document.getElementById('data')?.value||hojeISO();box.innerHTML='<label>📅 MÊS DA FATURA</label>'+faturaSelectHTML(old,cartaoId,data);};
-  function compraCartaoForm(e){e=e||null;let editando=!!e;let data=e.data||hojeISO();let cartaoSel=e.cartao||((db.cartoes&&db.cartoes[0]&&db.cartoes[0].id)||'');let off=offsetFromKey(cartaoSel,data,e.faturaKey);return `<div class="compraCartaoFinalOk"><div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">‹</button><span>${editando?'EDITAR COMPRA':'COMPRA NO CARTÃO'}</span><div class="formBadge">💳</div></div><div class="moneyLabel">VALOR TOTAL</div><div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="${h(e.valor||'')}" placeholder="0,00"><span class="currency">BRL</span></div></div><div class="form"><div class="compraCardSection"><label>CARTÃO</label><select id="cartao" onchange="atualizarFaturasDestino()">${cartoesOptions(cartaoSel)}</select></div><div class="compraCardSection" id="faturaMesBox"><label>📅 MÊS DA FATURA</label>${faturaSelectHTML(off,cartaoSel,data)}</div><div class="compraCardSection"><label>DESCRIÇÃO</label><input id="desc" value="${h(e.desc||'')}"></div>${editando?'':`<div class="compraCardSection"><label>PARCELAS</label><input id="parcelas" type="number" min="1" value="1"></div>`}<div class="compraCardSection"><select id="cat">${catsOptions('despesa',e.cat)}</select></div><div class="compraCardSection"><label>DATA DA COMPRA</label><input id="data" type="date" value="${data}" onchange="atualizarFaturasDestino()"></div>${editando?`<div class="compraCardSection"><label>OBSERVAÇÃO</label><textarea id="obs">${h(e.obs||'')}</textarea></div>`:''}<button class="btn goldBg" onclick="${editando?'salvarCompraEditada()':'salvarCompraCartao()'}">${editando?'SALVAR ALTERAÇÃO':'SALVAR COMPRA'}</button></div></div>`;}
+  function compraCartaoForm(e){e=e||null;let editando=!!e;let data=e.data||hojeISO();let cartaoSel=e.cartao||((db.cartoes&&db.cartoes[0]&&db.cartoes[0].id)||'');let off=offsetFromKey(cartaoSel,data,e.faturaKey);return `<div class="compraCartaoFinalOk"><div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">⬅️</button><span>${editando?'EDITAR COMPRA':'COMPRA NO CARTÃO'}</span><div class="formBadge">💳</div></div><div class="moneyLabel">VALOR TOTAL</div><div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="${h(e.valor||'')}" placeholder="0,00"><span class="currency">BRL</span></div></div><div class="form"><div class="compraCardSection"><label>CARTÃO</label><select id="cartao" onchange="atualizarFaturasDestino()">${cartoesOptions(cartaoSel)}</select></div><div class="compraCardSection" id="faturaMesBox"><label>📅 MÊS DA FATURA</label>${faturaSelectHTML(off,cartaoSel,data)}</div><div class="compraCardSection"><label>DESCRIÇÃO</label><input id="desc" value="${h(e.desc||'')}"></div>${editando?'':`<div class="compraCardSection"><label>PARCELAS</label><input id="parcelas" type="number" min="1" value="1"></div>`}<div class="compraCardSection"><select id="cat">${catsOptions('despesa',e.cat)}</select></div><div class="compraCardSection"><label>DATA DA COMPRA</label><input id="data" type="date" value="${data}" onchange="atualizarFaturasDestino()"></div>${editando?`<div class="compraCardSection"><label>OBSERVAÇÃO</label><textarea id="obs">${h(e.obs||'')}</textarea></div>`:''}<button class="btn goldBg" onclick="${editando?'salvarCompraEditada()':'salvarCompraCartao()'}">${editando?'SALVAR ALTERAÇÃO':'SALVAR COMPRA'}</button></div></div>`;}
   if(typeof forms!=='undefined'){forms.compraCartao=function(){return compraCartaoForm(null)};forms.editCompraCartao=function(){return compraCartaoForm((db.movs||[]).find(x=>x.id==editId)||{})};}
   window.movimentosCartaoAbertos=function(cartaoId,faturaKey){return (db.movs||[]).filter(m=>m.tipo==='cartao'&&m.cartao==cartaoId&&!m.ignorado&&restante(m)>0&&(!faturaKey||movKey(m)===faturaKey));};
   window.totalRestanteFatura=function(cartaoId,faturaKey){return movimentosCartaoAbertos(cartaoId,faturaKey).reduce((a,m)=>a+restante(m),0);};
@@ -3462,7 +3467,7 @@ window.addEventListener('pagehide',function(){
       var cartaoSel=e.cartao||((db.cartoes&&db.cartoes[0]&&db.cartoes[0].id)||'');
       var off=offsetDeKey(cartaoSel,data,e.faturaKey);
       var html='<div class="compraCartaoDireta">'+
-        '<div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">‹</button><span>'+(editando?'EDITAR COMPRA':'COMPRA NO CARTÃO')+'</span><div class="formBadge">💳</div></div>'+ 
+        '<div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">⬅️</button><span>'+(editando?'EDITAR COMPRA':'COMPRA NO CARTÃO')+'</span><div class="formBadge">💳</div></div>'+ 
         '<div class="moneyLabel">VALOR TOTAL</div><div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="'+esc(e.valor||'')+'" placeholder="0,00"><span class="currency">BRL</span></div></div>'+ 
         '<div class="form"><div class="compraCardSection"><label>CARTÃO</label><select id="cartao" onchange="atualizarMesFaturaCompraDireta()">'+(typeof cartoesOptions==='function'?cartoesOptions(cartaoSel):'')+'</select></div>'+ 
         '<div class="compraCardSection"><label>📅 MÊS DA FATURA</label><select id="faturaDestino">'+mesSelect(data,off)+'</select></div>'+ 
@@ -5880,7 +5885,7 @@ window.addEventListener('pagehide',function(){
   function compraForm(e){
     e=e||{}; var edit=!!e.id; var data=e.data||hoje(); var cartao=e.cartao||((db.cartoes&&db.cartoes[0]&&db.cartoes[0].id)||''); var off=offsetByKey(cartao,data,e.faturaKey);
     return '<div class="compraCartaoFinalReal">'+
-      '<div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">‹</button><span>'+(edit?'EDITAR COMPRA':'COMPRA NO CARTÃO')+'</span><div class="formBadge">💳</div></div><div class="moneyLabel">VALOR TOTAL</div><div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="'+h(e.valor||'')+'" placeholder="0,00"><span class="currency">BRL</span></div></div>'+
+      '<div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">⬅️</button><span>'+(edit?'EDITAR COMPRA':'COMPRA NO CARTÃO')+'</span><div class="formBadge">💳</div></div><div class="moneyLabel">VALOR TOTAL</div><div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="'+h(e.valor||'')+'" placeholder="0,00"><span class="currency">BRL</span></div></div>'+
       '<div class="form"><div class="compraCardSection"><label>CARTÃO</label><select id="cartao" onchange="atualizarFaturasDestino()">'+cartoesOptions(cartao)+'</select></div>'+
       '<div class="compraCardSection" id="faturaMesBox"><label>📅 MÊS DA FATURA</label>'+faturaSelect(data,off)+'</div>'+
       '<div class="compraCardSection"><label>DESCRIÇÃO</label><input id="desc" value="'+h(e.descBase||String(e.desc||'').replace(/\s+\d+\/\d+$/,''))+'"></div>'+
@@ -5990,7 +5995,7 @@ window.addEventListener('pagehide',function(){
   window.atualizarFaturasDestino=function(){var box=document.getElementById('faturaMesBox'); if(!box)return; var data=document.getElementById('data')?.value||hoje(); var selected=document.getElementById('faturaMesEscolhida')?.value||ymFromDate(data); box.innerHTML='<label>📅 MÊS DA FATURA</label>'+optionsMeses(data,selected);};
   function selectedYM(){return document.getElementById('faturaMesEscolhida')?.value || ymFromDate(document.getElementById('data')?.value||hoje());}
   function compraForm(e){e=e||{}; var edit=!!e.id; var data=e.data||hoje(); var cartao=e.cartao||((db.cartoes&&db.cartoes[0]&&db.cartoes[0].id)||''); var selYM=(e.faturaKey?String(e.faturaKey).split('|')[1]:ymFromDate(data)); var desc=String(e.descBase||e.desc||'').replace(/\s+\d+\/\d+$/,'');
-    return '<div class="compraCartaoMesReal"><div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">‹</button><span>'+(edit?'EDITAR COMPRA':'COMPRA NO CARTÃO')+'</span><div class="formBadge">💳</div></div><div class="moneyLabel">VALOR TOTAL</div><div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="'+h(e.valor||'')+'" placeholder="0,00"><span class="currency">BRL</span></div></div><div class="form"><div class="compraCardSection"><label>CARTÃO</label><select id="cartao">'+cartoesOptions(cartao)+'</select></div><div class="compraCardSection" id="faturaMesBox"><label>📅 MÊS DA FATURA</label>'+optionsMeses(data,selYM)+'</div><div class="compraCardSection"><label>DESCRIÇÃO</label><input id="desc" value="'+h(desc)+'"></div>'+(edit?'':'<div class="compraCardSection"><label>PARCELAS</label><input id="parcelas" type="number" min="1" value="1"></div>')+'<div class="compraCardSection"><select id="cat">'+catsOptions('despesa',e.cat)+'</select></div><div class="compraCardSection"><label>DATA DA COMPRA</label><input id="data" type="date" value="'+data+'" onchange="atualizarFaturasDestino()"></div>'+(edit?'<div class="compraCardSection"><label>OBSERVAÇÃO</label><textarea id="obs">'+h(e.obs||'')+'</textarea></div>':'')+'<button class="btn goldBg" onclick="'+(edit?'salvarCompraEditada()':'salvarCompraCartao()')+'">'+(edit?'SALVAR ALTERAÇÃO':'SALVAR COMPRA')+'</button></div></div>';}
+    return '<div class="compraCartaoMesReal"><div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">⬅️</button><span>'+(edit?'EDITAR COMPRA':'COMPRA NO CARTÃO')+'</span><div class="formBadge">💳</div></div><div class="moneyLabel">VALOR TOTAL</div><div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="'+h(e.valor||'')+'" placeholder="0,00"><span class="currency">BRL</span></div></div><div class="form"><div class="compraCardSection"><label>CARTÃO</label><select id="cartao">'+cartoesOptions(cartao)+'</select></div><div class="compraCardSection" id="faturaMesBox"><label>📅 MÊS DA FATURA</label>'+optionsMeses(data,selYM)+'</div><div class="compraCardSection"><label>DESCRIÇÃO</label><input id="desc" value="'+h(desc)+'"></div>'+(edit?'':'<div class="compraCardSection"><label>PARCELAS</label><input id="parcelas" type="number" min="1" value="1"></div>')+'<div class="compraCardSection"><select id="cat">'+catsOptions('despesa',e.cat)+'</select></div><div class="compraCardSection"><label>DATA DA COMPRA</label><input id="data" type="date" value="'+data+'" onchange="atualizarFaturasDestino()"></div>'+(edit?'<div class="compraCardSection"><label>OBSERVAÇÃO</label><textarea id="obs">'+h(e.obs||'')+'</textarea></div>':'')+'<button class="btn goldBg" onclick="'+(edit?'salvarCompraEditada()':'salvarCompraCartao()')+'">'+(edit?'SALVAR ALTERAÇÃO':'SALVAR COMPRA')+'</button></div></div>';}
   if(typeof forms!=='undefined'){
     forms.compraCartao=function(){return compraForm({});};
     forms.editCompraCartao=function(){return compraForm((db.movs||[]).find(function(x){return x.id==editId;})||{});};
@@ -6063,7 +6068,7 @@ window.addEventListener('pagehide',function(){
   function optionsMeses(data,selected){var base=ym(data||hoje()); selected=selected||base; var html='<div class="mesFaturaSelectWrap2"><select id="faturaMesEscolhida">'; for(var i=0;i<18;i++){var y=addYM(base,i); html+='<option value="'+y+'" '+(y===selected?'selected':'')+'>'+labelYM(y)+'</option>'; } return html+'</select></div>';}
   window.atualizarFaturasDestino=function(){var box=document.getElementById('faturaMesBox'); if(!box)return; var data=document.getElementById('data')?.value||hoje(); var selected=document.getElementById('faturaMesEscolhida')?.value||ym(data); box.innerHTML='<label>📅 MÊS DA FATURA</label>'+optionsMeses(data,selected);};
   function selectedYM(){return document.getElementById('faturaMesEscolhida')?.value||ym(document.getElementById('data')?.value||hoje());}
-  function compraForm(item){item=item||{}; var edit=!!item.id; var data=item.data||hoje(); var cartao=item.cartao||((db.cartoes&&db.cartoes[0]&&db.cartoes[0].id)||''); var selected=(item.faturaKey?String(item.faturaKey).split('|')[1]:ym(data)); var desc=String(item.descBase||item.desc||'').replace(/\s+\d+\/\d+$/,''); return '<div class="compraCartaoMesReal2"><div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">‹</button><span>'+(edit?'EDITAR COMPRA':'COMPRA NO CARTÃO')+'</span><div class="formBadge">💳</div></div><div class="moneyLabel">VALOR TOTAL</div><div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="'+h(item.valor||'')+'" placeholder="0,00"><span class="currency">BRL</span></div></div><div class="form"><div class="compraCardSection"><label>CARTÃO</label><select id="cartao">'+(typeof cartoesOptions==='function'?cartoesOptions(cartao):'')+'</select></div><div class="compraCardSection" id="faturaMesBox"><label>📅 MÊS DA FATURA</label>'+optionsMeses(data,selected)+'</div><div class="compraCardSection"><label>DESCRIÇÃO</label><input id="desc" value="'+h(desc)+'"></div>'+(edit?'':'<div class="compraCardSection"><label>PARCELAS</label><input id="parcelas" type="number" min="1" value="1"></div>')+'<div class="compraCardSection"><select id="cat">'+(typeof catsOptions==='function'?catsOptions('despesa',item.cat):'')+'</select></div><div class="compraCardSection"><label>DATA DA COMPRA</label><input id="data" type="date" value="'+h(data)+'" onchange="atualizarFaturasDestino()"></div>'+(edit?'<div class="compraCardSection"><label>OBSERVAÇÃO</label><textarea id="obs">'+h(item.obs||'')+'</textarea></div>':'')+'<button class="btn goldBg" onclick="'+(edit?'salvarCompraEditada()':'salvarCompraCartao()')+'">'+(edit?'SALVAR ALTERAÇÃO':'SALVAR COMPRA')+'</button></div></div>';}
+  function compraForm(item){item=item||{}; var edit=!!item.id; var data=item.data||hoje(); var cartao=item.cartao||((db.cartoes&&db.cartoes[0]&&db.cartoes[0].id)||''); var selected=(item.faturaKey?String(item.faturaKey).split('|')[1]:ym(data)); var desc=String(item.descBase||item.desc||'').replace(/\s+\d+\/\d+$/,''); return '<div class="compraCartaoMesReal2"><div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">⬅️</button><span>'+(edit?'EDITAR COMPRA':'COMPRA NO CARTÃO')+'</span><div class="formBadge">💳</div></div><div class="moneyLabel">VALOR TOTAL</div><div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="'+h(item.valor||'')+'" placeholder="0,00"><span class="currency">BRL</span></div></div><div class="form"><div class="compraCardSection"><label>CARTÃO</label><select id="cartao">'+(typeof cartoesOptions==='function'?cartoesOptions(cartao):'')+'</select></div><div class="compraCardSection" id="faturaMesBox"><label>📅 MÊS DA FATURA</label>'+optionsMeses(data,selected)+'</div><div class="compraCardSection"><label>DESCRIÇÃO</label><input id="desc" value="'+h(desc)+'"></div>'+(edit?'':'<div class="compraCardSection"><label>PARCELAS</label><input id="parcelas" type="number" min="1" value="1"></div>')+'<div class="compraCardSection"><select id="cat">'+(typeof catsOptions==='function'?catsOptions('despesa',item.cat):'')+'</select></div><div class="compraCardSection"><label>DATA DA COMPRA</label><input id="data" type="date" value="'+h(data)+'" onchange="atualizarFaturasDestino()"></div>'+(edit?'<div class="compraCardSection"><label>OBSERVAÇÃO</label><textarea id="obs">'+h(item.obs||'')+'</textarea></div>':'')+'<button class="btn goldBg" onclick="'+(edit?'salvarCompraEditada()':'salvarCompraCartao()')+'">'+(edit?'SALVAR ALTERAÇÃO':'SALVAR COMPRA')+'</button></div></div>';}
   window.abrirCompraCartaoMesFinal=function(id){window.editId=id||null; var item=id?(db.movs||[]).find(function(x){return x.id==id;})||{}:{}; var modal=document.getElementById('modal'), body=document.getElementById('modalBody'); modal.classList.add('show','moneyModal'); modal.classList.remove('invoiceModal'); modal.onclick=null; body.innerHTML=compraForm(item);};
   var oldOpen=window.openModal;
   window.openModal=function(type,id){ if(type==='compraCartao'){abrirCompraCartaoMesFinal(null);return;} if(type==='editCompraCartao'){abrirCompraCartaoMesFinal(id||window.editId);return;} return oldOpen.apply(this,arguments); };
@@ -6117,7 +6122,7 @@ window.addEventListener('pagehide',function(){
     e=e||{}; var edit=!!e.id; var data=e.data||hojeISO(); var ym=(e.faturaKey?String(e.faturaKey).split('|')[1]:null)||ymFromDate(data);
     var opts=''; for(var i=0;i<18;i++){var y=addYM(ymFromDate(data),i); opts+='<option value="'+y+'" '+(y===ym?'selected':'')+'>'+labelYM(y)+'</option>'}
     return '<div class="compraCartaoClean compraCartaoUnicaFinal">'
-      +'<div class="moneyHeader"><div class="backTitle"><button onclick="closeModal()">‹</button><span>COMPRA NO CARTÃO</span><div class="formBadge">💳</div></div>'
+      +'<div class="moneyHeader"><div class="backTitle"><button onclick="closeModal()">⬅️</button><span>COMPRA NO CARTÃO</span><div class="formBadge">💳</div></div>'
       +'<div class="moneyLabel">VALOR</div><div class="moneyInputWrap"><button class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="'+(edit?(e.valor||''):'')+'"><span class="currency">BRL</span></div></div>'
       +'<div class="compraCardSection"><label>CARTÃO</label><select id="cartao">'+cartoesOptionsFinal(e.cartao||((db.cartoes||[])[0]||{}).id||'')+'</select></div>'
       +'<div class="compraCardSection"><label>DATA DA COMPRA</label><input id="data" type="date" value="'+data+'" onchange="atualizarFaturaMesPadrao()"></div>'
@@ -6218,7 +6223,7 @@ window.addEventListener('pagehide',function(){
   window.atualizarFaturasDestino=window.atualizarFaturaMesPadrao;
 
   function compraCartaoForm(item){item=item||{}; var edit=!!item.id; var data=item.data||today(); var cartao=item.cartao||((db.cartoes||[])[0]||{}).id||''; var fym=(item.faturaKey?String(item.faturaKey).split('|')[1]:null)||ymFromDate2(data); var desc=String(item.descBase||item.desc||'').replace(/\s+\d+\/\d+$/,'');
-    return '<div class="compraCartaoSLFinal"><div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">‹</button><span>'+(edit?'EDITAR COMPRA':'COMPRA NO CARTÃO')+'</span><div class="formBadge">💳</div></div><div class="moneyLabel">VALOR</div><div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="'+esc(item.valor||'')+'" placeholder="0,00"><span class="currency">BRL</span></div></div>'+
+    return '<div class="compraCartaoSLFinal"><div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">⬅️</button><span>'+(edit?'EDITAR COMPRA':'COMPRA NO CARTÃO')+'</span><div class="formBadge">💳</div></div><div class="moneyLabel">VALOR</div><div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="'+esc(item.valor||'')+'" placeholder="0,00"><span class="currency">BRL</span></div></div>'+
     '<div class="form"><div class="compraCardSection"><label>CARTÃO</label><select id="cartao">'+cartoesOpts(cartao)+'</select></div><div class="compraCardSection"><label>DATA DA COMPRA</label><input id="data" type="date" value="'+esc(data)+'" onchange="atualizarFaturaMesPadrao()"></div><div class="compraCardSection"><label>📅 MÊS DA FATURA</label><select id="faturaMesFinal">'+faturaMesOptions(data,fym)+'</select></div><div class="compraCardSection"><label>DESCRIÇÃO</label><input id="desc" value="'+esc(desc)+'"></div><div class="compraCardSection"><select id="cat">'+catsOpts('despesa',item.cat)+'</select></div>'+(edit?'':'<div class="compraCardSection"><label>PARCELAS</label><input id="parcelas" type="number" min="1" value="1"></div>')+'<button class="btn goldBg" onclick="'+(edit?'salvarCompraEditada()':'salvarCompraCartao()')+'">SALVAR</button></div></div>'}
   if(window.forms){window.forms.compraCartao=function(){return compraCartaoForm({})}; window.forms.editCompraCartao=function(){var item=(db.movs||[]).find(function(x){return x.id==editId})||{}; return compraCartaoForm(item)}}
   var oldOpenModal=window.openModal;
@@ -6618,7 +6623,7 @@ window.addEventListener('pagehide',function(){
   window.atualizarFaturasDestino=window.atualizarFaturaMesPadrao;
 
   function formCompraCartao(item){item=item||{};const edit=!!item.id;const data=item.data||hoje();const cartao=item.cartao||((db.cartoes||[])[0]||{}).id||'';const mes=(item.faturaKey?String(item.faturaKey).split('|')[1]:null)||ymData(data);const desc=String(item.descBase||item.desc||'').replace(/\s+\d+\/\d+$/,'');
-    return '<div class="compraCartaoSLFinal compraCartaoMesEscolhidoFinal"><div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">‹</button><span>'+(edit?'EDITAR COMPRA':'COMPRA NO CARTÃO')+'</span><div class="formBadge">💳</div></div><div class="moneyLabel">VALOR</div><div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="'+esc(item.valor||'')+'" placeholder="0,00"><span class="currency">BRL</span></div></div>'+ 
+    return '<div class="compraCartaoSLFinal compraCartaoMesEscolhidoFinal"><div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">⬅️</button><span>'+(edit?'EDITAR COMPRA':'COMPRA NO CARTÃO')+'</span><div class="formBadge">💳</div></div><div class="moneyLabel">VALOR</div><div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="'+esc(item.valor||'')+'" placeholder="0,00"><span class="currency">BRL</span></div></div>'+ 
     '<div class="form"><div class="compraCardSection"><label>CARTÃO</label><select id="cartao">'+optsCartao(cartao)+'</select></div><div class="compraCardSection"><label>DATA DA COMPRA</label><input id="data" type="date" value="'+esc(data)+'" onchange="atualizarFaturaMesPadrao()"></div><div class="compraCardSection"><label>📅 MÊS DA FATURA</label><select id="faturaMesFinal">'+optsMes(data,mes)+'</select></div><div class="compraCardSection"><label>DESCRIÇÃO</label><input id="desc" value="'+esc(desc)+'"></div><div class="compraCardSection"><select id="cat">'+optsCat(item.cat)+'</select></div>'+(edit?'':'<div class="compraCardSection"><label>PARCELAS</label><input id="parcelas" type="number" min="1" value="1"></div>')+'<button class="btn goldBg" onclick="'+(edit?'salvarCompraEditada()':'salvarCompraCartao()')+'">SALVAR</button></div></div>';
   }
   if(window.forms){window.forms.compraCartao=()=>formCompraCartao({});window.forms.editCompraCartao=()=>formCompraCartao((db.movs||[]).find(x=>x.id==editId)||{});}
@@ -9680,14 +9685,14 @@ button[onclick="openModal('temas')"],button[onclick='openModal("temas")']{displa
   function atualizarSetas(){
     document.querySelectorAll('.backTitle button').forEach(function(b){
       var txt=(b.textContent||'').trim();
-      if(txt==='‹'||txt==='<'||txt==='←'||txt==='⟵') b.textContent='←';
+      if(txt==='‹'||txt==='<'||txt==='←'||txt==='⟵'||txt==='⬅️'||txt==='⬅') b.textContent='⬅️';
     });
     document.querySelectorAll('.sectionTitle button,.invoiceBackBtn').forEach(function(b){
       var txt=(b.textContent||'').trim();
       if(/VOLTAR/i.test(txt)){
-        var limpo=txt.replace(/^[‹←⟵<]\s*/,'');
+        var limpo=txt.replace(/^[‹←⟵<⬅️⬅]+\s*/u,'');
         b.dataset.slBack='1';
-        b.innerHTML='<span class="slBackArrow">←</span><span>'+limpo+'</span>';
+        b.innerHTML='<span class="slBackArrow">⬅️</span><span>'+limpo+'</span>';
       }
     });
   }
@@ -10111,8 +10116,6 @@ const renderAntesOrdem=window.render;
 window.render=function(){renderAntesOrdem();setTimeout(ativarOrdensArrastaveis,0)};
 setTimeout(()=>{atualizarRelogioLED();render()},0);
 </script>
-</body>
-</html>
 
 <style>
 /* AJUSTE CORRETO FINAL - CONTAS DA PÁGINA INICIAL
@@ -11544,7 +11547,7 @@ button[onclick="openModal('temas')"],button[onclick='openModal("temas")']{displa
       var off=editando?offsetDaKey(cartaoSel,data,e.faturaKey):proximaAbertaOffset(cartaoSel,data);
       if(off==null) off=proximaAbertaOffset(cartaoSel,data);
       var html='<div class="compraCartaoDireta">'+
-        '<div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">‹</button><span>'+(editando?'EDITAR COMPRA':'COMPRA NO CARTÃO')+'</span><div class="formBadge">💳</div></div>'+ 
+        '<div class="moneyHeader"><div class="backTitle"><button type="button" onclick="closeModal()">⬅️</button><span>'+(editando?'EDITAR COMPRA':'COMPRA NO CARTÃO')+'</span><div class="formBadge">💳</div></div>'+ 
         '<div class="moneyLabel">VALOR TOTAL</div><div class="moneyInputWrap"><button type="button" class="moneyClose" onclick="closeModal()">×</button><span class="moneyPrefix">R$</span><input id="valor" class="moneyBig" type="number" step="0.01" value="'+esc(e.valor||'')+'" placeholder="0,00"><span class="currency">BRL</span></div></div>'+ 
         '<div class="form"><div class="compraCardSection"><label>CARTÃO</label><select id="cartao" onchange="atualizarMesFaturaCompraDireta(true)">'+(typeof cartoesOptions==='function'?cartoesOptions(cartaoSel):'')+'</select></div>'+ 
         '<div class="compraCardSection"><label>📅 FATURA DE DESTINO</label><select id="faturaDestino" data-manual="'+(editando?'1':'0')+'" onchange="selecionarFaturaCompraManual()">'+opcoesFatura(cartaoSel,data,off)+'</select><div id="faturaDestinoHint" class="faturaHint"></div></div>'+ 
@@ -11880,3 +11883,175 @@ var timer=null;var obs=new MutationObserver(function(){clearTimeout(timer);timer
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',iniciar);else setTimeout(iniciar,0);
 })();
 </script>
+
+<!-- ===== AJUSTE FINAL SOLICITADO: RESUMO DE SALDO + SALDO DAS CONTAS + VOLTAR ===== -->
+<style id="sl-ajuste-resumo-saldo-voltar-css">
+.saldoContasResumoCard{
+  margin:0 0 9px!important;
+  padding:8px 10px!important;
+  min-height:0!important;
+  border:1.5px solid #31d158!important;
+  border-radius:12px!important;
+  box-shadow:0 0 10px #31d15855, inset 0 0 8px #31d15812!important;
+  text-align:center!important;
+}
+.saldoContasResumoLabel{
+  color:var(--muted)!important;
+  font-size:calc(9px * var(--fontScale,1))!important;
+  font-weight:900!important;
+  margin-bottom:3px!important;
+}
+.saldoContasResumoValor{
+  font-size:calc(20px * var(--fontScale,1))!important;
+  font-weight:950!important;
+  line-height:1!important;
+  text-shadow:0 0 12px currentColor!important;
+}
+.saldoContasResumoStatus{
+  margin-top:3px!important;
+  font-size:calc(9px * var(--fontScale,1))!important;
+  font-weight:900!important;
+}
+.sectionTitle button[data-sl-back="1"],
+.slBackVisual{
+  color:#fff!important;
+  border:1px solid var(--blue)!important;
+  background:#0b1522!important;
+  border-radius:8px!important;
+  padding:8px 10px!important;
+  box-shadow:0 0 10px #1f7aff55!important;
+  font-weight:900!important;
+}
+</style>
+<script id="sl-ajuste-resumo-saldo-voltar-js">
+(function(){
+  'use strict';
+  if(window.__SL_AJUSTE_RESUMO_SALDO_VOLTA_FINAL__) return;
+  window.__SL_AJUSTE_RESUMO_SALDO_VOLTA_FINAL__=true;
+
+  function numero(v){ return Number(v)||0; }
+  function moeda(v){
+    try{return typeof fmt==='function'?fmt(v):numero(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}catch(e){return 'R$ 0,00';}
+  }
+  function noPeriodo(m){
+    try{return typeof dentroFiltroData==='function'?dentroFiltroData(m):true;}catch(e){return true;}
+  }
+  function resumoReceitasDespesas(){
+    var receitas=0, despesas=0;
+    try{
+      (db.movs||[]).forEach(function(m){
+        if(!m || m.ignorado || m.pago===false || !noPeriodo(m)) return;
+        if(m.tipo==='receita') receitas+=numero(m.valor);
+        else if(m.tipo==='despesa') despesas+=numero(m.valor);
+      });
+    }catch(e){}
+    return {receitas:receitas,despesas:despesas,saldo:receitas-despesas};
+  }
+  function totalSaldosContas(){
+    var total=0;
+    try{
+      (db.contas||[]).forEach(function(c){
+        try{
+          if(typeof saldoConta==='function') total+=numero(saldoConta(c));
+          else total+=numero(c.saldo);
+        }catch(e){ total+=numero(c.saldo); }
+      });
+    }catch(e){}
+    return total;
+  }
+  function aplicarResumoSolicitado(){
+    var r=resumoReceitasDespesas();
+    var label=document.querySelector('#inicio .balance .balanceTop .label')||document.querySelector('#inicio .balance .label');
+    if(label) label.textContent='RESUMO DE SALDO';
+    var saldo=document.getElementById('saldoGeral');
+    if(saldo){saldo.innerText=moeda(r.saldo);saldo.className='value '+(r.saldo>=0?'green':'red');}
+    var status=document.getElementById('saldoStatus');
+    if(status){status.innerText=r.saldo>=0?'↗ POSITIVO':'↘ NEGATIVO';status.className=r.saldo>=0?'green':'red';}
+
+    var total=totalSaldosContas();
+    var contaTotal=document.getElementById('saldoContasTotal');
+    if(contaTotal){contaTotal.innerText=moeda(total);contaTotal.className='saldoContasResumoValor '+(total>=0?'green':'red');}
+    var contaStatus=document.getElementById('saldoContasStatus');
+    if(contaStatus){contaStatus.innerText=total>=0?'↗ POSITIVO':'↘ NEGATIVO';contaStatus.className='saldoContasResumoStatus '+(total>=0?'green':'red');}
+  }
+  window.aplicarResumoSolicitado=aplicarResumoSolicitado;
+
+  var renderAnterior=window.render;
+  window.render=function(){
+    var r;
+    try{if(typeof renderAnterior==='function') r=renderAnterior.apply(this,arguments);}catch(e){console.error('Render anterior:',e);}
+    try{aplicarResumoSolicitado();}catch(e){console.error('Resumo solicitado:',e);}
+    try{padronizarBotoesVoltar();}catch(e){}
+    return r;
+  };
+
+  function padronizarBotoesVoltar(root){
+    root=root||document;
+    var botoes=root.querySelectorAll?root.querySelectorAll('button'):[];
+    Array.prototype.forEach.call(botoes,function(btn){
+      var txt=(btn.textContent||'').trim();
+      if(!/VOLTAR/i.test(txt)) return;
+      txt=txt.replace(/^\s*(?:‹|<|←|⟵|⬅️?|↩️?|🔙)+\s*/u,'');
+      var desejado='⬅️ '+txt.toUpperCase();
+      if(btn.textContent!==desejado) btn.textContent=desejado;
+      btn.classList.add('slBackVisual');
+      if(/^⬅️?\s*VOLTAR$/iu.test(btn.textContent.trim())){
+        btn.setAttribute('data-sl-back','1');
+      }
+    });
+  }
+  window.padronizarBotoesVoltar=padronizarBotoesVoltar;
+
+  /* Evita que rotinas antigas de popstate executem em cascata. A rotina final de gesto
+     já instalada anteriormente (voltarAppSL) executa primeiro em capture e esta barreira
+     impede os handlers antigos seguintes de duplicarem o retorno. */
+  window.addEventListener('popstate',function(e){
+    try{e.stopImmediatePropagation();}catch(_e){}
+  },true);
+
+  /* Garante o ícone também em janelas/modais criados depois. */
+  var observer=new MutationObserver(function(muts){
+    try{
+      muts.forEach(function(m){Array.prototype.forEach.call(m.addedNodes||[],function(n){if(n&&n.nodeType===1)padronizarBotoesVoltar(n);});});
+    }catch(e){}
+  });
+  function iniciar(){
+    try{padronizarBotoesVoltar(document);}catch(e){}
+    try{aplicarResumoSolicitado();}catch(e){}
+    try{observer.observe(document.body,{childList:true,subtree:true});}catch(e){}
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',iniciar);
+  else setTimeout(iniciar,0);
+})();
+</script>
+<!-- ===== FIM AJUSTE FINAL SOLICITADO ===== -->
+
+<!-- AJUSTE FINAL: SETA VOLTAR ÚNICA ⬅️ -->
+<style id="SL_BACK_ARROW_EMOJI_ONLY">
+.slBackArrow{font-family:Arial,Helvetica,sans-serif!important;line-height:1!important}
+</style>
+<script id="SL_BACK_ARROW_EMOJI_ONLY_JS">
+(function(){
+  function setaVoltarEmoji(root){
+    root=root||document;
+    root.querySelectorAll && root.querySelectorAll('.backTitle button').forEach(function(b){
+      var t=(b.textContent||'').trim();
+      if(/^(?:‹|<|←|⟵|⬅️?|↩️?|🔙)$/.test(t)) b.textContent='⬅️';
+    });
+    root.querySelectorAll && root.querySelectorAll('button').forEach(function(b){
+      var t=(b.textContent||'').trim();
+      if(!/VOLTAR/i.test(t)) return;
+      var nome=t.replace(/^\s*(?:‹|<|←|⟵|⬅️?|↩️?|🔙)+\s*/u,'').trim();
+      b.textContent='⬅️ '+(nome||'VOLTAR').toUpperCase();
+      b.classList.add('slBackVisual');
+      b.setAttribute('data-sl-back','1');
+    });
+  }
+  window.setaVoltarEmoji=setaVoltarEmoji;
+  document.addEventListener('DOMContentLoaded',function(){setaVoltarEmoji(document);});
+  try{new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(function(n){if(n.nodeType===1)setaVoltarEmoji(n);});});}).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
+  setaVoltarEmoji(document);
+})();
+</script>
+</body>
+</html>
