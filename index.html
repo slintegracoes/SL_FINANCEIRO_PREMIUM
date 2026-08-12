@@ -12261,3 +12261,91 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 </body>
 </html>
+
+<!-- ===== CORREÇÃO DEFINITIVA V2: EXCLUIR PAGAMENTO REABRE FATURA ===== -->
+<script id="sl-correcao-definitiva-reabrir-fatura-v2">
+(function(){
+  'use strict';
+  function n(v){ return Number(v)||0; }
+  function banco(){ try{return (typeof db!=='undefined'&&db)?db:null;}catch(e){return null;} }
+  function trashId(){ return 'trash_'+Date.now()+'_'+Math.random().toString(36).slice(2,9); }
+  function paraLixeira(item){
+    var agora=new Date();
+    return Object.assign({},item,{
+      __trashId:trashId(),
+      apagadoEm:agora.toISOString(),
+      apagadoEmBR:agora.toLocaleString('pt-BR'),
+      expiraEm:new Date(agora.getTime()+48*60*60*1000).toISOString()
+    });
+  }
+  function chaveMov(m){
+    var k=String((m&&m.faturaKey)||'');
+    try{ if(typeof faturaKeyMov==='function') k=String(faturaKeyMov(m)||k); }catch(e){}
+    return k;
+  }
+  function reabrirPagamento(pg){
+    var b=banco(); if(!b||!pg)return 0;
+    var totalReaberto=0;
+    var refs=Array.isArray(pg.pagamentos)?pg.pagamentos:[];
+
+    refs.forEach(function(p){
+      var mov=(b.movs||[]).find(function(x){return String(x.id)===String(p.movId);});
+      if(!mov || mov.tipo!=='cartao')return;
+      var abat=Math.max(0,n(p.valor));
+      mov.valorPagoFatura=Math.max(0,n(mov.valorPagoFatura)-abat);
+      mov.pago=false;
+      totalReaberto+=abat;
+    });
+
+    /* Pagamentos antigos: localiza as compras pela mesma fatura/cartão e devolve o valor pago. */
+    if(totalReaberto<0.009){
+      var falta=Math.max(0,n(pg.valor));
+      var alvoKey=String(pg.faturaKey||'');
+      var candidatos=(b.movs||[]).filter(function(m){
+        return m && m.tipo==='cartao' && String(m.cartao||'')===String(pg.cartao||'') &&
+          (!alvoKey || chaveMov(m)===alvoKey) && n(m.valorPagoFatura)>0;
+      }).sort(function(a,c){return String(a.data||'').localeCompare(String(c.data||''));});
+
+      candidatos.forEach(function(m){
+        if(falta<=0.009)return;
+        var tirar=Math.min(n(m.valorPagoFatura),falta);
+        m.valorPagoFatura=Math.max(0,n(m.valorPagoFatura)-tirar);
+        m.pago=false;
+        falta-=tirar;
+        totalReaberto+=tirar;
+      });
+    }
+    return totalReaberto;
+  }
+  window.desfazerPagamentoFatura=reabrirPagamento;
+  try{desfazerPagamentoFatura=window.desfazerPagamentoFatura;}catch(e){}
+
+  var excluirAnterior=window.excluir;
+  window.excluir=function(id){
+    var b=banco();
+    if(!b)return alert('ERRO: BANCO DE DADOS NÃO CARREGADO');
+    var item=(b.movs||[]).find(function(x){return String(x.id)===String(id);});
+    if(!item)return;
+
+    if(item.origemTipo==='pagamentoFatura'){
+      var executar=function(){
+        reabrirPagamento(item);
+        b.lixeira=Array.isArray(b.lixeira)?b.lixeira:[];
+        b.lixeira.unshift(paraLixeira(item));
+        b.movs=(b.movs||[]).filter(function(x){return String(x.id)!==String(id);});
+        try{ if(typeof save==='function') save(); else localStorage.setItem('financeiroPremium',JSON.stringify(b)); }catch(e){}
+        try{ if(typeof render==='function') render(); }catch(e){}
+        try{ if(typeof atualizarBotaoFaturasFechadas==='function') atualizarBotaoFaturasFechadas(); }catch(e){}
+      };
+      if(typeof pedirConfirmacao==='function'){
+        return pedirConfirmacao('EXCLUIR PAGAMENTO DA FATURA','AO EXCLUIR ESTE PAGAMENTO, A FATURA VOLTARÁ A FICAR PENDENTE PARA PAGAR NOVAMENTE. DESEJA CONTINUAR?',executar);
+      }
+      if(confirm('EXCLUIR O PAGAMENTO E REABRIR A FATURA?'))executar();
+      return;
+    }
+
+    if(typeof excluirAnterior==='function')return excluirAnterior.apply(this,arguments);
+  };
+  try{excluir=window.excluir;}catch(e){}
+})();
+</script>
