@@ -12053,5 +12053,211 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   setaVoltarEmoji(document);
 })();
 </script>
+
+
+<!-- ===== PATCH 2026-08-12: FATURA / EDIÇÃO CARTÃO / AÇÕES DESFAZER-REFAZER ===== -->
+<style id="sl-patch-acoes-undo-redo-css">
+.slActionsHistory{display:grid;grid-template-columns:64px 1fr 64px;gap:10px;align-items:center;margin:10px 0 0}
+.slActionsHistory button{height:48px;border:1.5px solid var(--gold);border-radius:14px;background:#0b1522;color:#fff;font-size:24px;font-weight:900;box-shadow:0 0 12px #f2b63255}
+.slActionsHistory button:disabled{opacity:.32;filter:grayscale(1);box-shadow:none}
+.slActionsHistory strong{text-align:center;color:var(--gold);font-size:calc(14px * var(--fontScale,1));letter-spacing:.7px}
+</style>
+<script id="sl-patch-fatura-edicao-acoes-20260812">
+(function(){
+  'use strict';
+
+  function n(v){return Number(v)||0;}
+  function cloneJson(v){return JSON.parse(JSON.stringify(v));}
+  function persistirSemHistorico(){
+    try{localStorage.setItem('financeiroPremium',JSON.stringify(db));}catch(e){}
+    try{if(typeof render==='function')render();}catch(e){console.error(e);}
+  }
+
+  /* 1) Ao excluir um pagamento de fatura, reabre exatamente os valores abatidos. */
+  window.desfazerPagamentoFatura=function(pg){
+    if(!pg)return;
+    var restaurado=0;
+    var refs=Array.isArray(pg.pagamentos)?pg.pagamentos:[];
+    refs.forEach(function(p){
+      var m=(db.movs||[]).find(function(x){return String(x.id)===String(p.movId);});
+      if(!m)return;
+      var abat=Math.max(0,n(p.valor));
+      m.valorPagoFatura=Math.max(0,n(m.valorPagoFatura)-abat);
+      if(n(m.valor)-n(m.valorPagoFatura)>0.009)m.pago=false;
+      restaurado+=abat;
+    });
+
+    /* Compatibilidade com pagamentos antigos que não gravaram o mapa `pagamentos`. */
+    if(restaurado<0.009){
+      var falta=Math.max(0,n(pg.valor));
+      var candidatos=(db.movs||[]).filter(function(m){
+        if(!m||m.tipo!=='cartao'||String(m.cartao||'')!==String(pg.cartao||''))return false;
+        var k=String(m.faturaKey||'');
+        try{if(typeof faturaKeyMov==='function')k=String(faturaKeyMov(m)||k);}catch(e){}
+        return (!pg.faturaKey || k===String(pg.faturaKey)) && n(m.valorPagoFatura)>0;
+      }).sort(function(a,b){return String(b.data||'').localeCompare(String(a.data||''));});
+      candidatos.forEach(function(m){
+        if(falta<=0.009)return;
+        var tirar=Math.min(n(m.valorPagoFatura),falta);
+        m.valorPagoFatura=Math.max(0,n(m.valorPagoFatura)-tirar);
+        if(n(m.valor)-n(m.valorPagoFatura)>0.009)m.pago=false;
+        falta-=tirar;
+      });
+    }
+  };
+  try{desfazerPagamentoFatura=window.desfazerPagamentoFatura;}catch(e){}
+
+  /* 2) Editar compra preserva a fatura em que ela já estava. Só muda se o usuário mudar o destino. */
+  function keyEscolhida(cartaoId,data,old){
+    var sel=document.getElementById('faturaDestino');
+    if(!sel)return String(old.faturaKey||'');
+    var v=String(sel.value||'');
+    if(v.indexOf('|')>=0)return v;
+    var off=Number(v||0);
+    try{if(typeof faturaKeyFrom==='function')return faturaKeyFrom(cartaoId,data,off);}catch(e){}
+    return String(old.faturaKey||'');
+  }
+  window.salvarCompraEditada=function(){
+    var id=(typeof editId!=='undefined'&&editId)||window.editId||null;
+    var old=(db.movs||[]).find(function(x){return String(x.id)===String(id);});
+    if(!old)return alert('COMPRA NÃO ENCONTRADA.');
+    var cartaoId=(document.getElementById('cartao')||{}).value||old.cartao;
+    if(!cartaoId)return alert('CADASTRE UM CARTÃO PRIMEIRO');
+    var valor=n((document.getElementById('valor')||{}).value);
+    if(valor<=0)return alert('DIGITE UM VALOR');
+    var data=(document.getElementById('data')||{}).value||old.data||localISODate();
+    var key=keyEscolhida(cartaoId,data,old)||old.faturaKey||'';
+    var label='';
+    try{label=typeof faturaLabelFromKey==='function'?faturaLabelFromKey(key):String(old.faturaLabel||'');}catch(e){label=String(old.faturaLabel||'');}
+    var baseDesc=((document.getElementById('desc')||{}).value||old.descBase||old.desc||'Compra').trim();
+    baseDesc=baseDesc.replace(/\s+\d+\/\d+\s*$/,'').trim();
+    var pa=n(old.parcelaAtual)||null, pt=n(old.parcelaTotal||old.totalParcelas)||null;
+    var desc=(pt&&pt>1&&pa)?baseDesc+' '+pa+'/'+pt:baseDesc;
+    var mov=Object.assign({},old,{
+      id:old.id,
+      cartao:cartaoId,
+      faturaKey:key,
+      faturaLabel:label,
+      desc:desc,
+      descBase:baseDesc,
+      valor:valor,
+      cat:(document.getElementById('cat')||{}).value||old.cat||'Cartão',
+      data:data,
+      obs:'Compra no cartão'+(label?' • '+label:''),
+      valorPagoFatura:Math.min(n(old.valorPagoFatura),valor)
+    });
+    if(n(mov.valor)-n(mov.valorPagoFatura)>0.009)mov.pago=false;
+    db.movs=(db.movs||[]).map(function(x){return String(x.id)===String(old.id)?mov:x;});
+    try{editId=null;}catch(e){} window.editId=null;
+    if(typeof closeModal==='function')closeModal();
+    if(typeof save==='function')save();else persistirSemHistorico();
+  };
+  try{salvarCompraEditada=window.salvarCompraEditada;}catch(e){}
+
+  /* Nova compra nunca reaproveita o ID/campos da última edição. */
+  var abrirCompraBase=window.abrirCompraCartaoDireta;
+  if(typeof abrirCompraBase==='function'){
+    window.abrirCompraCartaoDireta=function(id){
+      if(!id){try{editId=null;}catch(e){} window.editId=null;}
+      return abrirCompraBase.call(this,id||null);
+    };
+    try{abrirCompraCartaoDireta=window.abrirCompraCartaoDireta;}catch(e){}
+  }
+
+  /* Também limpa o estado de edição ao salvar uma compra nova. */
+  var salvarCompraNovaBase=window.salvarCompraCartao;
+  if(typeof salvarCompraNovaBase==='function'){
+    window.salvarCompraCartao=function(){
+      var r=salvarCompraNovaBase.apply(this,arguments);
+      try{editId=null;}catch(e){} window.editId=null;
+      return r;
+    };
+    try{salvarCompraCartao=window.salvarCompraCartao;}catch(e){}
+  }
+
+  /* 3) Histórico de AÇÕES: snapshot anterior é capturado toda vez que save() confirma uma mudança. */
+  var undoStack=[], redoStack=[], aplicandoHistorico=false, maxAcoes=60;
+  var ultimoPersistido='';
+  try{ultimoPersistido=localStorage.getItem('financeiroPremium')||JSON.stringify(db);}catch(e){ultimoPersistido=JSON.stringify(db);}
+  var saveBase=window.save;
+  function atualizarBotoesAcoes(){
+    var u=document.getElementById('slUndoAction'), r=document.getElementById('slRedoAction');
+    if(u)u.disabled=!undoStack.length;
+    if(r)r.disabled=!redoStack.length;
+  }
+  if(typeof saveBase==='function'){
+    window.save=function(){
+      var atual='';
+      try{atual=JSON.stringify(db);}catch(e){}
+      if(!aplicandoHistorico && ultimoPersistido && atual && atual!==ultimoPersistido){
+        undoStack.push(ultimoPersistido);
+        if(undoStack.length>maxAcoes)undoStack.shift();
+        redoStack=[];
+      }
+      var out=saveBase.apply(this,arguments);
+      try{ultimoPersistido=JSON.stringify(db);}catch(e){}
+      atualizarBotoesAcoes();
+      return out;
+    };
+    try{save=window.save;}catch(e){}
+  }
+
+  function aplicarSnapshot(txt){
+    var novo=JSON.parse(txt);
+    aplicandoHistorico=true;
+    try{
+      db=cloneJson(novo);
+      window.db=db;
+      localStorage.setItem('financeiroPremium',JSON.stringify(db));
+      ultimoPersistido=JSON.stringify(db);
+      if(typeof closeModal==='function')closeModal();
+      if(typeof render==='function')render();
+    }finally{aplicandoHistorico=false;}
+  }
+  window.slDesfazerAcao=function(){
+    if(!undoStack.length)return;
+    var atual=JSON.stringify(db), anterior=undoStack.pop();
+    redoStack.push(atual);
+    aplicarSnapshot(anterior);
+    atualizarBotoesAcoes();
+  };
+  window.slRefazerAcao=function(){
+    if(!redoStack.length)return;
+    var atual=JSON.stringify(db), proximo=redoStack.pop();
+    undoStack.push(atual);
+    aplicarSnapshot(proximo);
+    atualizarBotoesAcoes();
+  };
+
+  function inserirAcoesConfig(){
+    var body=document.getElementById('modalBody');
+    if(!body||body.querySelector('#slActionsHistoryBox'))return;
+    var box=document.createElement('div');
+    box.id='slActionsHistoryBox'; box.className='editorGroup';
+    box.innerHTML='<h3>↩️ HISTÓRICO DE AÇÕES</h3><div class="slActionsHistory"><button id="slUndoAction" type="button" onclick="slDesfazerAcao()" title="DESFAZER">⬅️</button><strong> AÇÕES </strong><button id="slRedoAction" type="button" onclick="slRefazerAcao()" title="REFAZER">➡️</button></div>';
+    body.insertBefore(box,body.firstChild);
+    atualizarBotoesAcoes();
+  }
+  var openBase=window.openModal;
+  if(typeof openBase==='function'){
+    window.openModal=function(type,id){
+      var out=openBase.apply(this,arguments);
+      if(type==='config'||type==='temas')setTimeout(inserirAcoesConfig,0);
+      return out;
+    };
+    try{openModal=window.openModal;}catch(e){}
+  }
+
+  /* Se configurações já estiver aberta durante atualização, injeta agora. */
+  setTimeout(function(){
+    try{
+      var body=document.getElementById('modalBody');
+      if(body && /CONFIGURA/i.test(body.textContent||'')) inserirAcoesConfig();
+    }catch(e){}
+  },0);
+})();
+</script>
+<!-- ===== FIM PATCH 2026-08-12 ===== -->
+
 </body>
 </html>
