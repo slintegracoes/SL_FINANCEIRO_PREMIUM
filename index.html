@@ -904,7 +904,7 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
     <div id="relDetalhes"></div>
   </section>
 
-  <section id="historico" class="screen">
+    <section id="historico" class="screen">
     <div class="sectionTitle"><h2 id="historicoTitulo">📜 Histórico</h2><button onclick="if(window.voltarAppSL){voltarAppSL()}else{showScreen('inicio')}">⬅️ VOLTAR</button></div>
     <p id="historicoSubtitulo" class="muted" style="margin-top:-6px;margin-bottom:12px"></p>
 
@@ -11144,11 +11144,19 @@ button[onclick="openModal('temas')"],button[onclick='openModal("temas")']{displa
   function passaFiltrosDaTela(m){
     if(!m) return true;
     var tela=(typeof filtro!=='undefined')?filtro:'todos';
-    if((tela==='receita'||tela==='despesa') && window.slFiltroTelaConta!=='todos'){
-      if(String(m.conta||'')!==String(window.slFiltroTelaConta)) return false;
+    // FILTRA CONTA EM TODAS AS TELAS PRINCIPAIS, INCLUSIVE HISTÓRICO GERAL
+    if(window.slFiltroTelaConta!=='todos'){
+      if(m.tipo!=='cartao'){
+        if(String(m.conta||'')!==String(window.slFiltroTelaConta)) return false;
+      } else {
+        // no cartão, só filtra se o movimento tiver conta vinculada (pagamento)
+        if(m.conta && String(m.conta)!==String(window.slFiltroTelaConta)) return false;
+      }
     }
-    if((tela==='receita'||tela==='despesa'||tela==='cartao') && window.slFiltroTelaCategoria!=='todos'){
-      if(String(m.cat||'Sem categoria')!==String(window.slFiltroTelaCategoria)) return false;
+    if(window.slFiltroTelaCategoria!=='todos'){
+      if(tela!=='cartao' || true){
+        if(String(m.cat||'Sem categoria')!==String(window.slFiltroTelaCategoria)) return false;
+      }
     }
     if(tela==='cartao' && window.slFiltroTelaCartao!=='todos'){
       if(String(m.cartao||'')!==String(window.slFiltroTelaCartao)) return false;
@@ -12463,7 +12471,7 @@ window.renderMovs=function(){
     if(typeof renderMovsBase==='function') return renderMovsBase.apply(this,arguments);
   }
   // Se for 3 abas principais não pendentes
-  if(!pend && (tela==='receita' || tela==='despesa' || tela==='cartao')){
+  if(!pend && (tela==='receita' || tela==='despesa' || tela==='cartao' || tela==='todos' || tela==='contas')){
     try{
       var arr = (typeof window.movsFiltradosAtuais==='function')?window.movsFiltradosAtuais():[];
       var titulo=document.getElementById('historicoTitulo');
@@ -12471,6 +12479,8 @@ window.renderMovs=function(){
         if(tela==='receita') titulo.innerText='📜 RECEITAS';
         else if(tela==='despesa') titulo.innerText='📜 DESPESAS';
         else if(tela==='cartao') titulo.innerText='📜 GASTOS COM CARTÃO';
+        else if(tela==='contas') titulo.innerText='📜 HISTÓRICO - CONTAS';
+        else titulo.innerText='📜 HISTÓRICO GERAL';
       }
       var sub=document.getElementById('historicoSubtitulo');
       if(sub){sub.innerText=''; sub.style.display='none';}
@@ -12495,7 +12505,105 @@ if(typeof abrirCategoriaBase==='function'){
 
 })();
 </script>
+
+
+<!-- PATCH DEFINITIVO: CLICAR NA CONTA ABRE HISTÓRICO GERAL FILTRADO SOMENTE ELA -->
+<script id="patch-historico-so-filtro-conta">
+(function(){
+  'use strict';
+  function abrirHistConta(id){
+    if(!id) return;
+    try{
+      // Filtro principal
+      window.slFiltroTelaConta = id;
+      window.__slFiltroContaHistorico = id;
+      window.filtroContaHistorico = id;
+      try{ localStorage.setItem('sl_filtro_conta_ativo', id); }catch(e){}
+      
+      window.slFiltroTelaCategoria = 'todos';
+      window.slFiltroTelaCartao = 'todos';
+      window.selPrincipal = [];
+      // Força ir para histórico geral
+      if(typeof filtro!=='undefined') filtro='todos';
+      window.filtro = 'todos';
+      if(window.filtroPendencia!==undefined) window.filtroPendencia=false;
+      
+      if(typeof showScreen==='function') showScreen('historico');
+      
+      // Atualiza os selects do histórico
+      setTimeout(function(){
+        var sels = document.querySelectorAll('select');
+        sels.forEach(function(sel){
+          // verifica se é select de conta
+          if(sel.innerHTML && sel.innerHTML.includes('FILTRO CONTA')){
+            sel.value = id;
+          }
+        });
+        if(typeof render==='function') render();
+      }, 50);
+      
+      setTimeout(function(){
+        if(typeof render==='function') render();
+        // Atualiza título para mostrar nome da conta
+        try{
+          var dbContas = (typeof db!=='undefined' && db.contas) ? db.contas : [];
+          var c = dbContas.find(function(x){ return String(x.id)===String(id); });
+          var titulo = document.getElementById('historicoTitulo');
+          if(titulo && c){
+            titulo.innerText = '📜 HISTÓRICO - ' + (c.nome||'CONTA').toUpperCase();
+          }
+        }catch(e){}
+      }, 200);
+    }catch(e){ console.error(e); }
+  }
+  window.abrirHistoricoConta = abrirHistConta;
+
+  document.addEventListener('click', function(e){
+    // Não interfere em botões + / - / editar / ícone
+    if(e.target.closest('button')) return;
+    if(e.target.closest('.clickIcon')) return;
+    if(e.target.closest('.accountBtns')) return;
+    
+    var card = e.target.closest('.contaUltraCard, .slContaOficial, [data-conta-id]');
+    if(!card) return;
+    
+    // Só funciona na tela de início ou contas, não no histórico
+    var telaAtiva = document.querySelector('.screen.active');
+    if(telaAtiva && telaAtiva.id==='historico') return;
+    
+    var id = card.getAttribute('data-conta-id');
+    if(!id){
+      var inner = card.querySelector('[data-conta-id]');
+      if(inner) id = inner.getAttribute('data-conta-id');
+    }
+    if(!id) return;
+    
+    abrirHistConta(id);
+  });
+
+  // Ao voltar para TODOS, limpar filtro de conta se clicar em todos
+  var originalSlMudar = window.slMudarFiltroTela;
+  // será sobrescrito depois pelo patch original, então interceptamos via evento no select
+  document.addEventListener('change', function(e){
+    var sel = e.target;
+    if(sel.tagName==='SELECT' && sel.innerHTML && sel.innerHTML.includes('FILTRO CONTA')){
+      if(sel.value==='todos'){
+        window.slFiltroTelaConta='todos';
+        window.__slFiltroContaHistorico='todos';
+        try{ localStorage.removeItem('sl_filtro_conta_ativo'); }catch(err){}
+        try{
+          var titulo=document.getElementById('historicoTitulo');
+          if(titulo) titulo.innerText='📜 HISTÓRICO GERAL';
+        }catch(err){}
+      }
+    }
+  });
+
+})();
+</script>
+
 </body>
+
 </html>
 
 <!-- ===== CORREÇÃO DEFINITIVA V2: EXCLUIR PAGAMENTO REABRE FATURA ===== -->
