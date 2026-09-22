@@ -12670,6 +12670,169 @@ if(typeof abrirCategoriaBase==='function'){
 })();
 </script>
 
+
+<script id="SL_FIX_DEFINITIVO_ACHA_ERROS">
+(function(){
+  console.log('=== INICIANDO FIX DEFINITIVO ===');
+  function n(v){return Number(v)||0;}
+  function arr(v){return Array.isArray(v)?v:[];}
+  function ymSel(){
+    try{
+      if(typeof histAno!=='undefined' && typeof histMes!=='undefined' && histAno!==null){
+        return String(histAno)+'-'+String(Number(histMes)+1).padStart(2,'0');
+      }
+    }catch(e){}
+    var di=(document.getElementById('dataInicio')||{}).value||'';
+    if(/^\d{4}-\d{2}/.test(di)) return di.slice(0,7);
+    var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  }
+  function ymMov(m){
+    var k=String((m&&m.faturaKey)||'');
+    var a=k.match(/(\d{4})-(\d{2})/);
+    if(a) return a[1]+'-'+a[2];
+    var data=String((m&&m.data)||'');
+    return /^\d{4}-\d{2}/.test(data)?data.slice(0,7):'';
+  }
+
+  // Limpa todos os filtros que estavam escondendo
+  window.slFiltroTelaConta = window.slFiltroTelaConta || 'todos';
+  window.slFiltroTelaCategoria = window.slFiltroTelaCategoria || 'todos';
+  window.slFiltroTelaCartao = window.slFiltroTelaCartao || 'todos';
+  window.slFiltroTipoPrincipal = 'todos';
+
+  // SUBSTITUI COMPLETAMENTE movsFiltradosAtuais - ignora closures antigos
+  window.movsFiltradosAtuais = function(){
+    try{
+      var busca=(document.getElementById('busca')?.value||'').toLowerCase();
+      var di=document.getElementById('dataInicio')?.value||'';
+      var df=document.getElementById('dataFim')?.value||'';
+      var lista = arr((typeof db!=='undefined' && db.movs)?db.movs:[]);
+
+      // Ordena por data desc (igual original)
+      lista = [...lista].sort(function(a,b){
+        return String(b.data||'').localeCompare(String(a.data||'')) || String(b.id||'').localeCompare(String(a.id||''));
+      });
+
+      // Filtro base do original
+      lista = lista.filter(function(m){
+        try{
+          if(typeof passaFiltroCategoria==='function' && !passaFiltroCategoria(m)) return false;
+        }catch(e){}
+        if(typeof filtroPendencia!=='undefined' && filtroPendencia){
+          if(m.pago!==false || m.ignorado) return false;
+        }
+        if(typeof filtro!=='undefined' && filtro==='ignorados'){
+          if(!m.ignorado) return false;
+        }
+        if(di && String(m.data||'')<di) return false;
+        if(df && String(m.data||'')>df) return false;
+        if(typeof pendCategoriaFiltro!=='undefined' && pendCategoriaFiltro!=='todos'){
+          if(filtroPendencia && String(m.cat||'Sem categoria')!==String(pendCategoriaFiltro)) return false;
+        }
+        if(busca){
+          var desc=String(m.desc||'').toLowerCase();
+          var cat=String(m.cat||'').toLowerCase();
+          if(!desc.includes(busca) && !cat.includes(busca)) return false;
+        }
+        return true;
+      });
+
+      // *** CORREÇÃO PRINCIPAL PARA GASTOS COM CARTÃO ***
+      if(typeof filtro!=='undefined' && filtro==='cartao'){
+        var ym = ymSel();
+        console.log('Filtrando GASTOS COM CARTÃO para mês:', ym, 'total antes:', lista.length);
+        // Se não tem data manual, filtra por faturaKey
+        if(!di || !df){
+          lista = lista.filter(function(m){
+            if(!m || m.tipo!=='cartao') return false;
+            if(m.ignorado) return false;
+            var ymM = ymMov(m);
+            return ymM===ym;
+          });
+        } else {
+          // Se tem data manual, só mostra cartão
+          lista = lista.filter(function(m){ return m&&m.tipo==='cartao'&&!m.ignorado; });
+        }
+        console.log('Depois filtro cartão:', lista.length);
+
+        // Aplica filtros extras de conta/categoria/cartão se selecionados
+        if(window.slFiltroTelaCartao && window.slFiltroTelaCartao!=='todos'){
+          lista = lista.filter(function(m){ return String(m.cartao||'')===String(window.slFiltroTelaCartao); });
+        }
+        if(window.slFiltroTelaCategoria && window.slFiltroTelaCategoria!=='todos'){
+          lista = lista.filter(function(m){ return String(m.cat||'')===String(window.slFiltroTelaCategoria); });
+        }
+        return lista;
+      }
+
+      // Para outras telas (todos, receita, despesa), esconde cartão no todos (comportamento original)
+      if(typeof filtro!=='undefined' && filtro==='todos'){
+        lista = lista.filter(function(m){ return m.tipo!=='cartao'; });
+      }
+
+      // Aplica filtros de conta/categoria/cartão para histórico geral
+      if(window.slFiltroTelaConta && window.slFiltroTelaConta!=='todos'){
+        lista = lista.filter(function(m){ return String(m.conta||'')===String(window.slFiltroTelaConta); });
+      }
+      if(window.slFiltroTelaCategoria && window.slFiltroTelaCategoria!=='todos'){
+        lista = lista.filter(function(m){ return String(m.cat||'')===String(window.slFiltroTelaCategoria); });
+      }
+      if(window.slFiltroTelaCartao && window.slFiltroTelaCartao!=='todos'){
+        lista = lista.filter(function(m){ return String(m.cartao||'')===String(window.slFiltroTelaCartao); });
+      }
+
+      return lista;
+    }catch(e){
+      console.error('Erro em movsFiltradosAtuais fix:', e);
+      return arr((typeof db!=='undefined' && db.movs)?db.movs:[]);
+    }
+  };
+  try{ movsFiltradosAtuais = window.movsFiltradosAtuais; }catch(e){}
+
+  // Garante que renderMovs use a nova função
+  if(window.renderOriginal && typeof window.renderOriginal==='function'){
+    // já tem
+  } else if(typeof window.render==='function'){
+    window.renderOriginal = window.render;
+  }
+
+  window.render = function(){
+    var r;
+    try{ if(window.renderOriginal) r=window.renderOriginal.apply(this,arguments); }catch(e){console.error('renderOriginal erro',e);}
+    try{
+      // Força atualizar totais de cartão
+      var ym = ymSel();
+      var movsCartao = arr((typeof db!=='undefined' && db.movs)?db.movs:[]).filter(function(m){return m.tipo==='cartao'&&!m.ignorado&&ymMov(m)===ym;});
+      var total = movsCartao.reduce(function(s,m){return s+n(m.valor);},0);
+      // Atualiza boxes se estiver na tela de cartão
+      if(typeof filtro!=='undefined' && filtro==='cartao'){
+        console.log('Tela cartão - total calculado:', total, 'qtd:', movsCartao.length);
+      }
+    }catch(e){}
+    return r;
+  };
+  try{ render = window.render; }catch(e){}
+
+  // Debug: mostra o que tem no db
+  setTimeout(function(){
+    try{
+      var all = arr((typeof db!=='undefined' && db.movs)?db.movs:[]);
+      var cartoes = all.filter(function(m){return m.tipo==='cartao';});
+      console.log('DB total:', all.length, 'cartoes:', cartoes.length);
+      cartoes.forEach(function(m){
+        console.log('Cartao:', m.desc, 'data:', m.data, 'faturaKey:', m.faturaKey, 'ymMov:', ymMov(m), 'valor:', m.valor);
+      });
+      console.log('Filtro atual:', typeof filtro!=='undefined'?filtro:'indef', 'ymSel:', ymSel());
+      var filtrados = window.movsFiltradosAtuais();
+      console.log('Filtrados na tela atual:', filtrados.length);
+      window.render();
+    }catch(e){ console.error('debug erro', e); }
+  }, 500);
+
+  console.log('=== FIX DEFINITIVO APLICADO ===');
+})();
+</script>
+
 </body>
 
 </html>
