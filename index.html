@@ -11191,10 +11191,6 @@ window.slMudarFiltroTela=function(tipo,valor){
     window.slFiltroTelaConta='todos';
     window.slFiltroTelaCategoria='todos';
     window.slFiltroTelaCartao='todos';
-    // Independente: ao entrar em RECEITAS ou DESPESAS, reseta filtro TODOS/RECEITA/DESPESA do histórico geral
-    if(tipo==='receita' || tipo==='despesa'){
-      window.slFiltroTipoPrincipal='todos';
-    }
     return abrirCategoriaBase.apply(this,arguments);
   };
   try{abrirCategoria=window.abrirCategoria;}catch(e){}
@@ -12432,7 +12428,32 @@ window.slPrincipalAlternar=function(id, checked){
 
 function principalToolsHTML(arr, tela){
   function n2(v){ return Number(v)||0; }
-  // CALCULO CORRETO: SOMENTE RECEITA - DESPESA (SEM CARTAO)
+
+  // Se for CARTÃO, usa layout antigo: TOTAL DAS COMPRAS / TOTAL SELECIONADO
+  if(tela==='cartao'){
+    var totalCompras = 0;
+    arr.forEach(function(m){ totalCompras += n2(m.valor); });
+    var selArrCart = arr.filter(function(m){return window.selPrincipal.indexOf(String(m.id))>=0;});
+    var totalSelecionadoCart = 0;
+    selArrCart.forEach(function(m){ totalSelecionadoCart += n2(m.valor); });
+
+    var filtro1 = '<select onchange="slMudarFiltroTela(\'cartao\',this.value)">'+opCartoesPrincipal()+'</select>';
+    var filtro2 = '<select onchange="slMudarFiltroTela(\'categoria\',this.value)">'+opCatsPrincipal(tela)+'</select>';
+
+    return '<div class="ignoredToolsFinal">'+
+      '<div class="ignoredFiltersFinal">'+filtro1+filtro2+'</div>'+
+      '<div class="ignoredTotalsFinal">'+
+        '<div class="ignoredTotalCard" style="border-color:#1f7aff;background:#0e1f2e"><b style="color:#9fb3c8">🟦 TOTAL DAS COMPRAS</b><span style="color:#1f7aff;font-size:calc(18px * var(--fontScale,1))">'+moeda(totalCompras)+'</span></div>'+
+        '<div class="ignoredTotalCard selected" style="border-color:#31d158"><b style="color:#31d158">🟩 TOTAL SELECIONADO</b><span style="color:#31d158">'+moeda(totalSelecionadoCart)+'</span></div>'+
+      '</div>'+
+      '<div class="ignoredButtonsFinal">'+
+        '<button class="selectAll" onclick="slPrincipalSelecionarTodos()">SELECIONAR TODOS</button>'+
+        '<button class="clearAll" onclick="slPrincipalLimpar()" style="background:#ff453a;margin-top:8px">LIMPAR SELEÇÃO</button>'+
+      '</div>'+
+    '</div>';
+  }
+
+  // CALCULO CORRETO: SOMENTE RECEITA - DESPESA (SEM CARTAO) - PARA RECEITA/DESPESA/HISTORICO
   var totalReceita=0, totalDespesa=0;
   arr.forEach(function(m){
     var v=n2(m.valor);
@@ -12453,14 +12474,14 @@ function principalToolsHTML(arr, tela){
   var filtro1 = (tela==='cartao') ? '<select onchange="slMudarFiltroTela(\'cartao\',this.value)">'+opCartoesPrincipal()+'</select>' : '<select onchange="slMudarFiltroTela(\'conta\',this.value)">'+opContasPrincipal()+'</select>';
   var filtro2 = '<select onchange="slMudarFiltroTela(\'categoria\',this.value)">'+opCatsPrincipal(tela)+'</select>';
 
-  // 3 BOTOES PARA FILTRAR: TODOS / RECEITAS / DESPESAS - SÓ MOSTRA NO HISTÓRICO GERAL (TODOS), NÃO EM RECEITAS/DESPESAS
+  // 3 BOTOES PARA FILTRAR: TODOS / RECEITAS / DESPESAS - SÓ NO HISTÓRICO GERAL
   var tipo = window.slFiltroTipoPrincipal||'todos';
-  var isReceitaOuDespesa = (tela==='receita' || tela==='despesa');
+  var isTelaEspecifica = (tela==='receita' || tela==='despesa' || tela==='cartao');
   var btnTodos = '';
   var btnRec = '';
   var btnDes = '';
   var botoesFiltroHTML = '';
-  if(!isReceitaOuDespesa){
+  if(!isTelaEspecifica){
     btnTodos = '<button class="'+(tipo==='todos'?'active':'')+'" onclick="slMudarFiltroTipoPrincipal(\'todos\')" style="background:'+(tipo==='todos'?'#1f7aff':'#0b1522')+';border:1px solid '+(tipo==='todos'?'#1f7aff':'#203751')+';color:#fff;border-radius:12px;padding:10px 14px;font-weight:900">💰 TODOS</button>';
     btnRec = '<button class="'+(tipo==='receita'?'active':'')+'" onclick="slMudarFiltroTipoPrincipal(\'receita\')" style="background:'+(tipo==='receita'?'#148a30':'#0b1522')+';border:1px solid '+(tipo==='receita'?'#31d158':'#203751')+';color:#fff;border-radius:12px;padding:10px 14px;font-weight:900">📈 RECEITAS</button>';
     btnDes = '<button class="'+(tipo==='despesa'?'active':'')+'" onclick="slMudarFiltroTipoPrincipal(\'despesa\')" style="background:'+(tipo==='despesa'?'#b91c1c':'#0b1522')+';border:1px solid '+(tipo==='despesa'?'#ff453a':'#203751')+';color:#fff;border-radius:12px;padding:10px 14px;font-weight:900">📉 DESPESAS</button>';
@@ -12480,7 +12501,7 @@ function principalToolsHTML(arr, tela){
     '</div>'+
     '<div class="ignoredButtonsFinal">'+
       '<button class="selectAll" onclick="slPrincipalSelecionarTodos()">SELECIONAR TODOS</button>'+
-      '<button class="clearAll" onclick="slPrincipalLimpar()">LIMPAR SELEÇÃO</button>'+
+      '<button class="clearAll" onclick="slPrincipalLimpar()" style="background:#ff453a;margin-top:8px">LIMPAR SELEÇÃO</button>'+
     '</div>'+
   '</div>';
 }
