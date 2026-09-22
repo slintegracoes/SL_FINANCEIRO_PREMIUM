@@ -11141,24 +11141,24 @@ button[onclick="openModal('temas')"],button[onclick='openModal("temas")']{displa
     return (!di||String(m.data||'')>=di)&&(!df||String(m.data||'')<=df);
   };
 
-  function passaFiltrosDaTela(m){
+      function passaFiltrosDaTela(m){
     if(!m) return true;
-    var tela=(typeof filtro!=='undefined')?filtro:'todos';
-    // FILTRA CONTA EM TODAS AS TELAS PRINCIPAIS, INCLUSIVE HISTÓRICO GERAL
-    if(window.slFiltroTelaConta!=='todos'){
-      if(m.tipo!=='cartao'){
-        if(String(m.conta||'')!==String(window.slFiltroTelaConta)) return false;
-      } else {
-        // no cartão, só filtra se o movimento tiver conta vinculada (pagamento)
-        if(m.conta && String(m.conta)!==String(window.slFiltroTelaConta)) return false;
-      }
+    // NOVO: 3 BOTOES TODOS/RECEITA/DESPESA (sem cartao no TODOS das somas)
+    if(window.slFiltroTipoPrincipal && window.slFiltroTipoPrincipal!=='todos'){
+      if(window.slFiltroTipoPrincipal==='receita' && m.tipo!=='receita') return false;
+      if(window.slFiltroTipoPrincipal==='despesa' && m.tipo!=='despesa') return false;
+    } else {
+      // Quando TODOS, mostra só receita e despesa (esconde cartao para total das somas ser correto)
+      // Se quiser mostrar cartao no TODOS, comente a linha abaixo
+      if(m.tipo==='cartao') return false;
     }
-    if(window.slFiltroTelaCategoria!=='todos'){
-      if(tela!=='cartao' || true){
-        if(String(m.cat||'Sem categoria')!==String(window.slFiltroTelaCategoria)) return false;
-      }
+    if(window.slFiltroTelaConta && window.slFiltroTelaConta!=='todos'){
+      if(String(m.conta||'')!==String(window.slFiltroTelaConta)) return false;
     }
-    if(tela==='cartao' && window.slFiltroTelaCartao!=='todos'){
+    if(window.slFiltroTelaCategoria && window.slFiltroTelaCategoria!=='todos'){
+      if(String(m.cat||'Sem categoria')!==String(window.slFiltroTelaCategoria)) return false;
+    }
+    if(window.slFiltroTelaCartao && window.slFiltroTelaCartao!=='todos'){
       if(String(m.cartao||'')!==String(window.slFiltroTelaCartao)) return false;
     }
     return true;
@@ -11172,7 +11172,13 @@ button[onclick="openModal('temas')"],button[onclick='openModal("temas")']{displa
   };
   try{movsFiltradosAtuais=window.movsFiltradosAtuais;}catch(e){}
 
-  window.slMudarFiltroTela=function(tipo,valor){
+    window.slFiltroTipoPrincipal = window.slFiltroTipoPrincipal || 'todos';
+  window.slMudarFiltroTipoPrincipal=function(valor){
+    window.slFiltroTipoPrincipal=valor||'todos';
+    try{window.selPrincipal=[];}catch(e){}
+    try{render();}catch(e){}
+  };
+window.slMudarFiltroTela=function(tipo,valor){
     if(tipo==='conta') window.slFiltroTelaConta=valor||'todos';
     if(tipo==='categoria') window.slFiltroTelaCategoria=valor||'todos';
     if(tipo==='cartao') window.slFiltroTelaCartao=valor||'todos';
@@ -12421,15 +12427,44 @@ window.slPrincipalAlternar=function(id, checked){
 };
 
 function principalToolsHTML(arr, tela){
-  var totalTodos = arr.reduce(function(s,m){return s+n(m.valor);},0);
-  var totalSel = arr.filter(function(m){return window.selPrincipal.indexOf(String(m.id))>=0;}).reduce(function(s,m){return s+n(m.valor);},0);
+  function n2(v){ return Number(v)||0; }
+  // CALCULO CORRETO: SOMENTE RECEITA - DESPESA (SEM CARTAO)
+  var totalReceita=0, totalDespesa=0;
+  arr.forEach(function(m){
+    var v=n2(m.valor);
+    if(m.tipo==='receita') totalReceita+=v;
+    else if(m.tipo==='despesa') totalDespesa+=v;
+  });
+  var totalSomas = totalReceita - totalDespesa;
+
+  var selArr = arr.filter(function(m){return window.selPrincipal.indexOf(String(m.id))>=0;});
+  var selReceita=0, selDespesa=0;
+  selArr.forEach(function(m){
+    var v=n2(m.valor);
+    if(m.tipo==='receita') selReceita+=v;
+    else if(m.tipo==='despesa') selDespesa+=v;
+  });
+  var selSomas = selReceita - selDespesa;
+
   var filtro1 = (tela==='cartao') ? '<select onchange="slMudarFiltroTela(\'cartao\',this.value)">'+opCartoesPrincipal()+'</select>' : '<select onchange="slMudarFiltroTela(\'conta\',this.value)">'+opContasPrincipal()+'</select>';
   var filtro2 = '<select onchange="slMudarFiltroTela(\'categoria\',this.value)">'+opCatsPrincipal(tela)+'</select>';
+
+  // 3 BOTOES PARA FILTRAR: TODOS / RECEITAS / DESPESAS
+  var tipo = window.slFiltroTipoPrincipal||'todos';
+  var btnTodos = '<button class="'+(tipo==='todos'?'active':'')+'" onclick="slMudarFiltroTipoPrincipal(\'todos\')" style="background:'+(tipo==='todos'?'#1f7aff':'#0b1522')+';border:1px solid '+(tipo==='todos'?'#1f7aff':'#203751')+';color:#fff;border-radius:12px;padding:10px 14px;font-weight:900">💰 TODOS</button>';
+  var btnRec = '<button class="'+(tipo==='receita'?'active':'')+'" onclick="slMudarFiltroTipoPrincipal(\'receita\')" style="background:'+(tipo==='receita'?'#148a30':'#0b1522')+';border:1px solid '+(tipo==='receita'?'#31d158':'#203751')+';color:#fff;border-radius:12px;padding:10px 14px;font-weight:900">📈 RECEITAS</button>';
+  var btnDes = '<button class="'+(tipo==='despesa'?'active':'')+'" onclick="slMudarFiltroTipoPrincipal(\'despesa\')" style="background:'+(tipo==='despesa'?'#b91c1c':'#0b1522')+';border:1px solid '+(tipo==='despesa'?'#ff453a':'#203751')+';color:#fff;border-radius:12px;padding:10px 14px;font-weight:900">📉 DESPESAS</button>';
+
+  // Cor do total das somas: verde se positivo, vermelho se negativo
+  var corSomas = totalSomas>=0 ? '#31d158' : '#ff453a';
+  var corSelSomas = selSomas>=0 ? '#31d158' : '#ff453a';
+
   return '<div class="ignoredToolsFinal">'+
+    '<div style="display:flex;gap:8px;overflow:auto;margin-bottom:10px">'+btnTodos+btnRec+btnDes+'</div>'+
     '<div class="ignoredFiltersFinal">'+filtro1+filtro2+'</div>'+
     '<div class="ignoredTotalsFinal">'+
-      '<div class="ignoredTotalCard"><b>🟦 TOTAL DAS COMPRAS</b><span>'+moeda(totalTodos)+'</span></div>'+
-      '<div class="ignoredTotalCard selected"><b>🟩 TOTAL SELECIONADO</b><span>'+moeda(totalSel)+'</span></div>'+
+      '<div class="ignoredTotalCard" style="border-color:'+corSomas+';background:#0e1f2e"><b style="color:'+corSomas+'">💰 TOTAL DAS SOMAS</b><span style="color:'+corSomas+';font-size:calc(18px * var(--fontScale,1))">'+moeda(totalSomas)+'</span><small style="color:var(--muted);font-size:10px;display:block;margin-top:4px">RECEITAS - DESPESAS (SEM CARTÃO)</small></div>'+
+      '<div class="ignoredTotalCard selected" style="border-color:'+corSelSomas+'"><b style="color:'+corSelSomas+'">🟩 SELECIONADO</b><span style="color:'+corSelSomas+'">'+moeda(selSomas)+'</span></div>'+
     '</div>'+
     '<div class="ignoredButtonsFinal">'+
       '<button class="selectAll" onclick="slPrincipalSelecionarTodos()">SELECIONAR TODOS</button>'+
