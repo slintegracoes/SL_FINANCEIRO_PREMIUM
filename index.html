@@ -11191,6 +11191,10 @@ window.slMudarFiltroTela=function(tipo,valor){
     window.slFiltroTelaConta='todos';
     window.slFiltroTelaCategoria='todos';
     window.slFiltroTelaCartao='todos';
+    // Independente: ao entrar em RECEITAS ou DESPESAS, reseta filtro TODOS/RECEITA/DESPESA do histórico geral
+    if(tipo==='receita' || tipo==='despesa'){
+      window.slFiltroTipoPrincipal='todos';
+    }
     return abrirCategoriaBase.apply(this,arguments);
   };
   try{abrirCategoria=window.abrirCategoria;}catch(e){}
@@ -12449,21 +12453,29 @@ function principalToolsHTML(arr, tela){
   var filtro1 = (tela==='cartao') ? '<select onchange="slMudarFiltroTela(\'cartao\',this.value)">'+opCartoesPrincipal()+'</select>' : '<select onchange="slMudarFiltroTela(\'conta\',this.value)">'+opContasPrincipal()+'</select>';
   var filtro2 = '<select onchange="slMudarFiltroTela(\'categoria\',this.value)">'+opCatsPrincipal(tela)+'</select>';
 
-  // 3 BOTOES PARA FILTRAR: TODOS / RECEITAS / DESPESAS
+  // 3 BOTOES PARA FILTRAR: TODOS / RECEITAS / DESPESAS - SÓ MOSTRA NO HISTÓRICO GERAL (TODOS), NÃO EM RECEITAS/DESPESAS
   var tipo = window.slFiltroTipoPrincipal||'todos';
-  var btnTodos = '<button class="'+(tipo==='todos'?'active':'')+'" onclick="slMudarFiltroTipoPrincipal(\'todos\')" style="background:'+(tipo==='todos'?'#1f7aff':'#0b1522')+';border:1px solid '+(tipo==='todos'?'#1f7aff':'#203751')+';color:#fff;border-radius:12px;padding:10px 14px;font-weight:900">💰 TODOS</button>';
-  var btnRec = '<button class="'+(tipo==='receita'?'active':'')+'" onclick="slMudarFiltroTipoPrincipal(\'receita\')" style="background:'+(tipo==='receita'?'#148a30':'#0b1522')+';border:1px solid '+(tipo==='receita'?'#31d158':'#203751')+';color:#fff;border-radius:12px;padding:10px 14px;font-weight:900">📈 RECEITAS</button>';
-  var btnDes = '<button class="'+(tipo==='despesa'?'active':'')+'" onclick="slMudarFiltroTipoPrincipal(\'despesa\')" style="background:'+(tipo==='despesa'?'#b91c1c':'#0b1522')+';border:1px solid '+(tipo==='despesa'?'#ff453a':'#203751')+';color:#fff;border-radius:12px;padding:10px 14px;font-weight:900">📉 DESPESAS</button>';
+  var isReceitaOuDespesa = (tela==='receita' || tela==='despesa');
+  var btnTodos = '';
+  var btnRec = '';
+  var btnDes = '';
+  var botoesFiltroHTML = '';
+  if(!isReceitaOuDespesa){
+    btnTodos = '<button class="'+(tipo==='todos'?'active':'')+'" onclick="slMudarFiltroTipoPrincipal(\'todos\')" style="background:'+(tipo==='todos'?'#1f7aff':'#0b1522')+';border:1px solid '+(tipo==='todos'?'#1f7aff':'#203751')+';color:#fff;border-radius:12px;padding:10px 14px;font-weight:900">💰 TODOS</button>';
+    btnRec = '<button class="'+(tipo==='receita'?'active':'')+'" onclick="slMudarFiltroTipoPrincipal(\'receita\')" style="background:'+(tipo==='receita'?'#148a30':'#0b1522')+';border:1px solid '+(tipo==='receita'?'#31d158':'#203751')+';color:#fff;border-radius:12px;padding:10px 14px;font-weight:900">📈 RECEITAS</button>';
+    btnDes = '<button class="'+(tipo==='despesa'?'active':'')+'" onclick="slMudarFiltroTipoPrincipal(\'despesa\')" style="background:'+(tipo==='despesa'?'#b91c1c':'#0b1522')+';border:1px solid '+(tipo==='despesa'?'#ff453a':'#203751')+';color:#fff;border-radius:12px;padding:10px 14px;font-weight:900">📉 DESPESAS</button>';
+    botoesFiltroHTML = '<div style="display:flex;gap:8px;overflow:auto;margin-bottom:10px">'+btnTodos+btnRec+btnDes+'</div>';
+  }
 
   // Cor do total das somas: verde se positivo, vermelho se negativo
   var corSomas = totalSomas>=0 ? '#31d158' : '#ff453a';
   var corSelSomas = selSomas>=0 ? '#31d158' : '#ff453a';
 
   return '<div class="ignoredToolsFinal">'+
-    '<div style="display:flex;gap:8px;overflow:auto;margin-bottom:10px">'+btnTodos+btnRec+btnDes+'</div>'+
+    botoesFiltroHTML+
     '<div class="ignoredFiltersFinal">'+filtro1+filtro2+'</div>'+
     '<div class="ignoredTotalsFinal">'+
-      '<div class="ignoredTotalCard" style="border-color:'+corSomas+';background:#0e1f2e"><b style="color:'+corSomas+'">💰 TOTAL DAS SOMAS</b><span style="color:'+corSomas+';font-size:calc(18px * var(--fontScale,1))">'+moeda(totalSomas)+'</span><small style="color:var(--muted);font-size:10px;display:block;margin-top:4px">RECEITAS - DESPESAS (SEM CARTÃO)</small></div>'+
+      '<div class="ignoredTotalCard" style="border-color:'+corSomas+';background:#0e1f2e"><b style="color:'+corSomas+'">💰 TOTAL DAS SOMAS</b><span style="color:'+corSomas+';font-size:calc(18px * var(--fontScale,1))">'+moeda(totalSomas)+'</span></div>'+
       '<div class="ignoredTotalCard selected" style="border-color:'+corSelSomas+'"><b style="color:'+corSelSomas+'">🟩 SELECIONADO</b><span style="color:'+corSelSomas+'">'+moeda(selSomas)+'</span></div>'+
     '</div>'+
     '<div class="ignoredButtonsFinal">'+
