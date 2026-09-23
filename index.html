@@ -13120,23 +13120,10 @@ if(typeof abrirCategoriaBase==='function'){
   function vendedorOptions(sel){
     return '<option value="">SEM VENDEDOR</option>'+vendedores().map(function(v){return '<option value="'+esc(v.id)+'" '+(String(sel||'')===String(v.id)?'selected':'')+'>'+esc(v.nome)+'</option>'}).join('');
   }
-  function injectSeller(type,id){
-    if(!['receita','despesa','compraCartao','editCompraCartao'].includes(type))return;
-    setTimeout(function(){
-      var body=document.getElementById('modalBody'); if(!body||document.getElementById('slVendedorField'))return;
-      var item=id?(D().movs||[]).find(function(m){return String(m.id)===String(id)}):null;
-      var selected=item&&item.vendedorId||'';
-      var wrap=document.createElement('div');
-      wrap.id='slVendedorField'; wrap.className=type==='receita'||type==='despesa'?'mobRow modernCard slComSellerField':'compraCardSection slComSellerField';
-      wrap.innerHTML='<div class="mobIcon">👤</div><div><b>VENDEDOR</b><small style="display:block;margin-top:4px;color:#9fb3c8">ASSOCIE ESTA VENDA/COMPRA AO VENDEDOR</small><select id="slVendedor">'+vendedorOptions(selected)+'</select></div>';
-      var cat=document.getElementById('cat');
-      if(cat){
-        var parent=cat.closest('.mobRow')||cat.closest('.compraCardSection')||cat.parentElement;
-        if(parent&&parent.parentNode){parent.parentNode.insertBefore(wrap,parent.nextSibling);return;}
-      }
-      body.appendChild(wrap);
-    },30);
-  }
+  // O vendedor não faz mais parte do cadastro de despesas/compras.
+  // Mantemos a função apenas por compatibilidade com as camadas antigas do arquivo,
+  // mas ela não injeta nenhum campo no formulário.
+  function injectSeller(type,id){ return; }
 
   // Guarda o vendedor nos lançamentos já existentes e nos novos lançamentos.
   function envolverSalvar(nomeFunc){
@@ -13163,9 +13150,7 @@ if(typeof abrirCategoriaBase==='function'){
     };
     wrapped.__slComWrapped=true; window[nomeFunc]=wrapped;
   }
-  envolverSalvar('salvarMov');
-  envolverSalvar('salvarCompraCartao');
-  envolverSalvar('salvarCompraEditada');
+  // Não associa vendedor ao lançamento: o vendedor é usado somente no compartilhamento de comissões.
 
   // O arquivo possui várias camadas de openModal; esta é a última camada e apenas injeta o campo.
   var openBase=window.openModal;
@@ -13182,11 +13167,12 @@ if(typeof abrirCategoriaBase==='function'){
     var mensal=true;
     var ms=meses();
     var movs=arr(D().movs).filter(function(m){
-      if(!m||m.ignorado||!m.vendedorId)return false;
-      if(vend!=='todos'&&String(m.vendedorId)!==String(vend))return false;
+      if(!m||m.ignorado||m.tipo!=='despesa')return false;
+      // O filtro VENDEDOR é apenas informativo no compartilhamento.
+      // A soma e as despesas exibidas são determinadas pela CATEGORIA.
       if(cat!=='todos'&&String(m.cat||'SEM CATEGORIA')!==String(cat))return false;
       if(m.pago===false)return false;
-      var d=String(m.data||''); if(!/^\\d{4}-\\d{2}-\\d{2}/.test(d))return false;
+      var d=String(m.data||''); if(!/^\d{4}-\d{2}-\d{2}/.test(d))return false;
       var y=Number(d.slice(0,4)), mo=Number(d.slice(5,7))-1;
       return y===ano&&(mensal?mo===mes:true);
     }).sort(function(a,b){return String(a.data).localeCompare(String(b.data))});
@@ -13195,9 +13181,9 @@ if(typeof abrirCategoriaBase==='function'){
     var nomeVend=vend==='todos'?'TODOS OS VENDEDORES':vendedorNome(vend);
     var nomeCat=cat==='todos'?'TODAS AS CATEGORIAS':cat;
     var linhas=movs.map(function(m){return '📅 '+String(m.data).split('-').reverse().join('/')+'  📝 '+(m.desc||'SEM DESCRIÇÃO')+'  💰 '+moeda(m.valor)});
-    return ('💰 COMISSÕES\n📅 '+titulo+'\n👤 VENDEDOR: '+nomeVend+'\n📂 CATEGORIA: '+nomeCat+'\n\n'+(linhas.length?linhas.join('\n'):'⚠️ NENHUM PAGAMENTO ENCONTRADO.')+'\n\n💵 TOTAL PAGO: '+moeda(total)).toUpperCase();
+    return ('💰 COMISSÕES\n📅 '+titulo+'\n👤 VENDEDOR: '+nomeVend+'\n📂 CATEGORIA: '+nomeCat+'\n\n'+(linhas.length?linhas.join('\n'):'⚠️ NENHUMA DESPESA PAGA ENCONTRADA.')+'\n\n💵 TOTAL: '+moeda(total)).toUpperCase();
   }
-  function atualizarComPreview(){var p=document.getElementById('slComPreview'),t=document.getElementById('slComTotal');if(!p)return;var txt=textoComissao();p.textContent=txt;if(t){var m=txt.match(/TOTAL PAGO: (.*)$/m);t.textContent=m?m[1]:moeda(0)}}
+  function atualizarComPreview(){var p=document.getElementById('slComPreview'),t=document.getElementById('slComTotal');if(!p)return;var txt=textoComissao();p.textContent=txt;if(t){var m=txt.match(/TOTAL: (.*)$/m);t.textContent=m?m[1]:moeda(0)}}
   function popularCom(){
     var y=hoje().getFullYear(), mes=document.getElementById('slComMes'),ano=document.getElementById('slComAno'),v=document.getElementById('slComVendedor'),c=document.getElementById('slComCategoria');if(!mes||!ano||!v||!c)return;
     mes.innerHTML=meses().map(function(x,i){return '<option value="'+i+'">'+x+'</option>'}).join('');mes.value=String(hoje().getMonth());
@@ -13209,6 +13195,7 @@ if(typeof abrirCategoriaBase==='function'){
   }
   window.slAbrirComissoes=function(){
     var modal=document.getElementById('modal'),body=document.getElementById('modalBody');if(!modal||!body)return;
+    var genericClose=modal.querySelector('.close');if(genericClose)genericClose.style.display='none';
     var list=vendedores().map(function(v){return '<div class="slComSellerItem"><b>👤 '+esc(v.nome)+'</b><button class="slComDel" onclick="slComExcluirVendedor(\''+esc(v.id)+'\')">🗑 EXCLUIR</button></div>'}).join('')||'<div class="empty">NENHUM VENDEDOR CADASTRADO.</div>';
     body.innerHTML='<div class="slComModal"><div class="slComHead"><h2>💰 COMISSÕES</h2><button class="slComClose" onclick="closeModal()">×</button></div>'+
       '<div class="slComSection"><h3>👤 CADASTRAR VENDEDORES</h3><div class="slComSellerGrid"><input id="slComNovoVendedor" class="slComInput" placeholder="NOME DO VENDEDOR"><button class="slComBtn" onclick="slComAdicionarVendedor()">+ ADICIONAR</button></div><div class="slComSellerList">'+list+'</div></div>'+
@@ -13216,7 +13203,7 @@ if(typeof abrirCategoriaBase==='function'){
       '<div><label class="slComLabel">MÊS</label><select id="slComMes" class="slComSelect"></select></div><div><label class="slComLabel">ANO</label><select id="slComAno" class="slComSelect"></select></div>'+ 
       '<div><label class="slComLabel">VENDEDOR</label><select id="slComVendedor" class="slComSelect"></select></div><div><label class="slComLabel">CATEGORIA</label><select id="slComCategoria" class="slComSelect"></select></div>'+ 
       '</div>'+ 
-      '<div class="slComTotal"><small>TOTAL PAGO NO PERÍODO</small><strong id="slComTotal">R$ 0,00</strong></div><div id="slComPreview" class="slComPreview"></div><div class="slComActions"><button class="slComBtn slComCopy" onclick="slComCopiar()">📋 COPIAR TEXTO</button></div></div></div>';
+      '<div class="slComTotal"><small>TOTAL</small><strong id="slComTotal">R$ 0,00</strong></div><div id="slComPreview" class="slComPreview"></div><div class="slComActions"><button class="slComBtn slComCopy" onclick="slComCopiar()">📋 COPIAR TEXTO</button></div></div></div>';
     modal.classList.add('show');modal.classList.remove('moneyModal','invoiceModal');modal.onclick=function(e){if(e.target===modal)closeModal()};popularCom();
     ['slComMes','slComAno','slComVendedor','slComCategoria'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('change',atualizarComPreview)});
   };
