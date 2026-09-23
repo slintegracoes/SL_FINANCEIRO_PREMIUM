@@ -13177,13 +13177,20 @@ if(typeof abrirCategoriaBase==='function'){
       return y===ano&&(mensal?mo===mes:true);
     }).sort(function(a,b){return String(a.data).localeCompare(String(b.data))});
     var total=movs.reduce(function(s,m){return s+n(m.valor)},0);
-    var titulo=mensal?ms[mes]+' '+ano:'ANO '+ano;
     var nomeVend=vend==='todos'?'TODOS OS VENDEDORES':vendedorNome(vend);
     var nomeCat=cat==='todos'?'TODAS AS CATEGORIAS':cat;
-    var linhas=movs.map(function(m){return '📅 '+String(m.data).split('-').reverse().join('/')+'  📝 '+(m.desc||'SEM DESCRIÇÃO')+'  💰 '+moeda(m.valor)});
-    return ('💰 COMISSÕES\n📅 '+titulo+'\n👤 VENDEDOR: '+nomeVend+'\n📂 CATEGORIA: '+nomeCat+'\n\n'+(linhas.length?linhas.join('\n'):'⚠️ NENHUMA DESPESA PAGA ENCONTRADA.')+'\n\n💵 TOTAL: '+moeda(total)).toUpperCase();
+    function numeroEmoji(i){
+      var n=i+1, mapa=['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣'];
+      if(n<10)return mapa[n];
+      if(n===10)return '🔟';
+      return String(n).split('').map(function(x){return mapa[Number(x)]}).join('');
+    }
+    var linhas=movs.map(function(m,i){return ' '+numeroEmoji(i)+'📝 '+(m.desc||'SEM DESCRIÇÃO')+'  💰 '+moeda(m.valor)});
+    var tituloMes=(meses()[mes]||'').toUpperCase()+' '+ano;
+    var totalTexto='💵 TOTAL PAGO EM (   ): '+moeda(total);
+    return ('💰 COMISSÕES\n📅 '+tituloMes+'\n👤 VENDEDOR: '+nomeVend+'\n📂 CATEGORIA: '+nomeCat+'\n\n'+(linhas.length?linhas.join('\n'):'⚠️ NENHUMA DESPESA PAGA ENCONTRADA.')+'\n\n'+totalTexto).toUpperCase();
   }
-  function atualizarComPreview(){var p=document.getElementById('slComPreview'),t=document.getElementById('slComTotal');if(!p)return;var txt=textoComissao();p.textContent=txt;if(t){var m=txt.match(/TOTAL: (.*)$/m);t.textContent=m?m[1]:moeda(0)}}
+  function atualizarComPreview(){var p=document.getElementById('slComPreview'),t=document.getElementById('slComTotal');if(!p)return;var txt=textoComissao();p.textContent=txt;if(t){var mes=Number((document.getElementById('slComMes')||{}).value||new Date().getMonth());var ano=Number((document.getElementById('slComAno')||{}).value||new Date().getFullYear());var cat=(document.getElementById('slComCategoria')||{}).value||'todos';var total=arr(D().movs).filter(function(m){if(!m||m.ignorado||m.tipo!=='despesa')return false;if(cat!=='todos'&&String(m.cat||'SEM CATEGORIA')!==String(cat))return false;if(m.pago===false)return false;var d=String(m.data||'');if(!/^\d{4}-\d{2}-\d{2}/.test(d))return false;return Number(d.slice(0,4))===ano&&Number(d.slice(5,7))-1===mes;}).reduce(function(s,m){return s+n(m.valor)},0);t.textContent=moeda(total)}}
   function popularCom(){
     var y=hoje().getFullYear(), mes=document.getElementById('slComMes'),ano=document.getElementById('slComAno'),v=document.getElementById('slComVendedor'),c=document.getElementById('slComCategoria');if(!mes||!ano||!v||!c)return;
     mes.innerHTML=meses().map(function(x,i){return '<option value="'+i+'">'+x+'</option>'}).join('');mes.value=String(hoje().getMonth());
