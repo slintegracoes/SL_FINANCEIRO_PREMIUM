@@ -867,7 +867,7 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
       <div class="mini click" onclick="abrirCategoria('receita')"><b>💰 RECEITAS</b><span id="totalReceitas" class="green">R$ 0,00</span></div>
       <div class="mini click" onclick="abrirCategoria('despesa')"><b>🛒 Despesas</b><span id="totalDespesas" class="red">R$ 0,00</span></div>
       <div class="mini click" onclick="showScreen('cartoes')"><b>💳 LIMITE DOS CARTÕES</b><span id="totalContas" class="gold">R$ 0,00</span></div>
-      <div class="mini click cardRedMini" onclick="abrirCategoria('cartao')"><b><span id="iconeCardCartoes" onclick="event.stopPropagation();abrirIcones('homeCartoes')" style="cursor:pointer;font-size:calc(18px * var(--fontScale,1));margin-right:4px">💳</span> GASTOS COM CARTÕES</b><span id="totalCartoes" class="red">R$ 0,00</span></div>
+      <div class="mini click cardRedMini" onclick="abrirDetalhesGastosCartoes()"><b><span id="iconeCardCartoes" onclick="event.stopPropagation();abrirIcones('homeCartoes')" style="cursor:pointer;font-size:calc(18px * var(--fontScale,1));margin-right:4px">💳</span> GASTOS COM CARTÕES</b><span id="totalCartoes" class="red">R$ 0,00</span></div>
     </div>
     <div class="sectionTitle"><h2>🏦 Todas as contas</h2></div>
     <div id="saldoContasResumo" class="card saldoContasResumoCard">
@@ -2950,6 +2950,9 @@ window.addEventListener('pagehide',function(){
   document.head.appendChild(css);
 })();
 /* ===== FIM CORES FINAIS ===== */
+
+
+
 
 </script>
 
@@ -9139,7 +9142,7 @@ button[onclick="openModal('temas')"],button[onclick='openModal("temas")']{displa
     return '<h2>⚙️ Configurações</h2>'+
     '<div class="editorGroup"><h3>☁️ BACKUP FIREBASE</h3><div class="backupBtns"><button class="smallBtn backupNow" onclick="fazerBackupFirebaseManual()">☁️ FAZER BACKUP AGORA</button><button class="smallBtn restoreNow" onclick="restaurarUltimoBackupFirebase()">♻️ RESTAURAR ÚLTIMO BACKUP</button><button class="smallBtn datesNow" onclick="verDatasBackupsFirebase()">📅 VER DATAS DOS ÚLTIMOS BACKUPS</button></div></div>'+
     '<div class="editorGroup"><h3>🎨 APARÊNCIA</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal(\'fonte\')">🔠 FONTE</button><button class="smallBtn" onclick="openModal(\'ajusteTela\')">📱 AJUSTE DE TELA</button></div></div>'+
-    '<div class="editorGroup"><h3>📊 RELATÓRIOS</h3><div class="editorBtns"><button class="smallBtn" onclick="closeModal();showScreen(\'relatorios\')">📊 ABRIR RELATÓRIOS</button></div></div>'+
+    '<div class="editorGroup"><h3>📊 RELATÓRIOS</h3><div class="editorBtns"><button class="smallBtn" onclick="closeModal();showScreen(\'relatorios\')">📊 ABRIR RELATÓRIOS</button><button class="smallBtn" onclick="slAbrirCompartilharHistorico()">📤 COMPARTILHAR HISTÓRICO</button></div></div>'+
     '<div class="editorGroup"><h3>🛠️ EDITOR GERAL</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal(\'editorCartoes\')">💳 CARTÕES</button><button class="smallBtn" onclick="openModal(\'editorContas\')">🏦 CONTAS</button><button class="smallBtn" onclick="openModal(\'editorCategorias\')">📂 CATEGORIAS</button></div></div>'+
     '<button class="btn redBg" onclick="zerar()">🗑️ ZERAR TUDO</button>';
   };
@@ -10020,7 +10023,7 @@ function iniciar(){limparExpirados();setInterval(limparExpirados,15*60*1000)}if(
     return '<h2>⚙️ CONFIGURAÇÕES</h2>'+
       '<div class="editorGroup"><h3>☁️ BACKUP FIREBASE</h3><div class="backupBtns"><button class="smallBtn backupNow" onclick="fazerBackupFirebaseManual()">☁️ FAZER BACKUP AGORA</button><button class="smallBtn restoreNow" onclick="restaurarUltimoBackupFirebase()">♻️ RESTAURAR ÚLTIMO BACKUP</button><button class="smallBtn datesNow" onclick="verDatasBackupsFirebase()">📅 VER DATAS DOS ÚLTIMOS BACKUPS</button></div></div>'+
       '<div class="editorGroup"><h3>🎨 APARÊNCIA</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal(\'fonte\')">🔠 FONTE</button><button class="smallBtn" onclick="openModal(\'ajusteTela\')">📱 AJUSTE DE TELA</button></div></div>'+
-      '<div class="editorGroup"><h3>📊 RELATÓRIOS</h3><div class="editorBtns"><button class="smallBtn" onclick="closeModal();showScreen(\'relatorios\')">📊 ABRIR RELATÓRIOS</button></div></div>'+
+      '<div class="editorGroup"><h3>📊 RELATÓRIOS</h3><div class="editorBtns"><button class="smallBtn" onclick="closeModal();showScreen(\'relatorios\')">📊 ABRIR RELATÓRIOS</button><button class="smallBtn" onclick="slAbrirCompartilharHistorico()">📤 COMPARTILHAR HISTÓRICO</button></div></div>'+
       '<div class="editorGroup"><h3>🛠️ EDITOR GERAL</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal(\'editorCartoes\')">💳 CARTÕES</button><button class="smallBtn" onclick="openModal(\'editorContas\')">🏦 CONTAS</button><button class="smallBtn" onclick="openModal(\'editorCategorias\')">📂 CATEGORIAS</button></div></div>'+
       '<div class="editorBtns" style="margin-top:14px">'+
         '<button class="btn goldBg" style="margin-top:0" type="button" onclick="abrirLixeira()">🗑️ LIXEIRA <span id="slTrashCount">('+qtdLixeira()+')</span></button>'+
@@ -11051,7 +11054,7 @@ button[onclick="openModal('temas')"],button[onclick='openModal("temas")']{displa
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function moeda(v){try{return typeof fmt==='function'?fmt(v):n(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}catch(e){return 'R$ '+n(v).toFixed(2).replace('.',',')}}
   function salvarLocal(){try{localStorage.setItem('financeiroPremium',JSON.stringify(dbase()))}catch(e){}}
-  window.__slConfigSemTemasHTML=function(){return '<h2>⚙️ Configurações</h2><div class="editorGroup"><h3>☁️ BACKUP FIREBASE</h3><div class="backupBtns"><button class="smallBtn backupNow" onclick="fazerBackupFirebaseManual()">☁️ FAZER BACKUP AGORA</button><button class="smallBtn restoreNow" onclick="restaurarUltimoBackupFirebase()">♻️ RESTAURAR ÚLTIMO BACKUP</button><button class="smallBtn datesNow" onclick="verDatasBackupsFirebase()">📅 VER DATAS DOS ÚLTIMOS BACKUPS</button></div></div><div class="editorGroup"><h3>🎨 APARÊNCIA</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal(\'fonte\')">🔠 FONTE</button><button class="smallBtn" onclick="openModal(\'ajusteTela\')">📱 AJUSTE DE TELA</button></div></div><div class="editorGroup"><h3>📊 RELATÓRIOS</h3><div class="editorBtns"><button class="smallBtn" onclick="closeModal();showScreen(\'relatorios\')">📊 ABRIR RELATÓRIOS</button></div></div><div class="editorGroup"><h3>🛠️ EDITOR GERAL</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal(\'editorCartoes\')">💳 CARTÕES</button><button class="smallBtn" onclick="openModal(\'editorContas\')">🏦 CONTAS</button><button class="smallBtn" onclick="openModal(\'editorCategorias\')">📂 CATEGORIAS</button></div></div><button class="btn redBg" onclick="zerar()">🗑️ ZERAR TUDO</button>'};
+  window.__slConfigSemTemasHTML=function(){return '<h2>⚙️ Configurações</h2><div class="editorGroup"><h3>☁️ BACKUP FIREBASE</h3><div class="backupBtns"><button class="smallBtn backupNow" onclick="fazerBackupFirebaseManual()">☁️ FAZER BACKUP AGORA</button><button class="smallBtn restoreNow" onclick="restaurarUltimoBackupFirebase()">♻️ RESTAURAR ÚLTIMO BACKUP</button><button class="smallBtn datesNow" onclick="verDatasBackupsFirebase()">📅 VER DATAS DOS ÚLTIMOS BACKUPS</button></div></div><div class="editorGroup"><h3>🎨 APARÊNCIA</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal(\'fonte\')">🔠 FONTE</button><button class="smallBtn" onclick="openModal(\'ajusteTela\')">📱 AJUSTE DE TELA</button></div></div><div class="editorGroup"><h3>📊 RELATÓRIOS</h3><div class="editorBtns"><button class="smallBtn" onclick="closeModal();showScreen(\'relatorios\')">📊 ABRIR RELATÓRIOS</button><button class="smallBtn" onclick="slAbrirCompartilharHistorico()">📤 COMPARTILHAR HISTÓRICO</button></div></div><div class="editorGroup"><h3>🛠️ EDITOR GERAL</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal(\'editorCartoes\')">💳 CARTÕES</button><button class="smallBtn" onclick="openModal(\'editorContas\')">🏦 CONTAS</button><button class="smallBtn" onclick="openModal(\'editorCategorias\')">📂 CATEGORIAS</button></div></div><button class="btn redBg" onclick="zerar()">🗑️ ZERAR TUDO</button>'};
   var openAnterior=window.openModal;
   window.openModal=function(type,id){if(type==='temas')type='config'; if(type==='config'){try{if(typeof editId!=='undefined')editId=id||null}catch(e){window.editId=id||null} var m=document.getElementById('modal'),b=document.getElementById('modalBody'); if(m&&b){m.classList.remove('moneyModal');m.classList.add('show');var c=m.querySelector('.close');if(c)c.style.display='';b.innerHTML=window.__slConfigSemTemasHTML();return}} return openAnterior.apply(this,arguments)};
   window.aplicarFonteSL=function(){var d=dbase();d.fonte=d.fonte||{size:15,family:'Arial, Helvetica, sans-serif'};var size=Math.max(11,Math.min(28,n(d.fonte.size)||15));var family=d.fonte.family||'Arial, Helvetica, sans-serif';document.documentElement.style.setProperty('--appFontSize',size+'px');document.documentElement.style.setProperty('--appFontFamily',family)};
@@ -12074,10 +12077,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 <!-- ===== PATCH 2026-08-12: FATURA / EDIÇÃO CARTÃO / AÇÕES DESFAZER-REFAZER ===== -->
 <style id="sl-patch-acoes-undo-redo-css">
-.slActionsHistory{display:grid;grid-template-columns:64px 1fr 64px;gap:10px;align-items:center;margin:10px 0 0}
-.slActionsHistory button{height:48px;border:1.5px solid var(--gold);border-radius:14px;background:#0b1522;color:#fff;font-size:24px;font-weight:900;box-shadow:0 0 12px #f2b63255}
-.slActionsHistory button:disabled{opacity:.32;filter:grayscale(1);box-shadow:none}
-.slActionsHistory strong{text-align:center;color:var(--gold);font-size:calc(14px * var(--fontScale,1));letter-spacing:.7px}
 </style>
 <script id="sl-patch-fatura-edicao-acoes-20260812">
 (function(){
@@ -12190,79 +12189,6 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
       return r;
     };
     try{salvarCompraCartao=window.salvarCompraCartao;}catch(e){}
-  }
-
-  /* 3) Histórico de AÇÕES: snapshot anterior é capturado toda vez que save() confirma uma mudança. */
-  var undoStack=[], redoStack=[], aplicandoHistorico=false, maxAcoes=60;
-  var ultimoPersistido='';
-  try{ultimoPersistido=localStorage.getItem('financeiroPremium')||JSON.stringify(db);}catch(e){ultimoPersistido=JSON.stringify(db);}
-  var saveBase=window.save;
-  function atualizarBotoesAcoes(){
-    var u=document.getElementById('slUndoAction'), r=document.getElementById('slRedoAction');
-    if(u)u.disabled=!undoStack.length;
-    if(r)r.disabled=!redoStack.length;
-  }
-  if(typeof saveBase==='function'){
-    window.save=function(){
-      var atual='';
-      try{atual=JSON.stringify(db);}catch(e){}
-      if(!aplicandoHistorico && ultimoPersistido && atual && atual!==ultimoPersistido){
-        undoStack.push(ultimoPersistido);
-        if(undoStack.length>maxAcoes)undoStack.shift();
-        redoStack=[];
-      }
-      var out=saveBase.apply(this,arguments);
-      try{ultimoPersistido=JSON.stringify(db);}catch(e){}
-      atualizarBotoesAcoes();
-      return out;
-    };
-    try{save=window.save;}catch(e){}
-  }
-
-  function aplicarSnapshot(txt){
-    var novo=JSON.parse(txt);
-    aplicandoHistorico=true;
-    try{
-      db=cloneJson(novo);
-      window.db=db;
-      localStorage.setItem('financeiroPremium',JSON.stringify(db));
-      ultimoPersistido=JSON.stringify(db);
-      if(typeof closeModal==='function')closeModal();
-      if(typeof render==='function')render();
-    }finally{aplicandoHistorico=false;}
-  }
-  window.slDesfazerAcao=function(){
-    if(!undoStack.length)return;
-    var atual=JSON.stringify(db), anterior=undoStack.pop();
-    redoStack.push(atual);
-    aplicarSnapshot(anterior);
-    atualizarBotoesAcoes();
-  };
-  window.slRefazerAcao=function(){
-    if(!redoStack.length)return;
-    var atual=JSON.stringify(db), proximo=redoStack.pop();
-    undoStack.push(atual);
-    aplicarSnapshot(proximo);
-    atualizarBotoesAcoes();
-  };
-
-  function inserirAcoesConfig(){
-    var body=document.getElementById('modalBody');
-    if(!body||body.querySelector('#slActionsHistoryBox'))return;
-    var box=document.createElement('div');
-    box.id='slActionsHistoryBox'; box.className='editorGroup';
-    box.innerHTML='<h3>↩️ HISTÓRICO DE AÇÕES</h3><div class="slActionsHistory"><button id="slUndoAction" type="button" onclick="slDesfazerAcao()" title="DESFAZER">⬅️</button><strong> AÇÕES </strong><button id="slRedoAction" type="button" onclick="slRefazerAcao()" title="REFAZER">➡️</button></div>';
-    body.insertBefore(box,body.firstChild);
-    atualizarBotoesAcoes();
-  }
-  var openBase=window.openModal;
-  if(typeof openBase==='function'){
-    window.openModal=function(type,id){
-      var out=openBase.apply(this,arguments);
-      if(type==='config'||type==='temas')setTimeout(inserirAcoesConfig,0);
-      return out;
-    };
-    try{openModal=window.openModal;}catch(e){}
   }
 
   /* Se configurações já estiver aberta durante atualização, injeta agora. */
@@ -12855,6 +12781,292 @@ if(typeof abrirCategoriaBase==='function'){
   };
 })();
 </script>
+
+
+<!-- AJUSTE PONTUAL: COMPARTILHAR HISTÓRICO COM FILTROS DE CONTA E CATEGORIA -->
+<style id="sl-compartilhar-historico-css">
+#slShareHistOverlay{position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:99999;display:none;align-items:center;justify-content:center;padding:16px}
+#slShareHistOverlay.show{display:flex}
+#slShareHistBox{width:min(540px,96vw);max-height:92vh;overflow:auto;background:#0b111c;border:1px solid #7b6a2d;border-radius:24px;box-shadow:0 20px 60px #000b;padding:20px}
+#slShareHistBox h2{margin:0 0 14px;color:#ffd75a;font-size:24px;font-weight:900}
+.slShareMode{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.slShareMode button,.slShareAction{border:1px solid #23618a;background:#202b3c;color:#fff;border-radius:16px;padding:14px 10px;font-size:17px;font-weight:900;cursor:pointer}
+.slShareMode button.active{background:#11b981;color:#07130f;border-color:#11b981}
+.slShareGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.slShareGrid label{display:block;color:#fff;font-weight:900;font-size:13px;margin:0 0 6px}
+.slShareGrid select{width:100%;box-sizing:border-box;background:#0b1522;color:#fff;border:1px solid #23618a;border-radius:14px;padding:12px;font-size:16px;font-weight:800}
+.slShareFilters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.slShareFilters label{display:block;color:#aeb8c8;font-size:12px;font-weight:900;margin-bottom:6px}
+.slShareFilters select{width:100%;box-sizing:border-box;background:#0b1522;color:#fff;border:1px solid #23618a;border-radius:14px;padding:12px;font-weight:800}
+.slShareFooter{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.slShareCancel{background:#2b3546!important;color:#fff!important;border-color:#2b3546!important}
+.slShareCopy{background:#08b956!important;color:#fff!important;border-color:#08b956!important}
+.slShareCopy:disabled{opacity:.65;cursor:wait}
+.slShareHint{color:#8995a7;font-size:11px;font-weight:700;margin:4px 0 0}
+.slSharePreview{margin-top:10px;padding:12px;border:1px solid #23618a;border-radius:14px;background:#07111d;color:#dbeafe;font-size:12px;font-weight:800;line-height:1.45}
+.slShareMode button:active,.slShareAction:active{transform:scale(.98)}
+.slShareMode button:focus,.slShareGrid select:focus,.slShareFilters select:focus,.slShareAction:focus{outline:2px solid #11b981;outline-offset:1px}
+
+@media(max-width:520px){#slShareHistBox{padding:18px}.slShareFilters{grid-template-columns:1fr}.slShareGrid{grid-template-columns:1fr 1fr}}
+</style>
+<div id="slShareHistOverlay" aria-hidden="true">
+  <div id="slShareHistBox">
+    <h2>Compartilhar Histórico Valor</h2>
+    <div class="slShareMode">
+      <button type="button" id="slShareMensal" onclick="slShareSetModo('mensal')">Mensal</button>
+      <button type="button" id="slShareAnual" onclick="slShareSetModo('anual')">Anual</button>
+    </div>
+    <div class="slShareGrid">
+      <div><label>MÊS</label><select id="slShareMes"></select></div>
+      <div><label>ANO</label><select id="slShareAno"></select></div>
+    </div>
+    <div class="slShareFilters">
+      <div><label>CONTA</label><select id="slShareConta"></select></div>
+      <div><label>CATEGORIA</label><select id="slShareCategoria"></select></div>
+    </div>
+    <div class="slShareHint">Os filtros de conta e categoria serão aplicados ao texto compartilhado.</div><div id="slSharePreview" class="slSharePreview">SELECIONE OS FILTROS PARA ATUALIZAR O RESUMO.</div>
+    <div class="slShareFooter">
+      <button type="button" class="slShareAction slShareCancel" onclick="slFecharCompartilharHistorico()">CANCELAR</button>
+      <button type="button" class="slShareAction slShareCopy" onclick="slCopiarCompartilharHistorico()">COPIAR TEXTO</button>
+    </div>
+  </div>
+</div>
+<script id="sl-compartilhar-historico-js">
+(function(){
+  'use strict';
+  var modo='mensal';
+  var meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  function arr(v){return Array.isArray(v)?v:[]}
+  function dinheiro(v){
+    try{if(typeof fmt==='function')return fmt(v)}catch(e){}
+    return 'R$ '+Number(v||0).toFixed(2).replace('.',',')
+  }
+  function contaNome(id){
+    var contas=arr(typeof db!=='undefined' ? db.contas : []);
+    var c=contas.find(function(x){return String(x.id)===String(id)});
+    return c?(c.nome||'CONTA'):'SEM CONTA'
+  }
+  function getDb(){
+    try{return (typeof db!=='undefined'&&db)?db:null}catch(e){return null}
+  }
+  function popular(){
+    var mes=document.getElementById('slShareMes'),
+        ano=document.getElementById('slShareAno'),
+        conta=document.getElementById('slShareConta'),
+        cat=document.getElementById('slShareCategoria');
+    if(!mes||!ano||!conta||!cat)return;
+
+    var agora=new Date(), anoAtual=agora.getFullYear(), mesAtual=agora.getMonth();
+    mes.innerHTML=meses.map(function(x,i){return '<option value="'+i+'">'+x+'</option>'}).join('');
+    mes.value=String(mesAtual);
+
+    var anos=[];
+    for(var y=anoAtual-5;y<=anoAtual+1;y++)anos.push(y);
+    ano.innerHTML=anos.map(function(y){return '<option value="'+y+'">'+y+'</option>'}).join('');
+    ano.value=String(anoAtual);
+
+    var b=getDb();
+    var contas=arr(b&&b.contas);
+    conta.innerHTML='<option value="todos">TODAS AS CONTAS</option>'+
+      contas.map(function(c){
+        return '<option value="'+String(c.id).replace(/"/g,'&quot;')+'">'+
+          String((c.icone||'🏦')+' '+(c.nome||'CONTA')).replace(/[&<>"']/g,'')+
+        '</option>';
+      }).join('');
+
+    var cats={};
+    arr(b&&b.movs).forEach(function(m){if(m&&m.cat)cats[m.cat]=1});
+    arr(b&&b.categoriasReceitas).forEach(function(c){cats[c]=1});
+    arr(b&&b.categoriasDespesas).forEach(function(c){cats[c]=1});
+    cat.innerHTML='<option value="todos">TODAS AS CATEGORIAS</option>'+
+      Object.keys(cats).sort(function(a,b){return a.localeCompare(b,'pt-BR')})
+      .map(function(c){
+        return '<option value="'+String(c).replace(/"/g,'&quot;')+'">'+
+          String(c).replace(/[&<>"']/g,'')+
+        '</option>';
+      }).join('');
+
+    atualizarPreview();
+  }
+
+  function setBotoes(){
+    var m=document.getElementById('slShareMensal'),
+        a=document.getElementById('slShareAnual'),
+        ms=document.getElementById('slShareMes');
+    if(m)m.classList.toggle('active',modo==='mensal');
+    if(a)a.classList.toggle('active',modo==='anual');
+    if(ms)ms.parentElement.style.display=modo==='mensal'?'block':'none';
+    atualizarPreview();
+  }
+
+  window.slShareSetModo=function(v){
+    modo=(v==='anual')?'anual':'mensal';
+    setBotoes();
+  };
+
+  var inicializado=false;
+  window.slAbrirCompartilharHistorico=function(){
+    if(!inicializado){
+      popular();
+      inicializado=true;
+    }else{
+      atualizarPreview();
+    }
+    setBotoes();
+    var o=document.getElementById('slShareHistOverlay');
+    if(o){o.classList.add('show');o.setAttribute('aria-hidden','false')}
+  };
+
+  window.slFecharCompartilharHistorico=function(){
+    var o=document.getElementById('slShareHistOverlay');
+    if(o){o.classList.remove('show');o.setAttribute('aria-hidden','true')}
+  };
+
+  function obterMovs(){
+    var mes=Number((document.getElementById('slShareMes')||{}).value||0);
+    var ano=Number((document.getElementById('slShareAno')||{}).value||new Date().getFullYear());
+    var conta=(document.getElementById('slShareConta')||{}).value||'todos';
+    var cat=(document.getElementById('slShareCategoria')||{}).value||'todos';
+    var b=getDb();
+
+    return {
+      mes:mes, ano:ano, conta:conta, cat:cat,
+      movs:arr(b&&b.movs).filter(function(m){
+        if(!m||m.ignorado)return false;
+        if(m.pago===false && (m.tipo==='receita'||m.tipo==='despesa'))return false;
+        if(conta!=='todos' && String(m.conta||'')!==String(conta))return false;
+        if(cat!=='todos' && String(m.cat||'')!==String(cat))return false;
+
+        var d=String(m.data||'');
+        if(!/^\d{4}-\d{2}-\d{2}/.test(d))return false;
+        var y=Number(d.slice(0,4)), mo=Number(d.slice(5,7))-1;
+        return y===ano && (modo==='anual'||mo===mes);
+      }).sort(function(a,b){return String(a.data||'').localeCompare(String(b.data||''));})
+    };
+  }
+
+  function calcularResumo(movs){
+    var rec=0,des=0,cart=0,pagFatura=0;
+    arr(movs).forEach(function(m){
+      var v=Number(m.valor)||0;
+      if(m.tipo==='receita'){
+        rec+=v;
+      }else if(m.tipo==='cartao'){
+        cart+=v;
+      }else if(m.tipo==='despesa'){
+        if(m.origemTipo==='pagamentoFatura'){
+          pagFatura+=v;
+        }else{
+          des+=v;
+        }
+      }
+    });
+    return {rec:rec,des:des,cart:cart,pagFatura:pagFatura,saldo:rec-des-cart};
+  }
+
+  function tipoLinha(m){
+    if(m.tipo==='receita')return 'RECEITA';
+    if(m.tipo==='cartao')return 'CARTÃO';
+    if(m.origemTipo==='pagamentoFatura')return 'PAGAMENTO DE FATURA';
+    return 'DESPESA';
+  }
+
+  function montarTexto(){
+    var x=obterMovs(), r=calcularResumo(x.movs), lin=[];
+    x.movs.forEach(function(m){
+      var v=Number(m.valor)||0;
+      lin.push((m.data||'')+' • '+tipoLinha(m)+' • '+(m.desc||'LANÇAMENTO')+
+        ' • '+(m.cat||'SEM CATEGORIA')+' • '+dinheiro(v));
+    });
+
+    var titulo=modo==='mensal'?(meses[x.mes]+' '+x.ano):('ANO '+x.ano);
+    var contaLabel=x.conta==='todos'?'TODAS AS CONTAS':contaNome(x.conta);
+    var catLabel=x.cat==='todos'?'TODAS AS CATEGORIAS':x.cat;
+
+    return '📜 HISTÓRICO FINANCEIRO\n'+titulo+
+      '\nCONTA: '+contaLabel+
+      '\nCATEGORIA: '+catLabel+
+      '\n\nRECEITAS: '+dinheiro(r.rec)+
+      '\nDESPESAS: '+dinheiro(r.des)+
+      '\nCOMPRAS NO CARTÃO: '+dinheiro(r.cart)+
+      '\nPAGAMENTOS DE FATURA: '+dinheiro(r.pagFatura)+
+      '\nSALDO CONSIDERADO: '+dinheiro(r.saldo)+
+      '\n\n'+(lin.length?lin.join('\n'):'NENHUM LANÇAMENTO ENCONTRADO.');
+  }
+
+  function atualizarPreview(){
+    var p=document.getElementById('slSharePreview');
+    if(!p)return;
+    try{
+      var x=obterMovs(), r=calcularResumo(x.movs);
+      p.textContent=(modo==='mensal'?meses[x.mes]+' '+x.ano:'ANO '+x.ano)+
+        ' • '+x.movs.length+' LANÇAMENTO(S) • RECEITAS '+dinheiro(r.rec)+
+        ' • DESPESAS '+dinheiro(r.des)+
+        ' • CARTÃO '+dinheiro(r.cart)+
+        ' • SALDO '+dinheiro(r.saldo);
+    }catch(e){
+      p.textContent='NÃO FOI POSSÍVEL ATUALIZAR O RESUMO.';
+    }
+  }
+
+  async function copiarTexto(texto){
+    if(navigator.clipboard && typeof navigator.clipboard.writeText==='function'){
+      try{
+        await navigator.clipboard.writeText(texto);
+        return true;
+      }catch(e){}
+    }
+
+    var ta=document.createElement('textarea');
+    ta.value=texto;
+    ta.setAttribute('readonly','');
+    ta.style.position='fixed';
+    ta.style.top='0';
+    ta.style.left='-9999px';
+    ta.style.width='1px';
+    ta.style.height='1px';
+    ta.style.opacity='0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0,ta.value.length);
+
+    var ok=false;
+    try{ok=document.execCommand('copy')}catch(e){ok=false}
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  window.slCopiarCompartilharHistorico=async function(){
+    var texto=montarTexto();
+    var btn=document.querySelector('.slShareCopy');
+    if(btn)btn.disabled=true;
+    try{
+      var ok=await copiarTexto(texto);
+      if(ok){
+        alert('TEXTO DO HISTÓRICO COPIADO!');
+      }else{
+        alert('O NAVEGADOR BLOQUEOU A CÓPIA AUTOMÁTICA. SELECIONE E COPIE O TEXTO MANUALMENTE.');
+      }
+    }catch(e){
+      alert('NÃO FOI POSSÍVEL COPIAR O TEXTO.');
+    }finally{
+      if(btn)btn.disabled=false;
+    }
+  };
+
+  ['slShareMes','slShareAno','slShareConta','slShareCategoria'].forEach(function(id){
+    document.addEventListener('change',function(e){
+      if(e.target && e.target.id===id)atualizarPreview();
+    });
+  });
+
+  document.addEventListener('click',function(e){
+    if(e.target===document.getElementById('slShareHistOverlay'))slFecharCompartilharHistorico();
+  });
+})();
+</script>
 </body>
 
 </html>
@@ -13101,5 +13313,392 @@ if(typeof abrirCategoriaBase==='function'){
       history.back();
     }catch(err){}
   },{passive:true});
+})();
+/* ===== CORREÇÃO: DETALHAMENTO DOS GASTOS COM CARTÕES ===== */
+(function(){
+  function esc(v){
+    return String(v==null?'':v)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+  }
+
+  window.abrirDetalhesGastosCartoes=function(){
+    const movs=(db.movs||[])
+      .filter(m=>m.tipo==='cartao' && !m.ignorado)
+      .sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+
+    const total=movs.reduce((s,m)=>s+(+m.valor||0),0);
+
+    let html=`
+      <div class="invoiceHeader">
+        <h2>💳 GASTOS COM CARTÕES</h2>
+        <button class="invoiceHeaderClose" onclick="closeModal()">×</button>
+      </div>
+      <div class="card cartoesDetalheResumo">
+        <b>TOTAL DOS GASTOS</b>
+        <strong>${fmt(total)}</strong>
+        <small>${movs.length} COMPRA${movs.length===1?'':'S'} REGISTRADA${movs.length===1?'':'S'}</small>
+      </div>
+    `;
+
+    if(!movs.length){
+      html += `<div class="empty">NENHUM GASTO COM CARTÃO REGISTRADO.</div>`;
+    }else{
+      const grupos={};
+      movs.forEach(m=>{
+        const c=(db.cartoes||[]).find(x=>x.id==m.cartao);
+        const nome=c?.nome || 'CARTÃO NÃO IDENTIFICADO';
+        const icone=c?.icone || '💳';
+        const cor=c?.cor || '#ff453a';
+        if(!grupos[m.cartao||'sem']){
+          grupos[m.cartao||'sem']={nome,icone,cor,itens:[],total:0};
+        }
+        grupos[m.cartao||'sem'].itens.push(m);
+        grupos[m.cartao||'sem'].total += (+m.valor||0);
+      });
+
+      html += Object.values(grupos).map(g=>`
+        <div class="cartoesDetalheGrupo" style="--detalheCor:${esc(g.cor)}">
+          <div class="cartoesDetalheGrupoTop">
+            <div>
+              <h3>${esc(g.icone)} ${esc(g.nome)}</h3>
+              <small>${g.itens.length} COMPRA${g.itens.length===1?'':'S'}</small>
+            </div>
+            <strong>${fmt(g.total)}</strong>
+          </div>
+          <div class="cartoesDetalheLista">
+            ${g.itens.map(m=>{
+              const data=m.data ? new Date(m.data+'T00:00').toLocaleDateString('pt-BR') : '-';
+              const cat=m.cat || 'SEM CATEGORIA';
+              const parcela=m.parcelaTotal ? ` • PARCELA ${m.parcela||1}/${m.parcelaTotal}` : '';
+              return `
+                <div class="cartaoGastoItem">
+                  <div class="cartaoGastoIcon">${esc(m.icone || '💳')}</div>
+                  <div class="cartaoGastoInfo">
+                    <b>${esc(m.desc || 'COMPRA NO CARTÃO')}</b>
+                    <small>${esc(cat)} • ${data}${parcela}</small>
+                  </div>
+                  <div class="cartaoGastoRight">
+                    <strong>${fmt(m.valor)}</strong>
+                    <div class="cartaoGastoActions">
+                      <button onclick="openModal('editCompraCartao','${esc(m.id)}')">✏️</button>
+                      <button onclick="excluir('${esc(m.id)}');abrirDetalhesGastosCartoes()">🗑️</button>
+                    </div>
+                  </div>
+                </div>`;
+            }).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    modal.classList.add('show','moneyModal','invoiceModal');
+    modal.onclick=function(e){if(e.target===modal)closeModal();};
+    modalBody.innerHTML=html;
+  };
+
+  const style=document.createElement('style');
+  style.textContent=`
+    .cartoesDetalheResumo{
+      border:2px solid #ff453a!important;
+      background:linear-gradient(145deg,#21090b,#07111d)!important;
+      box-shadow:0 0 18px #ff453a55!important;
+      text-align:center;
+      padding:14px!important;
+      margin-bottom:12px!important;
+    }
+    .cartoesDetalheResumo b{
+      display:block;
+      color:#ffb4ae;
+      font-size:calc(11px * var(--fontScale,1));
+      margin-bottom:5px;
+    }
+    .cartoesDetalheResumo strong{
+      display:block;
+      color:#ff453a;
+      font-size:calc(28px * var(--fontScale,1));
+      text-shadow:0 0 12px #ff453a88;
+    }
+    .cartoesDetalheResumo small{
+      display:block;
+      color:var(--muted);
+      margin-top:4px;
+      font-size:calc(10px * var(--fontScale,1));
+    }
+    .cartoesDetalheGrupo{
+      border:2px solid var(--detalheCor,#ff453a);
+      border-radius:18px;
+      padding:10px;
+      margin-bottom:10px;
+      background:#0b111a;
+      box-shadow:0 0 14px color-mix(in srgb,var(--detalheCor,#ff453a) 35%,transparent);
+    }
+    .cartoesDetalheGrupoTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:2px 2px 10px;
+    }
+    .cartoesDetalheGrupoTop h3{
+      margin:0;
+      font-size:calc(15px * var(--fontScale,1));
+    }
+    .cartoesDetalheGrupoTop small{
+      display:block;
+      color:var(--muted);
+      margin-top:3px;
+      font-size:calc(9px * var(--fontScale,1));
+    }
+    .cartoesDetalheGrupoTop>strong{
+      color:#ff453a;
+      font-size:calc(15px * var(--fontScale,1));
+      white-space:nowrap;
+    }
+    .cartaoGastoItem{
+      display:grid;
+      grid-template-columns:36px 1fr auto;
+      align-items:center;
+      gap:8px;
+      background:#07111d;
+      border:1px solid #24364c;
+      border-radius:13px;
+      padding:8px;
+      margin-top:7px;
+    }
+    .cartaoGastoIcon{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      display:grid;
+      place-items:center;
+      background:#16263a;
+      font-size:calc(18px * var(--fontScale,1));
+    }
+    .cartaoGastoInfo{min-width:0}
+    .cartaoGastoInfo b{
+      display:block;
+      font-size:calc(12px * var(--fontScale,1));
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .cartaoGastoInfo small{
+      display:block;
+      color:var(--muted);
+      margin-top:3px;
+      font-size:calc(9px * var(--fontScale,1));
+    }
+    .cartaoGastoRight{text-align:right}
+    .cartaoGastoRight>strong{
+      display:block;
+      color:#ff453a;
+      font-size:calc(13px * var(--fontScale,1));
+      white-space:nowrap;
+    }
+    .cartaoGastoActions{
+      display:flex;
+      justify-content:flex-end;
+      gap:4px;
+      margin-top:4px;
+    }
+    .cartaoGastoActions button{
+      border:0;
+      border-radius:7px;
+      background:#16263a;
+      color:#fff;
+      padding:4px 6px;
+      font-size:11px;
+    }
+  `;
+  document.head.appendChild(style);
+})();
+
+</script>
+
+<!-- ===== NOVO FILTRO PREMIUM: GASTOS COM CARTÕES ===== -->
+<script id="novo-filtro-gastos-cartoes-final">
+(function(){
+  'use strict';
+  let gastosCartoesSelecionados = new Set();
+
+  function esc(v){
+    return String(v==null?'':v)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+  }
+  function num(v){ return Number(v)||0; }
+  function moeda(v){ try{return fmt(v);}catch(e){return num(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});} }
+  function dataOk(m){
+    try{return typeof dentroFiltroData==='function' ? dentroFiltroData(m) : true;}
+    catch(e){return true;}
+  }
+  function comprasBase(){
+    return (db.movs||[])
+      .filter(function(m){return m && m.tipo==='cartao' && !m.ignorado && dataOk(m);})
+      .sort(function(a,b){return (b.data||'').localeCompare(a.data||'');});
+  }
+  function categorias(arr){
+    return Array.from(new Set(arr.map(function(m){return m.cat||'SEM CATEGORIA';}))).sort(function(a,b){return a.localeCompare(b,'pt-BR');});
+  }
+  function cartoes(){ return db.cartoes||[]; }
+  function filtroAtual(){
+    return {
+      busca:(document.getElementById('gctBusca')?.value||'').trim().toLowerCase(),
+      cartao:document.getElementById('gctCartao')?.value||'todos',
+      categoria:document.getElementById('gctCategoria')?.value||'todas'
+    };
+  }
+  function listaFiltrada(){
+    const f=filtroAtual();
+    return comprasBase().filter(function(m){
+      const c=(db.cartoes||[]).find(function(x){return x.id==m.cartao;});
+      const nomeCartao=c?.nome||'CARTÃO NÃO IDENTIFICADO';
+      const texto=((m.desc||'')+' '+(m.cat||'')+' '+nomeCartao).toLowerCase();
+      if(f.busca && !texto.includes(f.busca)) return false;
+      if(f.cartao!=='todos' && m.cartao!==f.cartao) return false;
+      if(f.categoria!=='todas' && (m.cat||'SEM CATEGORIA')!==f.categoria) return false;
+      return true;
+    });
+  }
+  function totalSelecionadoVisivel(){
+    return listaFiltrada().filter(function(m){return gastosCartoesSelecionados.has(String(m.id));}).reduce(function(s,m){return s+num(m.valor);},0);
+  }
+  function renderDetalhesGastosCartoes(){
+    const base=comprasBase();
+    const lista=listaFiltrada();
+    const total=lista.reduce(function(s,m){return s+num(m.valor);},0);
+    const totalSel=totalSelecionadoVisivel();
+    const cats=categorias(base);
+    const cartoesLista=cartoes();
+    const f=filtroAtual();
+
+    let html=`
+      <div class="invoiceHeader">
+        <h2>💳 GASTOS COM CARTÕES</h2>
+        <button class="invoiceHeaderClose" onclick="closeModal()">×</button>
+      </div>
+
+      <div class="gctSearchWrap">
+        <input id="gctBusca" class="gctSearch" value="${esc(document.getElementById('gctBusca')?.value||'')}" placeholder="BUSCAR POR NOME" oninput="window.renderFiltroGastosCartoes()">
+      </div>
+
+      <div class="gctFilterBox">
+        <div class="gctFilterGrid">
+          <select id="gctCartao" class="gctSelect" onchange="window.renderFiltroGastosCartoes()">
+            <option value="todos" ${f.cartao==='todos'?'selected':''}>🔵 FILTRO CARTÃO</option>
+            ${cartoesLista.map(function(c){return `<option value="${esc(c.id)}" ${f.cartao===c.id?'selected':''}>${esc(c.icone||'💳')} ${esc(c.nome||'CARTÃO')}</option>`;}).join('')}
+          </select>
+          <select id="gctCategoria" class="gctSelect gctCategorySelect" onchange="window.renderFiltroGastosCartoes()">
+            <option value="todas" ${f.categoria==='todas'?'selected':''}>🟩 FILTRO CATEGORIA</option>
+            ${cats.map(function(c){return `<option value="${esc(c)}" ${f.categoria===c?'selected':''}>${esc(c)}</option>`;}).join('')}
+          </select>
+        </div>
+
+        <div class="gctTotalsGrid">
+          <div class="gctTotalBox gctTotalCompras">
+            <b>🔵 TOTAL DAS COMPRAS</b>
+            <strong>${moeda(total)}</strong>
+          </div>
+          <div class="gctTotalBox gctTotalSelecionado">
+            <b>🟩 TOTAL SELECIONADO</b>
+            <strong>${moeda(totalSel)}</strong>
+          </div>
+        </div>
+
+        <button class="gctAction gctSelectAll" onclick="window.selecionarTodosGastosCartoes()">SELECIONAR TODOS</button>
+        <button class="gctAction gctClear" onclick="window.limparSelecaoGastosCartoes()">LIMPAR SELEÇÃO</button>
+      </div>
+    `;
+
+    if(!lista.length){
+      html += `<div class="empty">NENHUM GASTO COM CARTÃO ENCONTRADO.</div>`;
+    }else{
+      const grupos={};
+      lista.forEach(function(m){
+        const c=(db.cartoes||[]).find(function(x){return x.id==m.cartao;});
+        const key=m.cartao||'sem';
+        if(!grupos[key]) grupos[key]={nome:c?.nome||'CARTÃO NÃO IDENTIFICADO',icone:c?.icone||'💳',cor:c?.cor||'#ff453a',itens:[],total:0};
+        grupos[key].itens.push(m);
+        grupos[key].total+=num(m.valor);
+      });
+      html += Object.values(grupos).map(function(g){
+        return `<div class="gctGroup" style="--gctCor:${esc(g.cor)}">
+          <div class="gctGroupTop">
+            <div><h3>${esc(g.icone)} ${esc(g.nome)}</h3><small>${g.itens.length} COMPRA${g.itens.length===1?'':'S'}</small></div>
+            <strong>${moeda(g.total)}</strong>
+          </div>
+          <div class="gctList">${g.itens.map(function(m){
+            const id=String(m.id);
+            const data=m.data ? new Date(m.data+'T00:00').toLocaleDateString('pt-BR') : '-';
+            const cat=m.cat||'SEM CATEGORIA';
+            const checked=gastosCartoesSelecionados.has(id);
+            const parcela=m.parcelaTotal ? ` • PARCELA ${m.parcela||1}/${m.parcelaTotal}` : '';
+            return `<div class="gctItem ${checked?'gctItemSelected':''}">
+              <input class="gctCheck" type="checkbox" ${checked?'checked':''} onchange="window.toggleGastoCartaoSelecionado('${esc(id)}',this.checked)">
+              <div class="gctIcon">${esc(m.icone||'💳')}</div>
+              <div class="gctInfo"><b>${esc(m.desc||'COMPRA NO CARTÃO')}</b><small>${esc(cat)} • ${data}${parcela}</small></div>
+              <div class="gctRight"><strong>${moeda(m.valor)}</strong><div class="gctActions"><button onclick="openModal('editCompraCartao','${esc(id)}')">✏️</button><button onclick="excluir('${esc(id)}');window.abrirDetalhesGastosCartoes()">🗑️</button></div></div>
+            </div>`;
+          }).join('')}</div>
+        </div>`;
+      }).join('');
+    }
+
+    modal.classList.add('show','moneyModal','invoiceModal');
+    modal.onclick=function(e){if(e.target===modal)closeModal();};
+    modalBody.innerHTML=html;
+  }
+
+  window.renderFiltroGastosCartoes=renderDetalhesGastosCartoes;
+  window.toggleGastoCartaoSelecionado=function(id,checked){
+    id=String(id);
+    if(checked) gastosCartoesSelecionados.add(id); else gastosCartoesSelecionados.delete(id);
+    renderDetalhesGastosCartoes();
+  };
+  window.selecionarTodosGastosCartoes=function(){
+    listaFiltrada().forEach(function(m){gastosCartoesSelecionados.add(String(m.id));});
+    renderDetalhesGastosCartoes();
+  };
+  window.limparSelecaoGastosCartoes=function(){
+    gastosCartoesSelecionados.clear();
+    renderDetalhesGastosCartoes();
+  };
+  window.abrirDetalhesGastosCartoes=function(){
+    gastosCartoesSelecionados.clear();
+    renderDetalhesGastosCartoes();
+  };
+
+  const style=document.createElement('style');
+  style.textContent=`
+    .gctSearchWrap{margin-bottom:12px}
+    .gctSearch{width:100%;height:54px;padding:0 16px;background:#091522;border:1.5px solid #24405f;border-radius:8px;color:#fff;font-size:calc(15px * var(--fontScale,1));font-weight:900;outline:none;text-transform:uppercase}
+    .gctSearch:focus{border-color:#1f7aff;box-shadow:0 0 12px #1f7aff55}
+    .gctFilterBox{background:#07111d;border:2px solid #f2b632;border-radius:8px;padding:14px;margin-bottom:14px;box-shadow:0 0 16px #f2b63244}
+    .gctFilterGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .gctSelect{width:100%;height:66px;padding:0 12px;background:#0a1725;border:2px solid #f2b632;border-radius:7px;color:#fff;font-size:calc(14px * var(--fontScale,1));font-weight:900;outline:none;text-transform:uppercase}
+    .gctCategorySelect{border-color:#f2b632}
+    .gctTotalsGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+    .gctTotalBox{height:128px;border:2px solid #1f7aff;border-radius:7px;background:#0b1928;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px}
+    .gctTotalBox b{font-size:calc(11px * var(--fontScale,1));color:#aebbd0;white-space:nowrap}
+    .gctTotalBox strong{font-size:calc(27px * var(--fontScale,1));margin-top:8px;text-shadow:0 0 12px currentColor;white-space:nowrap}
+    .gctTotalCompras strong{color:#1f7aff}.gctTotalSelecionado{border-color:#31d158}.gctTotalSelecionado b{color:#31d158}.gctTotalSelecionado strong{color:#31d158}
+    .gctAction{width:100%;height:54px;border:0;border-radius:7px;color:#fff;font-size:calc(14px * var(--fontScale,1));font-weight:900;margin-top:12px}
+    .gctSelectAll{background:linear-gradient(145deg,#2680ff,#095bc9);box-shadow:0 0 14px #1f7aff55}
+    .gctClear{background:linear-gradient(145deg,#ff453a,#d51d18);box-shadow:0 0 14px #ff453a55}
+    .gctGroup{border:2px solid var(--gctCor,#ff453a);border-radius:16px;padding:10px;margin-bottom:10px;background:#0a111a;box-shadow:0 0 13px color-mix(in srgb,var(--gctCor,#ff453a) 30%,transparent)}
+    .gctGroupTop{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 2px 9px}
+    .gctGroupTop h3{margin:0;font-size:calc(15px * var(--fontScale,1))}.gctGroupTop small{display:block;color:var(--muted);font-size:calc(9px * var(--fontScale,1));margin-top:3px}.gctGroupTop>strong{color:#ff453a;font-size:calc(15px * var(--fontScale,1));white-space:nowrap}
+    .gctItem{display:grid;grid-template-columns:25px 36px 1fr auto;align-items:center;gap:7px;background:#07111d;border:1px solid #24364c;border-radius:13px;padding:8px;margin-top:7px}
+    .gctItemSelected{border-color:#31d158;box-shadow:0 0 12px #31d15855;background:#081b12}
+    .gctCheck{width:21px;height:21px;accent-color:#31d158;margin:0}
+    .gctIcon{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:#16263a;font-size:calc(18px * var(--fontScale,1))}
+    .gctInfo{min-width:0}.gctInfo b{display:block;font-size:calc(12px * var(--fontScale,1));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.gctInfo small{display:block;color:var(--muted);font-size:calc(9px * var(--fontScale,1));margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .gctRight{text-align:right}.gctRight>strong{display:block;color:#ff453a;font-size:calc(13px * var(--fontScale,1));white-space:nowrap}.gctActions{display:flex;justify-content:flex-end;gap:4px;margin-top:4px}.gctActions button{border:0;border-radius:7px;background:#16263a;color:#fff;padding:4px 6px;font-size:11px}
+    @media(max-width:380px){.gctFilterGrid,.gctTotalsGrid{grid-template-columns:1fr}.gctTotalBox{height:100px}}
+  `;
+  document.head.appendChild(style);
 })();
 </script>
