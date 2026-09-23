@@ -12833,6 +12833,28 @@ if(typeof abrirCategoriaBase==='function'){
 })();
 </script>
 
+
+
+<!-- AJUSTE PONTUAL: BOTÃO HISTÓRICO GERAL ABRE SEMPRE TODAS AS CONTAS.
+     AO ABRIR PELO CARD DE UMA CONTA, O FILTRO ESPECÍFICO CONTINUA SENDO PRESERVADO. -->
+<script id="sl-ajuste-historico-geral-todas-contas">
+(function(){
+  'use strict';
+  window.abrirHistoricoTodos=function(){
+    // Abertura pelo botão geral: limpar somente o filtro de conta.
+    window.__slFiltroContaHistorico='todos';
+    window.slFiltroTelaConta='todos';
+    window.filtroContaHistorico='todos';
+    try{ localStorage.removeItem('sl_filtro_conta_ativo'); }catch(e){}
+
+    // Mantém o comportamento original do botão Histórico Geral.
+    window.filtro='todos';
+    window.filtroPendencia=false;
+    if(typeof showScreen==='function') showScreen('historico');
+    if(typeof render==='function') render();
+  };
+})();
+</script>
 </body>
 
 </html>
@@ -12922,5 +12944,162 @@ if(typeof abrirCategoriaBase==='function'){
     if(typeof excluirAnterior==='function')return excluirAnterior.apply(this,arguments);
   };
   try{excluir=window.excluir;}catch(e){}
+})();
+</script>
+
+
+<!-- PATCH FINAL: 3 BOTÕES DO HISTÓRICO - TODOS / RECEITAS / DESPESAS -->
+<script id="patch-final-3-botoes-historico">
+(function(){
+  'use strict';
+
+  window.slFiltroTipoPrincipal = window.slFiltroTipoPrincipal || 'todos';
+
+  // Aplica o filtro dos 3 botões SOBRE o resultado atual do Histórico,
+  // sem alterar os demais filtros (conta, categoria, mês/ano, busca etc.).
+  var movsAntesTipoFinal = window.movsFiltradosAtuais;
+  window.movsFiltradosAtuais = function(){
+    var lista = [];
+    try{
+      lista = typeof movsAntesTipoFinal === 'function' ? movsAntesTipoFinal.apply(this,arguments) : [];
+    }catch(e){ lista=[]; }
+
+    var tipo = window.slFiltroTipoPrincipal || 'todos';
+    if(tipo === 'receita'){
+      return lista.filter(function(m){ return m && m.tipo === 'receita'; });
+    }
+    if(tipo === 'despesa'){
+      return lista.filter(function(m){ return m && m.tipo === 'despesa'; });
+    }
+    // TODOS = receitas + despesas; cartão não entra no Histórico Geral.
+    return lista.filter(function(m){ return m && (m.tipo === 'receita' || m.tipo === 'despesa'); });
+  };
+  try{ movsFiltradosAtuais = window.movsFiltradosAtuais; }catch(e){}
+
+  window.slMudarFiltroTipoPrincipal = function(valor){
+    valor = (valor === 'receita' || valor === 'despesa' || valor === 'todos') ? valor : 'todos';
+    window.slFiltroTipoPrincipal = valor;
+    try{ window.selPrincipal = []; }catch(e){}
+    try{
+      var tela = (typeof getFiltroTela === 'function') ? getFiltroTela() : 'todos';
+      if(tela !== 'todos' && tela !== 'contas'){
+        if(typeof filtro !== 'undefined') filtro = 'todos';
+        window.filtro = 'todos';
+      }
+    }catch(e){}
+    try{ if(typeof render === 'function') render(); }catch(e){ console.error('Histórico filtro tipo:',e); }
+  };
+
+  // Reconstrói somente os 3 botões, mantendo o restante do menu exatamente igual.
+  var principalToolsAnteriorFinal = window.principalToolsHTML;
+  if(typeof principalToolsAnteriorFinal === 'function'){
+    window.principalToolsHTML = function(arr,tela){
+      var html = principalToolsAnteriorFinal.apply(this,arguments);
+      if(tela !== 'todos' && tela !== 'contas') return html;
+
+      var tipo = window.slFiltroTipoPrincipal || 'todos';
+      var btn = function(valor,texto,corAtiva){
+        var ativo = tipo === valor;
+        return '<button type="button" data-sl-hist-tipo="'+valor+'" class="slHistTipoBtn '+(ativo?'active':'')+'" style="flex:1;min-width:0;background:'+(ativo?corAtiva:'#0b1522')+';border:1px solid '+(ativo?corAtiva:'#203751')+';color:#fff;border-radius:12px;padding:10px 8px;font-weight:900;cursor:pointer">'+texto+'</button>';
+      };
+      var novo = '<div class="slHistTipoBtns" style="display:flex;gap:8px;overflow:auto;margin-bottom:10px">'+
+        btn('todos','💰 TODOS','#1f7aff')+
+        btn('receita','📈 RECEITAS','#148a30')+
+        btn('despesa','📉 DESPESAS','#b91c1c')+
+      '</div>';
+
+      // Substitui a linha antiga dos 3 botões. Se não encontrar, coloca no início.
+      var re = /<div[^>]*style=["']display:flex;gap:8px;overflow:auto;margin-bottom:10px["'][^>]*>[\s\S]*?💰 TODOS[\s\S]*?📉 DESPESAS[\s\S]*?<\/div>/i;
+      if(re.test(html)) return html.replace(re,novo);
+      return novo + html;
+    };
+  }
+
+  // Captura o clique antes de qualquer onclick antigo dos botões.
+  document.addEventListener('click',function(e){
+    var b = e.target && e.target.closest ? e.target.closest('[data-sl-hist-tipo]') : null;
+    if(!b) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    window.slMudarFiltroTipoPrincipal(b.getAttribute('data-sl-hist-tipo'));
+  },true);
+
+  // Se algum código recriar os botões, garante que o estado visual corresponda ao filtro.
+  function atualizarBotoes(){
+    var tipo = window.slFiltroTipoPrincipal || 'todos';
+    document.querySelectorAll('[data-sl-hist-tipo]').forEach(function(b){
+      var v=b.getAttribute('data-sl-hist-tipo'), ativo=v===tipo;
+      b.classList.toggle('active',ativo);
+      var c=v==='todos'?'#1f7aff':(v==='receita'?'#148a30':'#b91c1c');
+      b.style.background=ativo?c:'#0b1522';
+      b.style.borderColor=ativo?c:'#203751';
+    });
+  }
+  var renderFinalAnterior = window.render;
+  window.render = function(){
+    var r;
+    try{ r = typeof renderFinalAnterior==='function' ? renderFinalAnterior.apply(this,arguments) : undefined; }catch(e){ console.error('render histórico:',e); }
+    try{ atualizarBotoes(); }catch(e){}
+    return r;
+  };
+
+  setTimeout(atualizarBotoes,100);
+})();
+</script>
+
+<!-- CORREÇÃO PONTUAL: GESTO DE ARRASTAR DA DIREITA PARA A ESQUERDA COMO NO CELULAR -->
+<script id="sl-swipe-fechar-tela">
+(function(){
+  'use strict';
+  if(window.__slSwipeFecharTelaAtivo) return;
+  window.__slSwipeFecharTelaAtivo=true;
+
+  var inicioX=0, inicioY=0, tocou=false;
+
+  document.addEventListener('touchstart',function(e){
+    if(!e.touches || e.touches.length!==1) return;
+    inicioX=e.touches[0].clientX;
+    inicioY=e.touches[0].clientY;
+    tocou=true;
+  },{passive:true});
+
+  document.addEventListener('touchend',function(e){
+    if(!tocou || !e.changedTouches || !e.changedTouches.length) return;
+    tocou=false;
+
+    var fimX=e.changedTouches[0].clientX;
+    var fimY=e.changedTouches[0].clientY;
+    var dx=fimX-inicioX;
+    var dy=fimY-inicioY;
+
+    // Somente arraste da DIREITA para a ESQUERDA.
+    // Exige movimento horizontal para não fechar ao rolar a tela para cima/baixo.
+    if(dx >= -70 || Math.abs(dx) <= Math.abs(dy)*1.25) return;
+
+    var atual=document.querySelector('.screen.active');
+    var atualId=atual ? atual.id : 'inicio';
+
+    var modal=document.getElementById('modal');
+    var confirm=document.getElementById('confirmOverlay');
+    var scope=document.getElementById('scopeOverlay');
+    var sheet=document.querySelector('.selectSheet.show,.iconSheet.show,.repeatSheet.show');
+    var teclado=document.getElementById('iconKeyboardOverlay');
+
+    var temAberto =
+      (modal && modal.classList.contains('show')) ||
+      (confirm && confirm.classList.contains('show')) ||
+      (scope && scope.classList.contains('show')) ||
+      (sheet && sheet.classList.contains('show')) ||
+      (teclado && teclado.classList.contains('show'));
+
+    // Na tela inicial sem janela aberta, não faz nada.
+    if(atualId==='inicio' && !temAberto) return;
+
+    // Usa o mesmo mecanismo de VOLTAR já existente no aplicativo,
+    // preservando a navegação e os filtros atuais.
+    try{
+      history.back();
+    }catch(err){}
+  },{passive:true});
 })();
 </script>
