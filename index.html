@@ -826,6 +826,12 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
   box-shadow:0 0 15px #ff453a88!important;
 }
 </style>
+<style id="slComissoesAjusteFinal">
+.slComFilterFull{display:none!important}
+.slComHead .slComClose{display:grid!important;visibility:visible!important;opacity:1!important;position:static!important;width:38px!important;height:38px!important;border-radius:12px!important;border:1px solid #29435f!important;background:#17263a!important;color:#fff!important;font-size:24px!important;line-height:1!important;box-shadow:none!important;transform:none!important}
+.slComHead .slComClose::before,.slComHead .slComClose::after{display:none!important}
+.slComActions{grid-template-columns:1fr!important}
+</style>
 </head>
 <body>
 <div class="app">
@@ -11054,7 +11060,7 @@ button[onclick="openModal('temas')"],button[onclick='openModal("temas")']{displa
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function moeda(v){try{return typeof fmt==='function'?fmt(v):n(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}catch(e){return 'R$ '+n(v).toFixed(2).replace('.',',')}}
   function salvarLocal(){try{localStorage.setItem('financeiroPremium',JSON.stringify(dbase()))}catch(e){}}
-  window.__slConfigSemTemasHTML=function(){return '<h2>⚙️ Configurações</h2><div class="editorGroup"><h3>☁️ BACKUP FIREBASE</h3><div class="backupBtns"><button class="smallBtn backupNow" onclick="fazerBackupFirebaseManual()">☁️ FAZER BACKUP AGORA</button><button class="smallBtn restoreNow" onclick="restaurarUltimoBackupFirebase()">♻️ RESTAURAR ÚLTIMO BACKUP</button><button class="smallBtn datesNow" onclick="verDatasBackupsFirebase()">📅 VER DATAS DOS ÚLTIMOS BACKUPS</button></div></div><div class="editorGroup"><h3>🎨 APARÊNCIA</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal(\'fonte\')">🔠 FONTE</button><button class="smallBtn" onclick="openModal(\'ajusteTela\')">📱 AJUSTE DE TELA</button></div></div><div class="editorGroup"><h3>📊 RELATÓRIOS</h3><div class="editorBtns"><button class="smallBtn" onclick="closeModal();showScreen(\'relatorios\')">📊 ABRIR RELATÓRIOS</button><button class="smallBtn" onclick="slAbrirCompartilharHistorico()">📤 COMPARTILHAR HISTÓRICO</button></div></div><div class="editorGroup"><h3>🛠️ EDITOR GERAL</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal(\'editorCartoes\')">💳 CARTÕES</button><button class="smallBtn" onclick="openModal(\'editorContas\')">🏦 CONTAS</button><button class="smallBtn" onclick="openModal(\'editorCategorias\')">📂 CATEGORIAS</button></div></div><button class="btn redBg" onclick="zerar()">🗑️ ZERAR TUDO</button>'};
+  window.__slConfigSemTemasHTML=function(){return '<h2>⚙️ Configurações</h2><div class="editorGroup"><h3>☁️ BACKUP FIREBASE</h3><div class="backupBtns"><button class="smallBtn backupNow" onclick="fazerBackupFirebaseManual()">☁️ FAZER BACKUP AGORA</button><button class="smallBtn restoreNow" onclick="restaurarUltimoBackupFirebase()">♻️ RESTAURAR ÚLTIMO BACKUP</button><button class="smallBtn datesNow" onclick="verDatasBackupsFirebase()">📅 VER DATAS DOS ÚLTIMOS BACKUPS</button></div></div><div class="editorGroup"><h3>🎨 APARÊNCIA</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal(\'fonte\')">🔠 FONTE</button><button class="smallBtn" onclick="openModal(\'ajusteTela\')">📱 AJUSTE DE TELA</button></div></div><div class="editorGroup"><h3>📊 RELATÓRIOS</h3><div class="editorBtns"><button class="smallBtn" onclick="closeModal();showScreen(\'relatorios\')">📊 ABRIR RELATÓRIOS</button><button class="smallBtn" onclick="slAbrirCompartilharHistorico()">📤 COMPARTILHAR HISTÓRICO</button></div></div><div class="editorGroup"><h3>💰 COMISSÕES</h3><div class="editorBtns"><button class="smallBtn" onclick="slAbrirComissoes()">💰 ABRIR COMISSÕES</button></div></div><div class="editorGroup"><h3>🛠️ EDITOR GERAL</h3><div class="editorBtns"><button class="smallBtn" onclick="openModal(\'editorCartoes\')">💳 CARTÕES</button><button class="smallBtn" onclick="openModal(\'editorContas\')">🏦 CONTAS</button><button class="smallBtn" onclick="openModal(\'editorCategorias\')">📂 CATEGORIAS</button></div></div><button class="btn redBg" onclick="zerar()">🗑️ ZERAR TUDO</button>'};
   var openAnterior=window.openModal;
   window.openModal=function(type,id){if(type==='temas')type='config'; if(type==='config'){try{if(typeof editId!=='undefined')editId=id||null}catch(e){window.editId=id||null} var m=document.getElementById('modal'),b=document.getElementById('modalBody'); if(m&&b){m.classList.remove('moneyModal');m.classList.add('show');var c=m.querySelector('.close');if(c)c.style.display='';b.innerHTML=window.__slConfigSemTemasHTML();return}} return openAnterior.apply(this,arguments)};
   window.aplicarFonteSL=function(){var d=dbase();d.fonte=d.fonte||{size:15,family:'Arial, Helvetica, sans-serif'};var size=Math.max(11,Math.min(28,n(d.fonte.size)||15));var family=d.fonte.family||'Arial, Helvetica, sans-serif';document.documentElement.style.setProperty('--appFontSize',size+'px');document.documentElement.style.setProperty('--appFontFamily',family)};
@@ -13067,6 +13073,165 @@ if(typeof abrirCategoriaBase==='function'){
   });
 })();
 </script>
+
+
+<!-- ===== COMISSÕES / VENDEDORES PREMIUM ===== -->
+<style id="sl-comissoes-premium-css">
+.slComModal{background:linear-gradient(180deg,#091827,#050b12);border:1.5px solid #f2b632;border-radius:26px;padding:16px;box-shadow:0 0 24px #f2b63255}
+.slComHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.slComHead h2{margin:0;color:#fff;font-size:calc(20px * var(--fontScale,1))}.slComClose{width:40px;height:40px;border:1px solid #ff453a;border-radius:12px;background:#2a0707;color:#ff453a;font-size:24px;font-weight:900}
+.slComSection{background:#07111d;border:1.5px solid #00e5ff;border-radius:18px;padding:12px;margin-bottom:12px;box-shadow:0 0 12px #00e5ff33}.slComSection h3{margin:0 0 10px;color:#fff;font-size:calc(14px * var(--fontScale,1))}
+.slComSellerGrid{display:grid;grid-template-columns:1fr auto;gap:8px}.slComInput,.slComSelect{width:100%;height:48px;background:#0a1725;border:1.5px solid #29435f;border-radius:12px;color:#fff;padding:0 12px;font-size:calc(14px * var(--fontScale,1));font-weight:900;outline:none}.slComBtn{height:48px;border:0;border-radius:12px;padding:0 14px;color:#fff;font-weight:900;background:linear-gradient(145deg,#31d158,#0f7a2b)}
+.slComSellerList{display:grid;gap:7px;margin-top:10px}.slComSellerItem{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#0b1522;border:1px solid #203751;border-radius:12px;padding:9px 10px}.slComSellerItem b{font-size:calc(13px * var(--fontScale,1))}.slComDel{border:0;border-radius:9px;background:#3a1010;color:#ffb4ae;padding:7px 9px;font-weight:900}
+.slComFilters{display:grid;grid-template-columns:1fr 1fr;gap:9px}.slComFilterFull{grid-column:1/-1}.slComLabel{display:block;color:#9fb3c8;font-size:calc(10px * var(--fontScale,1));margin-bottom:5px;font-weight:900}.slComTotal{margin-top:10px;border:2px solid #31d158;border-radius:16px;padding:12px;text-align:center;background:#071a10;box-shadow:0 0 14px #31d15844}.slComTotal small{display:block;color:#a8eab5;font-size:calc(10px * var(--fontScale,1))}.slComTotal strong{display:block;color:#31d158;font-size:calc(27px * var(--fontScale,1));margin-top:5px;text-shadow:0 0 12px #31d158aa}
+.slComPreview{margin-top:10px;border:1px solid #24405f;border-radius:13px;background:#050d16;padding:10px;max-height:230px;overflow:auto;color:#dbeafe;font-size:calc(11px * var(--fontScale,1));line-height:1.45;white-space:pre-wrap;text-transform:uppercase}.slComActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.slComShare{background:linear-gradient(145deg,#08b956,#087a3c)!important}.slComCopy{background:linear-gradient(145deg,#1f7aff,#06459e)!important}
+.slComSellerField{margin-top:0!important}.slComSellerField .mobIcon{background:rgba(49,209,88,.12)!important;border:1px solid #31d15855}.slComSellerField select{background:transparent;border:0;color:#fff;width:100%;font-size:calc(16px * var(--fontScale,1));font-weight:900;outline:none;padding:6px 0;text-transform:uppercase}.slComSellerField option{background:#0b1522;color:#fff}
+@media(max-width:390px){.slComFilters{grid-template-columns:1fr}.slComFilterFull{grid-column:auto}.slComActions{grid-template-columns:1fr}}
+</style>
+<script id="sl-comissoes-premium-js">
+(function(){
+  'use strict';
+  function D(){if(typeof db==='undefined'||!db)window.db={};return db;}
+  function arr(v){return Array.isArray(v)?v:[]}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function n(v){return Number(v||0)||0}
+  function moeda(v){try{return typeof fmt==='function'?fmt(v):n(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}catch(e){return 'R$ '+n(v).toFixed(2).replace('.',',')}}
+  function saveLocal(){try{localStorage.setItem('financeiroPremium',JSON.stringify(D()))}catch(e){} try{if(typeof applyTheme==='function')applyTheme()}catch(e){}}
+  function vendedores(){D().vendedores=arr(D().vendedores);return D().vendedores}
+  function vendedorNome(id){var x=vendedores().find(function(v){return String(v.id)===String(id)});return x?(x.nome||'VENDEDOR'):''}
+  function meses(){return ['JANEIRO','FEVEREIRO','MARÇO','ABRIL','MAIO','JUNHO','JULHO','AGOSTO','SETEMBRO','OUTUBRO','NOVEMBRO','DEZEMBRO']}
+  function hoje(){return new Date()}
+
+  window.slComAdicionarVendedor=function(){
+    var inp=document.getElementById('slComNovoVendedor');
+    var nome=(inp&&inp.value||'').trim().toUpperCase();
+    if(!nome)return alert('DIGITE O NOME DO VENDEDOR.');
+    if(vendedores().some(function(v){return String(v.nome||'').toUpperCase()===nome}))return alert('ESTE VENDEDOR JÁ ESTÁ CADASTRADO.');
+    vendedores().push({id:'vend_'+Date.now()+Math.random().toString(16).slice(2),nome:nome});
+    saveLocal();
+    if(inp)inp.value='';
+    window.slAbrirComissoes();
+  };
+  window.slComExcluirVendedor=function(id){
+    if(!confirm('EXCLUIR ESTE VENDEDOR?'))return;
+    D().vendedores=vendedores().filter(function(v){return String(v.id)!==String(id)});
+    saveLocal(); window.slAbrirComissoes();
+  };
+
+  function vendedorOptions(sel){
+    return '<option value="">SEM VENDEDOR</option>'+vendedores().map(function(v){return '<option value="'+esc(v.id)+'" '+(String(sel||'')===String(v.id)?'selected':'')+'>'+esc(v.nome)+'</option>'}).join('');
+  }
+  function injectSeller(type,id){
+    if(!['receita','despesa','compraCartao','editCompraCartao'].includes(type))return;
+    setTimeout(function(){
+      var body=document.getElementById('modalBody'); if(!body||document.getElementById('slVendedorField'))return;
+      var item=id?(D().movs||[]).find(function(m){return String(m.id)===String(id)}):null;
+      var selected=item&&item.vendedorId||'';
+      var wrap=document.createElement('div');
+      wrap.id='slVendedorField'; wrap.className=type==='receita'||type==='despesa'?'mobRow modernCard slComSellerField':'compraCardSection slComSellerField';
+      wrap.innerHTML='<div class="mobIcon">👤</div><div><b>VENDEDOR</b><small style="display:block;margin-top:4px;color:#9fb3c8">ASSOCIE ESTA VENDA/COMPRA AO VENDEDOR</small><select id="slVendedor">'+vendedorOptions(selected)+'</select></div>';
+      var cat=document.getElementById('cat');
+      if(cat){
+        var parent=cat.closest('.mobRow')||cat.closest('.compraCardSection')||cat.parentElement;
+        if(parent&&parent.parentNode){parent.parentNode.insertBefore(wrap,parent.nextSibling);return;}
+      }
+      body.appendChild(wrap);
+    },30);
+  }
+
+  // Guarda o vendedor nos lançamentos já existentes e nos novos lançamentos.
+  function envolverSalvar(nomeFunc){
+    var original=window[nomeFunc]; if(typeof original!=='function'||original.__slComWrapped)return;
+    var wrapped=function(){
+      var vendedorId=(document.getElementById('slVendedor')||{}).value||'';
+      var antes=new Set(arr(D().movs).map(function(m){return String(m.id)}));
+      var oldId=(typeof editId!=='undefined')?editId:null;
+      var old=D().movs.find(function(m){return String(m.id)===String(oldId)});
+      var grupo=old&&old.grupo;
+      var r=original.apply(this,arguments);
+      try{
+        var movs=D().movs||[];
+        movs.forEach(function(m){
+          var novo=!antes.has(String(m.id));
+          var mesmo=oldId&&String(m.id)===String(oldId);
+          var grupoMesmo=grupo&&m.grupo===grupo;
+          if((novo||mesmo||grupoMesmo)&&vendedorId){m.vendedorId=vendedorId;m.vendedor=vendedorNome(vendedorId);}
+          else if((novo||mesmo||grupoMesmo)&&!vendedorId){delete m.vendedorId;delete m.vendedor;}
+        });
+        saveLocal();
+      }catch(e){}
+      return r;
+    };
+    wrapped.__slComWrapped=true; window[nomeFunc]=wrapped;
+  }
+  envolverSalvar('salvarMov');
+  envolverSalvar('salvarCompraCartao');
+  envolverSalvar('salvarCompraEditada');
+
+  // O arquivo possui várias camadas de openModal; esta é a última camada e apenas injeta o campo.
+  var openBase=window.openModal;
+  if(typeof openBase==='function'&&!openBase.__slComWrapped){
+    var openWrapped=function(type,id){var r=openBase.apply(this,arguments);injectSeller(type,id);return r};
+    openWrapped.__slComWrapped=true;window.openModal=openWrapped;
+  }
+
+  function textoComissao(){
+    var mes=Number((document.getElementById('slComMes')||{}).value||new Date().getMonth());
+    var ano=Number((document.getElementById('slComAno')||{}).value||new Date().getFullYear());
+    var vend=(document.getElementById('slComVendedor')||{}).value||'todos';
+    var cat=(document.getElementById('slComCategoria')||{}).value||'todos';
+    var mensal=true;
+    var ms=meses();
+    var movs=arr(D().movs).filter(function(m){
+      if(!m||m.ignorado||!m.vendedorId)return false;
+      if(vend!=='todos'&&String(m.vendedorId)!==String(vend))return false;
+      if(cat!=='todos'&&String(m.cat||'SEM CATEGORIA')!==String(cat))return false;
+      if(m.pago===false)return false;
+      var d=String(m.data||''); if(!/^\\d{4}-\\d{2}-\\d{2}/.test(d))return false;
+      var y=Number(d.slice(0,4)), mo=Number(d.slice(5,7))-1;
+      return y===ano&&(mensal?mo===mes:true);
+    }).sort(function(a,b){return String(a.data).localeCompare(String(b.data))});
+    var total=movs.reduce(function(s,m){return s+n(m.valor)},0);
+    var titulo=mensal?ms[mes]+' '+ano:'ANO '+ano;
+    var nomeVend=vend==='todos'?'TODOS OS VENDEDORES':vendedorNome(vend);
+    var nomeCat=cat==='todos'?'TODAS AS CATEGORIAS':cat;
+    var linhas=movs.map(function(m){return '📅 '+String(m.data).split('-').reverse().join('/')+'  📝 '+(m.desc||'SEM DESCRIÇÃO')+'  💰 '+moeda(m.valor)});
+    return ('💰 COMISSÕES\n📅 '+titulo+'\n👤 VENDEDOR: '+nomeVend+'\n📂 CATEGORIA: '+nomeCat+'\n\n'+(linhas.length?linhas.join('\n'):'⚠️ NENHUM PAGAMENTO ENCONTRADO.')+'\n\n💵 TOTAL PAGO: '+moeda(total)).toUpperCase();
+  }
+  function atualizarComPreview(){var p=document.getElementById('slComPreview'),t=document.getElementById('slComTotal');if(!p)return;var txt=textoComissao();p.textContent=txt;if(t){var m=txt.match(/TOTAL PAGO: (.*)$/m);t.textContent=m?m[1]:moeda(0)}}
+  function popularCom(){
+    var y=hoje().getFullYear(), mes=document.getElementById('slComMes'),ano=document.getElementById('slComAno'),v=document.getElementById('slComVendedor'),c=document.getElementById('slComCategoria');if(!mes||!ano||!v||!c)return;
+    mes.innerHTML=meses().map(function(x,i){return '<option value="'+i+'">'+x+'</option>'}).join('');mes.value=String(hoje().getMonth());
+    var anos=[];for(var a=y-5;a<=y+1;a++)anos.push(a);ano.innerHTML=anos.map(function(a){return '<option value="'+a+'">'+a+'</option>'}).join('');ano.value=String(y);
+    v.innerHTML='<option value="todos">TODOS OS VENDEDORES</option>'+vendedores().map(function(x){return '<option value="'+esc(x.id)+'">'+esc(x.nome)+'</option>'}).join('');
+    var cats={};arr(D().movs).forEach(function(m){if(m&&m.cat)cats[m.cat]=1});arr(D().categoriasReceitas).forEach(function(x){cats[x]=1});arr(D().categoriasDespesas).forEach(function(x){cats[x]=1});
+    c.innerHTML='<option value="todos">TODAS AS CATEGORIAS</option>'+Object.keys(cats).sort(function(a,b){return a.localeCompare(b,'pt-BR')}).map(function(x){return '<option value="'+esc(x)+'">'+esc(x)+'</option>'}).join('');
+    atualizarComPreview();
+  }
+  window.slAbrirComissoes=function(){
+    var modal=document.getElementById('modal'),body=document.getElementById('modalBody');if(!modal||!body)return;
+    var list=vendedores().map(function(v){return '<div class="slComSellerItem"><b>👤 '+esc(v.nome)+'</b><button class="slComDel" onclick="slComExcluirVendedor(\''+esc(v.id)+'\')">🗑 EXCLUIR</button></div>'}).join('')||'<div class="empty">NENHUM VENDEDOR CADASTRADO.</div>';
+    body.innerHTML='<div class="slComModal"><div class="slComHead"><h2>💰 COMISSÕES</h2><button class="slComClose" onclick="closeModal()">×</button></div>'+
+      '<div class="slComSection"><h3>👤 CADASTRAR VENDEDORES</h3><div class="slComSellerGrid"><input id="slComNovoVendedor" class="slComInput" placeholder="NOME DO VENDEDOR"><button class="slComBtn" onclick="slComAdicionarVendedor()">+ ADICIONAR</button></div><div class="slComSellerList">'+list+'</div></div>'+
+      '<div class="slComSection"><h3>📤 COMPARTILHAR COMISSÕES</h3><div class="slComFilters">'+
+      '<div><label class="slComLabel">MÊS</label><select id="slComMes" class="slComSelect"></select></div><div><label class="slComLabel">ANO</label><select id="slComAno" class="slComSelect"></select></div>'+ 
+      '<div><label class="slComLabel">VENDEDOR</label><select id="slComVendedor" class="slComSelect"></select></div><div><label class="slComLabel">CATEGORIA</label><select id="slComCategoria" class="slComSelect"></select></div>'+ 
+      '</div>'+ 
+      '<div class="slComTotal"><small>TOTAL PAGO NO PERÍODO</small><strong id="slComTotal">R$ 0,00</strong></div><div id="slComPreview" class="slComPreview"></div><div class="slComActions"><button class="slComBtn slComCopy" onclick="slComCopiar()">📋 COPIAR TEXTO</button></div></div></div>';
+    modal.classList.add('show');modal.classList.remove('moneyModal','invoiceModal');modal.onclick=function(e){if(e.target===modal)closeModal()};popularCom();
+    ['slComMes','slComAno','slComVendedor','slComCategoria'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('change',atualizarComPreview)});
+  };
+  async function copiar(txt){if(navigator.clipboard&&navigator.clipboard.writeText){try{await navigator.clipboard.writeText(txt);return true}catch(e){}}var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);ta.select();var ok=false;try{ok=document.execCommand('copy')}catch(e){}ta.remove();return ok}
+  window.slComCopiar=async function(){var ok=await copiar(textoComissao());alert(ok?'TEXTO DAS COMISSÕES COPIADO!':'NÃO FOI POSSÍVEL COPIAR O TEXTO.')};
+
+  // Acrescenta o botão COMISSÕES nas Configurações sem apagar os demais botões existentes.
+  var cfgOld=window.__slConfigSemTemasHTML;
+  if(typeof cfgOld==='function'&&!cfgOld.__slComWrapped){
+    var cfgNew=function(){var html=cfgOld.apply(this,arguments);var extra='<div class="editorGroup"><h3>💰 COMISSÕES</h3><div class="editorBtns"><button class="smallBtn" onclick="slAbrirComissoes()">👤 VENDEDORES / COMPARTILHAR</button></div></div>';return html.replace('<div class="editorGroup"><h3>🛠️ EDITOR GERAL</h3>',extra+'<div class="editorGroup"><h3>🛠️ EDITOR GERAL</h3>')};cfgNew.__slComWrapped=true;window.__slConfigSemTemasHTML=cfgNew;
+  }
+  setTimeout(function(){try{D().vendedores=arr(D().vendedores)}catch(e){}},0);
+})();
+</script>
+
 </body>
 
 </html>
@@ -13700,5 +13865,78 @@ if(typeof abrirCategoriaBase==='function'){
     @media(max-width:380px){.gctFilterGrid,.gctTotalsGrid{grid-template-columns:1fr}.gctTotalBox{height:100px}}
   `;
   document.head.appendChild(style);
+})();
+</script>
+
+<!-- ===== CORREÇÃO DEFINITIVA: BOTÃO COMISSÕES SEM CONFLITO DE CONFIGURAÇÕES ===== -->
+<script id="sl-comissoes-config-definitivo">
+(function(){
+  'use strict';
+  if(window.__slComissoesConfigDefinitivo)return;
+  window.__slComissoesConfigDefinitivo=true;
+
+  function blocoComissoes(){
+    return '<div class="editorGroup" id="slComissoesConfigBox" style="border-color:#31d158!important;box-shadow:0 0 14px #31d15855!important">'+
+      '<h3 style="color:#31d158!important">💰 COMISSÕES</h3>'+
+      '<div class="editorBtns"><button class="smallBtn" type="button" onclick="slAbrirComissoes()">💰 ABRIR COMISSÕES</button></div>'+
+      '</div>';
+  }
+
+  function garantirBotao(){
+    var body=document.getElementById('modalBody');
+    if(!body || !/CONFIGURAÇÕES/i.test(body.textContent||''))return;
+    if(document.getElementById('slComissoesConfigBox'))return;
+    var html=body.innerHTML;
+    var bloco=blocoComissoes();
+    var alvo='<div class="editorGroup"><h3>🛠️ EDITOR GERAL</h3>';
+    if(html.indexOf(alvo)>=0){
+      body.innerHTML=html.replace(alvo,bloco+alvo);
+    }else{
+      var fim=html.indexOf('ZERAR TUDO');
+      if(fim>=0){
+        var pos=html.lastIndexOf('<div',fim);
+        if(pos>=0)body.innerHTML=html.slice(0,pos)+bloco+html.slice(pos);
+        else body.insertAdjacentHTML('beforeend',bloco);
+      }else body.insertAdjacentHTML('beforeend',bloco);
+    }
+  }
+
+  var cfg=window.__slConfigSemTemasHTML;
+  if(typeof cfg==='function'&&!cfg.__slComissaoFinal){
+    var cfgFinal=function(){
+      var html=cfg.apply(this,arguments);
+      if(html.indexOf('slComissoesConfigBox')>=0 || html.indexOf('slAbrirComissoes')>=0)return html;
+      var alvo='<div class="editorGroup"><h3>🛠️ EDITOR GERAL</h3>';
+      if(html.indexOf(alvo)>=0)return html.replace(alvo,blocoComissoes()+alvo);
+      return html+blocoComissoes();
+    };
+    cfgFinal.__slComissaoFinal=true;
+    window.__slConfigSemTemasHTML=cfgFinal;
+  }
+
+  var abrirAnterior=window.openModal;
+  if(typeof abrirAnterior==='function'&&!abrirAnterior.__slComissaoFinal){
+    var abrirFinal=function(type,id){
+      var r=abrirAnterior.apply(this,arguments);
+      if(type==='config' || type==='temas'){
+        setTimeout(garantirBotao,0);
+        setTimeout(garantirBotao,50);
+        setTimeout(garantirBotao,200);
+      }
+      return r;
+    };
+    abrirFinal.__slComissaoFinal=true;
+    window.openModal=abrirFinal;
+    try{openModal=window.openModal}catch(e){}
+  }
+
+  document.addEventListener('click',function(e){
+    var t=e.target;
+    if(!t)return;
+    var oc=t.getAttribute&&t.getAttribute('onclick')||'';
+    if(oc.indexOf("openModal('config')")>=0 || oc.indexOf('openModal("config")')>=0){
+      setTimeout(garantirBotao,0);setTimeout(garantirBotao,80);setTimeout(garantirBotao,250);
+    }
+  },true);
 })();
 </script>
