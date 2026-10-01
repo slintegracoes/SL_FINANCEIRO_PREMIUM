@@ -9333,7 +9333,9 @@ button[onclick="openModal('temas')"],button[onclick='openModal("temas")']{displa
       if(!m||m.tipo!=='cartao'||m.ignorado)return;
       var key=KEY(m); if(YMKEY(key)!==ym)return;
       var card=byId[String(m.cartao||'')]; if(!card)return;
-      if(CLOSED(card,key)) fechada+=N(m.valor); else aberta+=N(m.valor);
+      // Considera somente o saldo real da fatura (valor da compra - pagamentos já realizados)
+      var saldo = Math.max(0, N(m.valor) - N(m.valorPagoFatura));
+      if(CLOSED(card,key)) fechada+=saldo; else aberta+=saldo;
     });
     return {aberta:aberta,fechada:fechada,total:aberta+fechada};
   }
