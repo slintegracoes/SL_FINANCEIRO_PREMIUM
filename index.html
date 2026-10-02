@@ -12791,6 +12791,9 @@ if(typeof abrirCategoriaBase==='function'){
     try{ localStorage.removeItem('sl_filtro_conta_ativo'); }catch(e){}
 
     // Mantém o comportamento original do botão Histórico Geral.
+    // A lista usa estas variáveis; as propriedades de window são só espelhos.
+    filtro='todos';
+    filtroPendencia=false;
     window.filtro='todos';
     window.filtroPendencia=false;
     if(typeof showScreen==='function') showScreen('historico');
@@ -13981,11 +13984,13 @@ if(typeof abrirCategoriaBase==='function'){
   'use strict';
   // null inclui todos os cartões; um Set vazio representa nenhuma seleção.
   var selecionados=null;
+  var atualizacaoPendente=false;
   function numero(v){var n=Number(v);return Number.isFinite(n)?n:0;}
-  function cartoes(){return typeof db!=='undefined'&&Array.isArray(db.cartoes)?db.cartoes:[];}
+  function cartoes(){return typeof db!=='undefined'&&Array.isArray(db.cartoes)?db.cartoes.filter(function(c){return c&&c.id!=null;}):[];}
   function movimentos(){return typeof db!=='undefined'&&Array.isArray(db.movs)?db.movs:[];}
   function moeda(v){return typeof fmt==='function'?fmt(v):numero(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
   function noPeriodo(m){return typeof dentroFiltroData==='function'?dentroFiltroData(m):true;}
+  function escreverTexto(alvo,valor){if(alvo&&alvo.textContent!==valor)alvo.textContent=valor;}
   function emAberto(m){
     return typeof restanteCompraCartao==='function'
       ?Math.max(0,numero(restanteCompraCartao(m)))
@@ -13994,9 +13999,9 @@ if(typeof abrirCategoriaBase==='function'){
   function atualizarOpcoes(lista,ativos,gastosPorCartao){
     var texto=document.getElementById('slResumoCartoesSelecaoTexto');
     if(texto){
-      texto.textContent=!lista.length?'NENHUM CARTÃO CADASTRADO'
+      escreverTexto(texto,!lista.length?'NENHUM CARTÃO CADASTRADO'
         :ativos.size===lista.length?'TODOS OS CARTÕES ('+lista.length+')'
-        :ativos.size+' DE '+lista.length+' CARTÕES SELECIONADOS';
+        :ativos.size+' DE '+lista.length+' CARTÕES SELECIONADOS');
     }
     var visiveis=lista.filter(function(c){
       return !window.slFiltroTelaCartao||window.slFiltroTelaCartao==='todos'
@@ -14023,12 +14028,12 @@ if(typeof abrirCategoriaBase==='function'){
       card.querySelectorAll('.cardCompactValues > div').forEach(function(campo){
         var titulo=campo.querySelector('small'),valor=campo.querySelector('b');
         if(titulo&&valor&&/^(JÁ\s+)?GASTO(U|S)?$/i.test(titulo.textContent.trim())){
-          valor.innerText=moeda(gastosPorCartao.get(id)||0);
+          escreverTexto(valor,moeda(gastosPorCartao.get(id)||0));
         }
       });
     });
   }
-  function atualizarResumo(){
+  function atualizarValores(){
     var lista=cartoes(),ids=new Set(lista.map(function(c){return String(c.id);}));
     if(selecionados!==null){
       selecionados.forEach(function(id){if(!ids.has(id))selecionados.delete(id);});
@@ -14054,11 +14059,20 @@ if(typeof abrirCategoriaBase==='function'){
       gastos+=gastosPorCartao.get(id)||0;
     });
     // A seleção da tela Cartões afeta apenas seus três resumos.
-    var home=document.getElementById('totalCartoes');if(home)home.innerText=moeda(gastosPeriodo);
-    var lim=document.getElementById('limiteTotalCartoes');if(lim)lim.innerText=moeda(limite);
-    var gas=document.getElementById('usadoTotalCartoes');if(gas)gas.innerText=moeda(gastos);
-    var sob=document.getElementById('sobraLimiteCartoes');if(sob)sob.innerText=moeda(sobra);
+    escreverTexto(document.getElementById('totalCartoes'),moeda(gastosPeriodo));
+    escreverTexto(document.getElementById('limiteTotalCartoes'),moeda(limite));
+    escreverTexto(document.getElementById('usadoTotalCartoes'),moeda(gastos));
+    escreverTexto(document.getElementById('sobraLimiteCartoes'),moeda(sobra));
     atualizarOpcoes(lista,ativos,gastosPorCartao);
+  }
+  function atualizarResumo(){
+    // Uma falha nos dados do resumo nunca interrompe as funções do aplicativo.
+    try{atualizarValores();}catch(e){console.error('Resumo dos cartões:',e);}
+  }
+  function agendarResumo(){
+    if(atualizacaoPendente)return;
+    atualizacaoPendente=true;
+    setTimeout(function(){atualizacaoPendente=false;atualizarResumo();},0);
   }
   window.slAtualizarResumoCartoes=atualizarResumo;
   var painel=document.getElementById('listaCartoes');
@@ -14074,18 +14088,17 @@ if(typeof abrirCategoriaBase==='function'){
   if(todos)todos.addEventListener('click',function(){selecionados=null;atualizarResumo();});
   var limpar=document.getElementById('slResumoCartoesLimpar');
   if(limpar)limpar.addEventListener('click',function(){selecionados=new Set();atualizarResumo();});
-  var renderAnterior=window.render;
-  window.render=function(){
-    var resultado=typeof renderAnterior==='function'?renderAnterior.apply(this,arguments):undefined;
-    atualizarResumo();return resultado;
-  };
-  try{render=window.render;}catch(e){}
-  var renderCartoesAnterior=window.renderCartoes;
-  window.renderCartoes=function(){
-    var resultado=typeof renderCartoesAnterior==='function'?renderCartoesAnterior.apply(this,arguments):undefined;
-    atualizarResumo();return resultado;
-  };
-  try{renderCartoes=window.renderCartoes;}catch(e){}
+  // Observa apenas os valores e a lista de cartões. As rotinas originais de
+  // navegação, renderização, edição, pagamentos e salvamento são preservadas.
+  var observador=new MutationObserver(agendarResumo);
+  ['#inicio .grid','#listaCartoes','#cartoes .cartoesResumo'].forEach(function(seletor){
+    var alvo=document.querySelector(seletor);
+    if(alvo)observador.observe(alvo,{childList:true,subtree:true,characterData:true});
+  });
+  ['dataInicio','dataFim'].forEach(function(id){
+    var campo=document.getElementById(id);
+    if(campo){campo.addEventListener('input',agendarResumo);campo.addEventListener('change',agendarResumo);}
+  });
   atualizarResumo();
 })();
 </script>
