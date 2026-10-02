@@ -895,7 +895,13 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
     <button class="btn redBg" onclick="openModal('compraCartao')" style="margin-bottom:12px">LANÇAR COMPRA NO CARTÃO</button>
     <div class="grid cartoesResumo">
       <div class="mini destaqueCartao"><b>💳 Limite Total</b><span id="limiteTotalCartoes" class="gold">R$ 0,00</span></div>
+      <div class="mini destaqueCartao slSobraLimiteResumo"><b>💰 Sobra de Limite</b><span id="sobraLimiteCartoes" class="green">R$ 0,00</span></div>
       <div class="mini destaqueCartao"><b>💸 Já Gastou</b><span id="usadoTotalCartoes" class="red">R$ 0,00</span></div>
+    </div>
+    <div class="slResumoCartoesAcoes">
+      <span id="slResumoCartoesSelecaoTexto" aria-live="polite">TODOS OS CARTÕES</span>
+      <button id="slResumoCartoesTodos" type="button">TODOS</button>
+      <button id="slResumoCartoesLimpar" type="button">LIMPAR</button>
     </div>
     <div id="listaCartoes"></div>
   </section>
@@ -11306,7 +11312,8 @@ window.slMudarFiltroTela=function(tipo,valor){
     var home=document.getElementById('totalCartoes');
     if(home) home.innerText=(typeof fmt==='function'?fmt(total):total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}));
     var usado=document.getElementById('usadoTotalCartoes');
-    if(usado) usado.innerText=(typeof fmt==='function'?fmt(total):total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}));
+    if(typeof window.slAtualizarResumoCartoes==='function') window.slAtualizarResumoCartoes();
+    else if(usado) usado.innerText=(typeof fmt==='function'?fmt(total):total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}));
 
     // Corrige "JÁ GASTOU" de cada cartão usando o mês/ano da FATURA.
     var cards=document.querySelectorAll('#listaCartoes .cardCredit.cardCompact');
@@ -11415,7 +11422,9 @@ window.slMudarFiltroTela=function(tipo,valor){
   function atualizarResumo(){
     var total=totalMes();
     var el=document.getElementById('totalCartoes'); if(el) el.innerText=fmtLocal(total);
-    var el2=document.getElementById('usadoTotalCartoes'); if(el2) el2.innerText=fmtLocal(total);
+    var el2=document.getElementById('usadoTotalCartoes');
+    if(typeof window.slAtualizarResumoCartoes==='function') window.slAtualizarResumoCartoes();
+    else if(el2) el2.innerText=fmtLocal(total);
     var cards=document.querySelectorAll('#listaCartoes .cardCredit.cardCompact');
     var lista=cartoesDb();
     if(window.slFiltroTelaCartao && window.slFiltroTelaCartao!=='todos') lista=lista.filter(function(c){return String(c.id)===String(window.slFiltroTelaCartao);});
@@ -13934,5 +13943,149 @@ if(typeof abrirCategoriaBase==='function'){
       setTimeout(garantirBotao,0);setTimeout(garantirBotao,80);setTimeout(garantirBotao,250);
     }
   },true);
+})();
+</script>
+
+<!-- RESUMO DOS CARTÕES: GASTOS DO PERÍODO, LIMITE DISPONÍVEL E SELEÇÃO MÚLTIPLA -->
+<style id="sl-resumo-cartoes-periodo-css">
+#cartoes .cartoesResumo{grid-template-columns:repeat(3,minmax(0,1fr));container-type:inline-size}
+#cartoes .cartoesResumo .destaqueCartao{min-width:0;padding:10px}
+#cartoes .cartoesResumo .destaqueCartao b{
+  font-size:clamp(9px,2.6cqi,calc(13.5px * var(--fontScale,1)))!important;
+  line-height:1.25;min-height:2.5em;
+}
+#cartoes .cartoesResumo .destaqueCartao span{
+  display:block;font-size:clamp(10px,4cqi,calc(19px * var(--fontScale,1)))!important;
+  white-space:nowrap;
+}
+#cartoes .cartoesResumo .mini:nth-child(2){border-color:#31d158!important;box-shadow:0 0 15px #31d15866!important}
+#cartoes .cartoesResumo .mini:nth-child(3){border-color:#ff453a!important;box-shadow:0 0 15px #ff453a66!important}
+#cartoes .slResumoCartoesAcoes{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+#slResumoCartoesSelecaoTexto{flex:1;min-width:140px;color:var(--muted);font-size:calc(11px * var(--fontScale,1))}
+#cartoes .slResumoCartoesAcoes button{
+  padding:8px 10px;border:1px solid var(--line);border-radius:10px;
+  background:#16263a;color:#fff;font-size:calc(11px * var(--fontScale,1));cursor:pointer;
+}
+#listaCartoes .cardCompactName{flex:1;min-width:0}
+#listaCartoes .slResumoCartaoOpcao{
+  display:inline-flex;align-items:center;gap:5px;flex:none;margin-left:auto;
+  min-height:32px;cursor:pointer;font-size:calc(10px * var(--fontScale,1));color:#fff;
+}
+#listaCartoes .slResumoCartaoOpcao input{
+  flex:0 0 20px;width:20px!important;height:20px!important;margin:0;padding:0;
+  accent-color:#31d158;cursor:pointer;
+}
+</style>
+<script id="sl-resumo-cartoes-periodo-js">
+(function(){
+  'use strict';
+  // null inclui todos os cartões; um Set vazio representa nenhuma seleção.
+  var selecionados=null;
+  function numero(v){var n=Number(v);return Number.isFinite(n)?n:0;}
+  function cartoes(){return typeof db!=='undefined'&&Array.isArray(db.cartoes)?db.cartoes:[];}
+  function movimentos(){return typeof db!=='undefined'&&Array.isArray(db.movs)?db.movs:[];}
+  function moeda(v){return typeof fmt==='function'?fmt(v):numero(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
+  function noPeriodo(m){return typeof dentroFiltroData==='function'?dentroFiltroData(m):true;}
+  function emAberto(m){
+    return typeof restanteCompraCartao==='function'
+      ?Math.max(0,numero(restanteCompraCartao(m)))
+      :Math.max(0,numero(m.valor)-numero(m.valorPagoFatura));
+  }
+  function atualizarOpcoes(lista,ativos,gastosPorCartao){
+    var texto=document.getElementById('slResumoCartoesSelecaoTexto');
+    if(texto){
+      texto.textContent=!lista.length?'NENHUM CARTÃO CADASTRADO'
+        :ativos.size===lista.length?'TODOS OS CARTÕES ('+lista.length+')'
+        :ativos.size+' DE '+lista.length+' CARTÕES SELECIONADOS';
+    }
+    var visiveis=lista.filter(function(c){
+      return !window.slFiltroTelaCartao||window.slFiltroTelaCartao==='todos'
+        ||String(c.id)===String(window.slFiltroTelaCartao);
+    });
+    document.querySelectorAll('#listaCartoes .cardCredit.cardCompact').forEach(function(card,i){
+      var c=visiveis[i];if(!c)return;
+      var id=String(c.id),topo=card.querySelector('.cardCompactTop');
+      card.setAttribute('data-sl-resumo-cartao-id',id);
+      var check=card.querySelector('input[data-sl-cartao-resumo]');
+      if(!check&&topo){
+        var label=document.createElement('label');label.className='slResumoCartaoOpcao';
+        label.addEventListener('click',function(e){e.stopPropagation();});
+        check=document.createElement('input');check.type='checkbox';
+        var nome=document.createElement('span');nome.textContent='SOMAR';
+        label.appendChild(check);label.appendChild(nome);topo.appendChild(label);
+      }
+      if(check){
+        check.setAttribute('data-sl-cartao-resumo',id);
+        check.setAttribute('aria-label','Somar limite, sobra e gasto de '+(c.nome||'CARTÃO'));
+        check.checked=ativos.has(id);
+      }
+      // A mesma DATA do lançamento usada no card inicial e em seus detalhes.
+      card.querySelectorAll('.cardCompactValues > div').forEach(function(campo){
+        var titulo=campo.querySelector('small'),valor=campo.querySelector('b');
+        if(titulo&&valor&&/^(JÁ\s+)?GASTO(U|S)?$/i.test(titulo.textContent.trim())){
+          valor.innerText=moeda(gastosPorCartao.get(id)||0);
+        }
+      });
+    });
+  }
+  function atualizarResumo(){
+    var lista=cartoes(),ids=new Set(lista.map(function(c){return String(c.id);}));
+    if(selecionados!==null){
+      selecionados.forEach(function(id){if(!ids.has(id))selecionados.delete(id);});
+    }
+    var ativos=selecionados===null?ids:selecionados;
+    var gastosPeriodo=0,gastosPorCartao=new Map(),abertos=new Map();
+    movimentos().forEach(function(m){
+      if(!m||m.tipo!=='cartao'||m.ignorado)return;
+      var id=String(m.cartao);
+      // Compras pagas também integram os gastos do mês de seu lançamento.
+      if(noPeriodo(m)){
+        var valor=numero(m.valor);gastosPeriodo+=valor;
+        gastosPorCartao.set(id,(gastosPorCartao.get(id)||0)+valor);
+      }
+      // O limite ocupado considera compras em aberto de todos os meses.
+      if(ativos.has(id))abertos.set(id,(abertos.get(id)||0)+emAberto(m));
+    });
+    var limite=0,sobra=0,gastos=0;
+    lista.forEach(function(c){
+      var id=String(c.id);if(!ativos.has(id))return;
+      limite+=numero(c.limite);
+      sobra+=Math.max(0,numero(c.limite)-(abertos.get(id)||0));
+      gastos+=gastosPorCartao.get(id)||0;
+    });
+    // A seleção da tela Cartões afeta apenas seus três resumos.
+    var home=document.getElementById('totalCartoes');if(home)home.innerText=moeda(gastosPeriodo);
+    var lim=document.getElementById('limiteTotalCartoes');if(lim)lim.innerText=moeda(limite);
+    var gas=document.getElementById('usadoTotalCartoes');if(gas)gas.innerText=moeda(gastos);
+    var sob=document.getElementById('sobraLimiteCartoes');if(sob)sob.innerText=moeda(sobra);
+    atualizarOpcoes(lista,ativos,gastosPorCartao);
+  }
+  window.slAtualizarResumoCartoes=atualizarResumo;
+  var painel=document.getElementById('listaCartoes');
+  if(painel)painel.addEventListener('change',function(e){
+    var check=e.target;
+    if(!check||!check.matches('input[data-sl-cartao-resumo]'))return;
+    if(selecionados===null)selecionados=new Set(cartoes().map(function(c){return String(c.id);}));
+    var id=check.getAttribute('data-sl-cartao-resumo');
+    if(check.checked)selecionados.add(id);else selecionados.delete(id);
+    atualizarResumo();
+  });
+  var todos=document.getElementById('slResumoCartoesTodos');
+  if(todos)todos.addEventListener('click',function(){selecionados=null;atualizarResumo();});
+  var limpar=document.getElementById('slResumoCartoesLimpar');
+  if(limpar)limpar.addEventListener('click',function(){selecionados=new Set();atualizarResumo();});
+  var renderAnterior=window.render;
+  window.render=function(){
+    var resultado=typeof renderAnterior==='function'?renderAnterior.apply(this,arguments):undefined;
+    atualizarResumo();return resultado;
+  };
+  try{render=window.render;}catch(e){}
+  var renderCartoesAnterior=window.renderCartoes;
+  window.renderCartoes=function(){
+    var resultado=typeof renderCartoesAnterior==='function'?renderCartoesAnterior.apply(this,arguments):undefined;
+    atualizarResumo();return resultado;
+  };
+  try{renderCartoes=window.renderCartoes;}catch(e){}
+  atualizarResumo();
 })();
 </script>
