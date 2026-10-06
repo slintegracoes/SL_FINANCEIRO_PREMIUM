@@ -13174,8 +13174,8 @@ if(typeof abrirCategoriaBase==='function'){
   }
 
   function textoComissao(){
-    var mes=Number((document.getElementById('slComMes')||{}).value||(typeof histMes!=='undefined'?histMes:new Date().getMonth()));
-    var ano=Number((document.getElementById('slComAno')||{}).value||(typeof histAno!=='undefined'?histAno:new Date().getFullYear()));
+    var mes=Number((document.getElementById('slComMes')||{}).value||new Date().getMonth());
+    var ano=Number((document.getElementById('slComAno')||{}).value||new Date().getFullYear());
     var vend=(document.getElementById('slComVendedor')||{}).value||'todos';
     var cat=(document.getElementById('slComCategoria')||{}).value||'todos';
     var mensal=true;
@@ -13207,8 +13207,8 @@ if(typeof abrirCategoriaBase==='function'){
   function atualizarComPreview(){var p=document.getElementById('slComPreview'),t=document.getElementById('slComTotal');if(!p)return;var txt=textoComissao();p.textContent=txt;if(t){var mes=Number((document.getElementById('slComMes')||{}).value||new Date().getMonth());var ano=Number((document.getElementById('slComAno')||{}).value||new Date().getFullYear());var cat=(document.getElementById('slComCategoria')||{}).value||'todos';var total=arr(D().movs).filter(function(m){if(!m||m.ignorado||m.tipo!=='despesa')return false;if(cat!=='todos'&&String(m.cat||'SEM CATEGORIA')!==String(cat))return false;if(m.pago===false)return false;var d=String(m.data||'');if(!/^\d{4}-\d{2}-\d{2}/.test(d))return false;return Number(d.slice(0,4))===ano&&Number(d.slice(5,7))-1===mes;}).reduce(function(s,m){return s+n(m.valor)},0);t.textContent=moeda(total)}}
   function popularCom(){
     var y=hoje().getFullYear(), mes=document.getElementById('slComMes'),ano=document.getElementById('slComAno'),v=document.getElementById('slComVendedor'),c=document.getElementById('slComCategoria');if(!mes||!ano||!v||!c)return;
-    mes.innerHTML=meses().map(function(x,i){return '<option value="'+i+'">'+x+'</option>'}).join('');mes.value=String(typeof histMes!=='undefined'?histMes:hoje().getMonth());
-    var anos=[];for(var a=y-5;a<=y+1;a++)anos.push(a);ano.innerHTML=anos.map(function(a){return '<option value="'+a+'">'+a+'</option>'}).join('');ano.value=String(typeof histAno!=='undefined'?histAno:y);
+    mes.innerHTML=meses().map(function(x,i){return '<option value="'+i+'">'+x+'</option>'}).join('');mes.value=String(hoje().getMonth());
+    var anos=[];for(var a=y-5;a<=y+1;a++)anos.push(a);ano.innerHTML=anos.map(function(a){return '<option value="'+a+'">'+a+'</option>'}).join('');ano.value=String(y);
     v.innerHTML='<option value="todos">TODOS OS VENDEDORES</option>'+vendedores().map(function(x){return '<option value="'+esc(x.id)+'">'+esc(x.nome)+'</option>'}).join('');
     var cats={};arr(D().movs).forEach(function(m){if(m&&m.cat)cats[m.cat]=1});arr(D().categoriasReceitas).forEach(function(x){cats[x]=1});arr(D().categoriasDespesas).forEach(function(x){cats[x]=1});
     c.innerHTML='<option value="todos">TODAS AS CATEGORIAS</option>'+Object.keys(cats).sort(function(a,b){return a.localeCompare(b,'pt-BR')}).map(function(x){return '<option value="'+esc(x)+'">'+esc(x)+'</option>'}).join('');
