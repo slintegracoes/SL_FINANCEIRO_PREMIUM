@@ -12455,6 +12455,20 @@ function opCatsPrincipal(tipo){
 window.slPrincipalSelecionarTodos=function(){
   try{
     var arr = (typeof window.movsFiltradosAtuais==='function')?window.movsFiltradosAtuais():[];
+      // No Histórico Geral, aplicar os mesmos três filtros múltiplos da tela inicial.
+      if(tela==='todos'){
+        var fc=Array.isArray(window.__slMultiConta)?window.__slMultiConta:[];
+        var fr=Array.isArray(window.__slMultiCategoriaReceita)?window.__slMultiCategoriaReceita:[];
+        var fd=Array.isArray(window.__slMultiCategoriaDespesa)?window.__slMultiCategoriaDespesa:[];
+        arr=arr.filter(function(m){
+          var conta=m.conta?String(m.conta):'__sem_conta__';
+          var cat=m.cat?String(m.cat):'Sem categoria';
+          if(fc.length&&fc.indexOf(conta)<0)return false;
+          if(m.tipo==='receita'&&fr.length&&fr.indexOf(cat)<0)return false;
+          if(m.tipo==='despesa'&&fd.length&&fd.indexOf(cat)<0)return false;
+          return true;
+        });
+      }
     window.selPrincipal = arr.map(function(m){return String(m.id);});
     render();
   }catch(e){}
@@ -12535,7 +12549,7 @@ function principalToolsHTML(arr, tela){
 
   return '<div class="ignoredToolsFinal">'+
     botoesFiltroHTML+
-    '<div class="ignoredFiltersFinal">'+filtro1+filtro2+'</div>'+
+    (tela==='todos'?'<div id="slHistoricoFiltros" class="slFiltrosHistorico"></div>':'<div class="ignoredFiltersFinal">'+filtro1+filtro2+'</div>')+
     '<div class="ignoredTotalsFinal">'+
       '<div class="ignoredTotalCard" style="border-color:'+corSomas+';background:#0e1f2e"><b style="color:'+corSomas+'">💰 TOTAL DAS SOMAS</b><span style="color:'+corSomas+';font-size:calc(18px * var(--fontScale,1))">'+moeda(totalSomas)+'</span></div>'+
       '<div class="ignoredTotalCard selected" style="border-color:'+corSelSomas+'"><b style="color:'+corSelSomas+'">🟩 SELECIONADO</b><span style="color:'+corSelSomas+'">'+moeda(selSomas)+'</span></div>'+
@@ -12596,7 +12610,20 @@ window.renderMovs=function(){
       var buscaEl=document.getElementById('busca');
       if(buscaEl) buscaEl.placeholder='BUSCAR POR NOME';
       var alvo=document.getElementById('listaHistorico');
-      if(alvo){ alvo.innerHTML = principalToolsHTML(arr, tela) + listaPrincipalHTML(arr); }
+      if(alvo){
+        alvo.innerHTML = principalToolsHTML(arr, tela) + listaPrincipalHTML(arr);
+        if(tela==='todos'){
+          var homeFiltros=document.getElementById('slSaldoFiltros');
+          var histFiltros=document.getElementById('slHistoricoFiltros');
+          if(homeFiltros&&histFiltros){
+            histFiltros.innerHTML=homeFiltros.innerHTML;
+            histFiltros.querySelectorAll('details[data-sl-saldo-box]').forEach(function(d){
+              var k=d.getAttribute('data-sl-saldo-box');
+              d.open=!!(window.__slHistFiltrosAbertos&&window.__slHistFiltrosAbertos[k]);
+            });
+          }
+        }
+      }
       return;
     }catch(e){console.error('render principal 3 abas',e);}
   }
@@ -13525,12 +13552,23 @@ if(typeof abrirCategoriaBase==='function'){
 
 
 <style id="sl-filtro-saldo-principal-css">
-  #slSaldoFiltros{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 8px}
+  /* Cores dos três filtros do Saldo Geral: contas azul, receitas verde, despesas vermelho. */
+  #slSaldoFiltros [data-sl-saldo-box="conta"] summary{border-color:#338cff!important;box-shadow:0 0 9px #338cff44!important}
+  #slSaldoFiltros [data-sl-saldo-box="conta"] .slMultiFilterOptions{border-color:#338cff!important}
+  #slSaldoFiltros [data-sl-saldo-box="conta"] .slMultiFilterActions button{border-color:#338cff66}
+  #slSaldoFiltros [data-sl-saldo-box="receita"] summary{border-color:#31d158!important;box-shadow:0 0 9px #31d15844!important}
+  #slSaldoFiltros [data-sl-saldo-box="receita"] .slMultiFilterOptions{border-color:#31d158!important}
+  #slSaldoFiltros [data-sl-saldo-box="receita"] .slMultiFilterActions button{border-color:#31d15866}
+  #slSaldoFiltros [data-sl-saldo-box="despesa"] summary{border-color:#ff453a!important;box-shadow:0 0 9px #ff453a44!important}
+  #slSaldoFiltros [data-sl-saldo-box="despesa"] .slMultiFilterOptions{border-color:#ff453a!important}
+  #slSaldoFiltros [data-sl-saldo-box="despesa"] .slMultiFilterActions button{border-color:#ff453a66}
+
+  #slSaldoFiltros{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0 8px}
   #slSaldoFiltros .slMultiFilter summary{min-height:42px;padding:11px 30px 10px 10px;font-size:calc(10px * var(--fontScale,1));border-color:#33a0ff;box-shadow:0 0 9px #1f7aff33}
   #slSaldoFiltros .slMultiFilterOptions{border-color:#33a0ff}
   #slSaldoFiltros .slMultiFilterOption{font-size:11px}
   #slSaldoFiltros .slMultiFilterActions button{font-size:9px}
-  @media(max-width:350px){#slSaldoFiltros{grid-template-columns:1fr}}
+  @media(max-width:520px){#slSaldoFiltros{grid-template-columns:1fr 1fr}} @media(max-width:350px){#slSaldoFiltros{grid-template-columns:1fr}}
 </style>
 <script id="sl-filtro-saldo-principal-js">
 (function(){
@@ -13539,23 +13577,34 @@ if(typeof abrirCategoriaBase==='function'){
   window.__slFiltroSaldoPrincipalAtivo=true;
 
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-  function listaContas(){try{return (db.contas||[]).map(function(c){return {id:String(c.id),nome:(c.icone||'🏦')+' '+(c.nome||'CONTA')};});}catch(e){return [];}}
-  function listaCats(){
-    var s={};
-    try{
-      (db.categoriasReceitas||[]).forEach(function(c){if(c)s[String(c)]=1;});
-      (db.categoriasDespesas||[]).forEach(function(c){if(c)s[String(c)]=1;});
-      (db.movs||[]).forEach(function(m){if(m&&m.cat)s[String(m.cat)]=1;});
-      if((db.movs||[]).some(function(m){return m&&!m.cat;}))s['Sem categoria']=1;
-    }catch(e){}
-    return Object.keys(s).sort().map(function(c){return {id:c,nome:c};});
+  function listaContas(){
+    try{return (db.contas||[]).map(function(c){return {id:String(c.id),nome:(c.icone||'🏦')+' '+(c.nome||'CONTA')};});}catch(e){return [];}
   }
-  function selecionados(tipo){return tipo==='conta'?(window.__slMultiConta||(window.__slMultiConta=[])):(window.__slMultiCategoria||(window.__slMultiCategoria=[]));}
+  function listaCategorias(tipo){
+    var base=tipo==='receita'?(db.categoriasReceitas||[]):(db.categoriasDespesas||[]);
+    var set={};
+    base.forEach(function(c){var nome=typeof c==='string'?c:(c&&c.nome)||'';if(nome)set[nome]=1;});
+    try{
+      (db.movs||[]).forEach(function(m){
+        if(!m||m.tipo!==tipo)return;
+        if(m.cat)set[String(m.cat)]=1;
+        else set['Sem categoria']=1;
+      });
+    }catch(e){}
+    return Object.keys(set).sort().map(function(c){return {id:c,nome:c};});
+  }
+  function selecionados(tipo){
+    var key=tipo==='conta'?'__slMultiConta':(tipo==='receita'?'__slMultiCategoriaReceita':'__slMultiCategoriaDespesa');
+    if(!Array.isArray(window[key]))window[key]=[];
+    return window[key];
+  }
+  function titulo(tipo){
+    return tipo==='conta'?'FILTRO CONTAS':(tipo==='receita'?'FILTRO C. RECEITAS':'FILTRO C. DESPESAS');
+  }
   function htmlFiltro(tipo){
-    var arr=tipo==='conta'?listaContas():listaCats();
-    var sel=selecionados(tipo);
-    var titulo=tipo==='conta'?'FILTRO CONTAS':'FILTRO CATEGORIAS';
-    var nome=sel.length?(tipo==='conta'?'CONTAS':'CATEGORIAS')+' ('+sel.length+')':titulo;
+    var arr=tipo==='conta'?listaContas():listaCategorias(tipo);
+    var sel=selecionados(tipo),label=titulo(tipo);
+    var nome=sel.length?label+' ('+sel.length+')':label;
     var itens=arr.map(function(x){
       return '<label class="slMultiFilterOption"><input type="checkbox" data-sl-saldo-kind="'+tipo+'" data-sl-saldo-value="'+esc(x.id)+'"'+(sel.indexOf(x.id)>=0?' checked':'')+'><span>'+esc(x.nome)+'</span></label>';
     }).join('');
@@ -13571,7 +13620,7 @@ if(typeof abrirCategoriaBase==='function'){
       box=document.createElement('div');box.id='slSaldoFiltros';
       status.insertAdjacentElement('afterend',box);
     }
-    box.innerHTML=htmlFiltro('conta')+htmlFiltro('categoria');
+    box.innerHTML=htmlFiltro('conta')+htmlFiltro('receita')+htmlFiltro('despesa');
   }
   function dentroData(m){
     var di=document.getElementById('dataInicio')&&document.getElementById('dataInicio').value||'';
@@ -13579,8 +13628,7 @@ if(typeof abrirCategoriaBase==='function'){
     return (!di||String(m.data||'')>=di)&&(!df||String(m.data||'')<=df);
   }
   function saldoFiltrado(){
-    var contasSel=selecionados('conta'),catsSel=selecionados('categoria');
-    var total=0;
+    var contasSel=selecionados('conta'),recSel=selecionados('receita'),despSel=selecionados('despesa'),total=0;
     try{
       (db.movs||[]).forEach(function(m){
         if(!m||m.ignorado||m.pago===false||!dentroData(m))return;
@@ -13588,17 +13636,17 @@ if(typeof abrirCategoriaBase==='function'){
         var conta=m.conta?String(m.conta):'__sem_conta__';
         var cat=m.cat?String(m.cat):'Sem categoria';
         if(contasSel.length&&contasSel.indexOf(conta)<0)return;
-        if(catsSel.length&&catsSel.indexOf(cat)<0)return;
+        if(m.tipo==='receita'&&recSel.length&&recSel.indexOf(cat)<0)return;
+        if(m.tipo==='despesa'&&despSel.length&&despSel.indexOf(cat)<0)return;
         total+=(m.tipo==='receita'?1:-1)*(Number(m.valor)||0);
       });
     }catch(e){}
     return total;
   }
   function atualizarValor(){
-    var contasSel=selecionados('conta'),catsSel=selecionados('categoria');
-    if(!contasSel.length&&!catsSel.length)return;
-    var v=saldoFiltrado();
-    var el=document.getElementById('saldoGeral'),st=document.getElementById('saldoStatus');
+    var algum=selecionados('conta').length||selecionados('receita').length||selecionados('despesa').length;
+    if(!algum)return;
+    var v=saldoFiltrado(),el=document.getElementById('saldoGeral'),st=document.getElementById('saldoStatus');
     if(el){el.innerText=typeof fmt==='function'?fmt(v):v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});el.className='value '+(v>=0?'green':'red');}
     if(st){st.innerText=v>=0?'↗ POSITIVO':'↘ NEGATIVO';st.className=v>=0?'green':'red';}
   }
@@ -13613,10 +13661,9 @@ if(typeof abrirCategoriaBase==='function'){
     var el=e.target;
     if(!el||!el.matches('input[data-sl-saldo-kind]'))return;
     var tipo=el.getAttribute('data-sl-saldo-kind'),valor=el.getAttribute('data-sl-saldo-value');
-    var arr=selecionados(tipo);
-    if(el.checked){if(arr.indexOf(valor)<0)arr.push(valor);}
-    else{var key=tipo==='conta'?'__slMultiConta':'__slMultiCategoria';window[key]=arr.filter(function(x){return x!==valor;});}
-    var abertas={conta:!!document.querySelector('[data-sl-saldo-box="conta"][open]'),categoria:!!document.querySelector('[data-sl-saldo-box="categoria"][open]')};
+    var arr=selecionados(tipo),key=tipo==='conta'?'__slMultiConta':(tipo==='receita'?'__slMultiCategoriaReceita':'__slMultiCategoriaDespesa');
+    window[key]=el.checked?(arr.indexOf(valor)>=0?arr:arr.concat([valor])):arr.filter(function(x){return x!==valor;});
+    var abertas={conta:!!document.querySelector('[data-sl-saldo-box="conta"][open]'),receita:!!document.querySelector('[data-sl-saldo-box="receita"][open]'),despesa:!!document.querySelector('[data-sl-saldo-box="despesa"][open]')};
     try{if(typeof window.render==='function')window.render();}catch(err){}
     setTimeout(function(){Object.keys(abertas).forEach(function(k){if(abertas[k]){var d=document.querySelector('[data-sl-saldo-box="'+k+'"]');if(d)d.open=true;}});},40);
   });
@@ -13624,8 +13671,8 @@ if(typeof abrirCategoriaBase==='function'){
     var b=e.target&&e.target.closest('[data-sl-saldo-clear]');
     if(!b)return;
     e.preventDefault();
-    var tipo=b.getAttribute('data-sl-saldo-clear');
-    window[tipo==='conta'?'__slMultiConta':'__slMultiCategoria']=[];
+    var tipo=b.getAttribute('data-sl-saldo-clear'),key=tipo==='conta'?'__slMultiConta':(tipo==='receita'?'__slMultiCategoriaReceita':'__slMultiCategoriaDespesa');
+    window[key]=[];
     try{if(typeof window.render==='function')window.render();}catch(err){}
     setTimeout(function(){var d=document.querySelector('[data-sl-saldo-box="'+tipo+'"]');if(d)d.open=true;},40);
   });
@@ -13806,6 +13853,44 @@ if(typeof abrirCategoriaBase==='function'){
 })();
 </script>
 
+
+<style id="sl-historico-tres-filtros-css">
+  #slHistoricoFiltros{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;
+    margin:10px 0 12px;padding:10px;
+    background:linear-gradient(145deg,#07111d,#0d1724);
+    border:1.7px solid #f2b632;border-radius:16px;
+    box-shadow:0 0 14px #f2b63244,inset 0 0 10px #ffffff08;
+  }
+  #slHistoricoFiltros [data-sl-saldo-box="conta"] summary{border-color:#338cff!important;box-shadow:0 0 9px #338cff44!important}
+  #slHistoricoFiltros [data-sl-saldo-box="receita"] summary{border-color:#31d158!important;box-shadow:0 0 9px #31d15844!important}
+  #slHistoricoFiltros [data-sl-saldo-box="despesa"] summary{border-color:#ff453a!important;box-shadow:0 0 9px #ff453a44!important}
+  #slHistoricoFiltros .slMultiFilter summary{min-height:42px;padding:11px 25px 10px 8px;font-size:calc(9px * var(--fontScale,1))}
+  #slHistoricoFiltros .slMultiFilterOptions{max-width:min(90vw,320px)}
+  @media(max-width:520px){#slHistoricoFiltros{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:8px}}
+  @media(max-width:350px){#slHistoricoFiltros{grid-template-columns:1fr}}
+</style>
+<script id="sl-historico-tres-filtros-js">
+(function(){
+  'use strict';
+  if(window.__slHistoricoTresFiltrosAtivo)return;
+  window.__slHistoricoTresFiltrosAtivo=true;
+  window.__slHistFiltrosAbertos={};
+  document.addEventListener('click',function(e){
+    var d=e.target&&e.target.closest('#slHistoricoFiltros details[data-sl-saldo-box]');
+    if(!d)return;
+    var k=d.getAttribute('data-sl-saldo-box');
+    setTimeout(function(){
+      window.__slHistFiltrosAbertos[k]=!!d.open;
+    },0);
+  },true);
+  document.addEventListener('change',function(e){
+    if(!e.target||!e.target.matches('#slHistoricoFiltros input[data-sl-saldo-kind]'))return;
+    var d=e.target.closest('details[data-sl-saldo-box]');
+    if(d)window.__slHistFiltrosAbertos[d.getAttribute('data-sl-saldo-box')]=true;
+  },true);
+})();
+</script>
 </body>
 
 </html>
