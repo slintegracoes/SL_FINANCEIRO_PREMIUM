@@ -832,6 +832,77 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
 .slComHead .slComClose::before,.slComHead .slComClose::after{display:none!important}
 .slComActions{grid-template-columns:1fr!important}
 </style>
+
+<style id="sl-anotacoes-css">
+  .slAnotLaunchRow{position:relative;display:flex;gap:7px;margin:7px 0 12px;align-items:stretch}
+  .slAnotLaunch{flex:1;min-height:48px;border:1px solid #c49a43;border-radius:13px;background:repeating-linear-gradient(to bottom,#fffdf2 0,#fffdf2 21px,#dce7f2 22px,#fffdf2 23px);color:#24364b;font-weight:950;letter-spacing:.7px;font-size:14px;box-shadow:0 4px 12px #0005;text-align:center}
+  .slAnotLaunch span{font-size:19px;margin-right:7px}
+  #anotacoes .slAnotPaper{padding:14px;border:1px solid #d8c58e;border-radius:16px;background-color:#fffdf3;background-image:linear-gradient(to right,transparent 0,transparent 31px,#e9a2a2 32px,transparent 33px),repeating-linear-gradient(to bottom,#fffdf3 0,#fffdf3 30px,#d7e3ef 31px,#fffdf3 32px);color:#26374b;box-shadow:0 5px 18px #0004}
+  .slAnotCategoryTabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:0 0 14px;padding-left:22px}
+  .slAnotCategoryTabs button{min-width:0;min-height:42px;border:1px solid #9fb3c8;border-radius:10px;background:#f4f0df;color:#304258;font-weight:950}
+  .slAnotCategoryTabs button.active{background:#253f5d;color:#fff;border-color:#253f5d;box-shadow:0 3px 8px #24384b55}
+  .slAnotForm,.slAnotFilterPanel{margin:0 0 13px;padding:12px 12px 12px 24px;border:1px solid #cbd7e3;border-radius:12px;background:#ffffffd9}
+  .slAnotForm h3,.slAnotFilterPanel h3,.slAnotListHead h3{margin:0 0 9px;color:#26374b;font-size:14px;font-weight:950}
+  .slAnotForm label,.slAnotFilterPanel label{display:block;margin:8px 0 4px;color:#53677d;font-size:10px;font-weight:950}
+  .slAnotForm label span{font-weight:600}
+  .slAnotForm input,.slAnotForm textarea,.slAnotFilterGrid input,.slAnotFilterGrid select{width:100%;min-width:0;padding:10px;border:1px solid #c4d0dc;border-radius:8px;background:#fff;color:#24364b;font:inherit}
+  .slAnotForm textarea{resize:vertical}
+  .slAnotAdd{width:100%;margin-top:10px;padding:12px;border:0;border-radius:9px;background:#294d70;color:#fff;font-weight:950}
+  .slAnotFilterGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .slAnotFilterActions{display:flex;gap:8px;margin-top:10px}
+  .slAnotFilterActions button{flex:1;padding:9px;border:1px solid #9fb3c8;border-radius:8px;background:#edf3f8;color:#304258;font-size:10px;font-weight:950}
+  .slAnotSummary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 14px;padding-left:22px}
+  .slAnotSummary>div{padding:11px 8px;border:1px solid #9fb3c8;border-radius:10px;background:#f7fbff;text-align:center}
+  .slAnotSummary small{display:block;color:#5c6f83;font-size:9px;font-weight:950}
+  .slAnotSummary strong{display:block;margin-top:5px;color:#17723c;font-size:18px;font-weight:950;overflow-wrap:anywhere}
+  .slAnotListHead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 0 8px 22px}
+  .slAnotListHead span{color:#66788c;font-size:9px;font-weight:900}
+  .slAnotList{padding-left:22px}
+  .slAnotItem{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center;padding:9px 7px;border-bottom:1px dashed #9fb3c8;color:#26374b}
+  .slAnotItemNo{font-weight:950;color:#54718e;text-align:center}
+  .slAnotItem small{display:block;margin-top:3px;color:#64778b;font-size:10px;overflow-wrap:anywhere}
+  .slAnotItem strong{font-size:14px;font-weight:950;white-space:nowrap}
+  .slAnotPositive{color:#168044!important}.slAnotNegative{color:#c62828!important}
+  .slAnotDelete{border:0;border-radius:7px;background:#f8e4e4;color:#a52222;padding:6px 8px;font-size:12px}
+  .slAnotEmpty{padding:18px;text-align:center;color:#718096;font-weight:800}
+  @media(max-width:380px){.slAnotFilterGrid{grid-template-columns:1fr 1fr}.slAnotSummary strong{font-size:15px}.slAnotCategoryTabs{padding-left:15px;gap:4px}.slAnotList{padding-left:15px}}
+</style>
+
+<style id="sl-anotacoes-geral-escrever-css">
+  #anotacoes #slAnotObs{
+    display:block;width:100%;box-sizing:border-box;
+    min-height:150px;padding:12px;
+    background:#ffffff!important;color:#26374b!important;
+    border:1px solid #b8c7d6!important;border-radius:9px;
+    line-height:1.55;box-shadow:inset 0 1px 3px #00000012;
+  }
+  #anotacoes #slAnotObs::placeholder{color:#8493a3!important}
+  #anotacoes .slAnotTextoGeral{
+    margin-top:7px;padding:11px;min-height:58px;
+    border:1px solid #d5dee8;border-radius:8px;
+    background:#fff;color:#26374b;white-space:pre-wrap;
+    overflow-wrap:anywhere;line-height:1.5;
+  }
+</style>
+
+<style id="sl-pdv-selecao-edicao-css">
+  .slPdvSelectTools{margin:12px 0;padding:11px;border:1px solid #29435f;border-radius:13px;background:#0b1522}
+  .slPdvSelectActions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .slPdvSelectActions button{padding:10px 7px;border:1px solid #35516d;border-radius:9px;background:#17283b;color:#fff;font-size:10px;font-weight:900}
+  .slPdvSelectActions .slPdvDeleteSelected{grid-column:1/-1;border-color:#8d302c;background:#351313;color:#ffaaa5}
+  .slPdvSelectedSummary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px;padding-top:9px;border-top:1px solid #29435f}
+  .slPdvSelectedSummary strong{grid-column:1/-1;color:#f2b632;font-size:11px}
+  .slPdvSelectedSummary span{font-size:9px;color:#9eb2c7}
+  .slPdvSelectedSummary b{display:block;margin-top:3px;color:#fff;font-size:11px}
+  .slPdvSaleSelect{display:flex;align-items:center;gap:7px;color:#9eb2c7;font-size:10px;font-weight:900}
+  .slPdvSaleSelect input{width:19px;height:19px;accent-color:#31d158}
+  .slPdvSaleTools{display:flex;gap:6px}
+  .slPdvEdit{border:1px solid #315b87;border-radius:9px;padding:7px 10px;background:#142c46;color:#a9d3ff;font-size:10px;font-weight:900}
+  .slPdvSale.slPdvSaleSelected{border-color:#31d158;box-shadow:0 0 0 1px #31d15855}
+  .slPdvEditingBanner{display:none;margin:0 0 10px;padding:10px;border:1px solid #f2b632;border-radius:9px;background:#352a12;color:#ffe2a0;font-weight:900;font-size:11px}
+  .slPdvEditingBanner.active{display:block}
+  @media(max-width:360px){.slPdvSelectActions{grid-template-columns:1fr}.slPdvSelectActions .slPdvDeleteSelected{grid-column:auto}.slPdvSelectedSummary{grid-template-columns:1fr 1fr}}
+</style>
 </head>
 <body>
 <div class="app">
@@ -839,6 +910,11 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
   <div id="ledDateTime" class="ledDateTime" aria-live="polite">--/--/---- • --:--:--</div>
 
   <button id="btnAbrirPDVLoja" class="slPdvLaunch" type="button" onclick="abrirPDVLoja()">🛍️ VENDAS LOJA</button>
+
+  <div class="slAnotLaunchRow">
+    <button id="slAnotLaunch" class="slAnotLaunch" type="button" onclick="slAnotAbrir()"><span>📓</span> ANOTAÇÕES</button>
+  </div>
+
   <div class="dateFilterBox homeDateFilter">
     <button class="smallBtn" onclick="toggleFiltroDatas()" style="width:100%;margin-bottom:10px">🔍 FILTRO DE DATAS</button>
     <div class="mesAnoBox">
@@ -933,6 +1009,7 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
     </div>
     <div class="card slPdvCard">
       <h3 class="slPdvHeading">🧾 REGISTRAR VENDA</h3>
+      <div id="slPdvEditingBanner" class="slPdvEditingBanner">✏️ EDITANDO VENDA — ALTERE OS DADOS E SALVE</div>
       <form id="slPdvForm" onsubmit="event.preventDefault();slPdvLancar();">
         <label class="slPdvLabel" for="slPdvData">DATA DA VENDA</label>
         <input class="slPdvInput" id="slPdvData" type="date" required>
@@ -958,7 +1035,7 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
         </select>
         <label class="slPdvLabel" for="slPdvDescricao">DESCRIÇÃO DA VENDA <span style="color:#94a3b8;font-weight:600">(OPCIONAL)</span></label>
         <textarea class="slPdvInput slPdvTextarea" id="slPdvDescricao" maxlength="180" placeholder="DESCREVA O PRODUTO OU A VENDA (OPCIONAL)..."></textarea>
-        <button class="btn slPdvLaunchSubmit" type="submit">➕ LANÇAR VENDA</button>
+        <button id="slPdvSubmit" class="btn slPdvLaunchSubmit" type="button" onclick="slPdvLancar()">➕ LANÇAR VENDA</button><button id="slPdvCancelEdit" type="button" onclick="slPdvCancelarEdicao()" style="display:none;width:100%;margin-top:7px;background:#25364a;color:#fff;border:1px solid #49627d;border-radius:10px;padding:11px;font-weight:900">CANCELAR EDIÇÃO</button>
       </form>
     </div>
 
@@ -1017,7 +1094,67 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
         <div><small>CUSTOS</small><strong id="slPdvTotalCusto">R$ 0,00</strong></div>
         <div><small>LUCRO</small><strong id="slPdvTotalLucro">R$ 0,00</strong></div>
       </div>
+      <div class="slPdvSelectTools">
+        <div class="slPdvSelectActions">
+          <button type="button" onclick="slPdvSelecionarTodos()">☑️ SELECIONAR TODOS</button>
+          <button type="button" onclick="slPdvLimparSelecao()">LIMPAR SELEÇÃO</button>
+          <button type="button" class="slPdvDeleteSelected" onclick="slPdvExcluirSelecionadas()">🗑️ EXCLUIR SELECIONADAS</button>
+        </div>
+        <div class="slPdvSelectedSummary">
+          <strong id="slPdvSelecionadasQtd">0 SELECIONADAS</strong>
+          <span>SOMA DAS VENDAS: <b id="slPdvSelecionadasEntrada">R$ 0,00</b></span>
+          <span>CUSTOS: <b id="slPdvSelecionadasCusto">R$ 0,00</b></span>
+          <span>LUCRO: <b id="slPdvSelecionadasLucro">R$ 0,00</b></span>
+        </div>
+      </div>
       <div id="slPdvLista" class="slPdvList"></div>
+    </div>
+  </section>
+
+
+  <section id="anotacoes" class="screen">
+    <div class="sectionTitle"><h2><span id="slAnotTituloIcon">📓</span> ANOTAÇÕES</h2><button type="button" onclick="showScreen('inicio')">⬅️ VOLTAR</button></div>
+    <div class="slAnotPaper">
+      <div class="slAnotCategoryTabs" role="tablist" aria-label="Categorias de anotações">
+        <button type="button" data-sl-anot-cat="TV" class="active">📺 TV</button>
+        <button type="button" data-sl-anot-cat="GERAL">📒 GERAL</button>
+      </div>
+
+      <div class="slAnotForm">
+        <h3 id="slAnotFormTitulo">✍️ NOVA ANOTAÇÃO</h3>
+        <label for="slAnotData">DATA</label>
+        <input id="slAnotData" type="date" required>
+        <div id="slAnotValorWrap">
+          <label for="slAnotValor">VALOR POSITIVO OU NEGATIVO (R$)</label>
+          <input id="slAnotValor" type="number" step="0.01" inputmode="decimal" placeholder="Ex.: 150,00 ou -35,00">
+        </div>
+        <label id="slAnotObsLabel" for="slAnotObs">OBSERVAÇÃO <span>(OPCIONAL)</span></label>
+        <textarea id="slAnotObs" rows="2" maxlength="300" placeholder="Escreva uma observação, se necessário..."></textarea>
+        <button type="button" class="slAnotAdd" onclick="slAnotAdicionar()">＋ ADICIONAR ANOTAÇÃO</button>
+      </div>
+
+      <div class="slAnotFilterPanel">
+        <h3>🔎 FILTRAR ANOTAÇÕES</h3>
+        <div class="slAnotFilterGrid">
+          <div><label for="slAnotMes">MÊS</label><select id="slAnotMes"><option value="">TODOS</option>
+            <option value="01">JANEIRO</option><option value="02">FEVEREIRO</option><option value="03">MARÇO</option><option value="04">ABRIL</option><option value="05">MAIO</option><option value="06">JUNHO</option><option value="07">JULHO</option><option value="08">AGOSTO</option><option value="09">SETEMBRO</option><option value="10">OUTUBRO</option><option value="11">NOVEMBRO</option><option value="12">DEZEMBRO</option>
+          </select></div>
+          <div><label for="slAnotAno">ANO</label><select id="slAnotAno"><option value="">TODOS</option></select></div>
+          <div><label for="slAnotInicio">DATA INICIAL</label><input id="slAnotInicio" type="date"></div>
+          <div><label for="slAnotFim">DATA FINAL</label><input id="slAnotFim" type="date"></div>
+        </div>
+        <div class="slAnotFilterActions">
+          <button type="button" onclick="slAnotHoje()">HOJE</button>
+          <button type="button" onclick="slAnotLimparFiltros()">LIMPAR FILTROS</button>
+        </div>
+      </div>
+
+      <div class="slAnotSummary">
+        <div><small>TOTAL DA CATEGORIA</small><strong id="slAnotTotalCategoria">R$ 0,00</strong></div>
+        <div><small>SOMA FINAL (3 CATEGORIAS)</small><strong id="slAnotTotalGeral">R$ 0,00</strong></div>
+      </div>
+      <div class="slAnotListHead"><h3>📖 CADERNO DE ANOTAÇÕES</h3><span id="slAnotQuantidade">0 REGISTROS</span></div>
+      <div id="slAnotLista" class="slAnotList"></div>
     </div>
   </section>
 
@@ -13675,44 +13812,50 @@ if(typeof abrirCategoriaBase==='function'){
 
         var conta=m.conta?String(m.conta):'__sem_conta__';
         var cat=m.cat?String(m.cat):'Sem categoria';
-
-        // O filtro de contas restringe receitas e despesas igualmente.
         if(contasSel.length&&contasSel.indexOf(conta)<0)return;
 
-        // Quando uma categoria de receita está selecionada, somar somente
-        // as receitas marcadas. O filtro de despesas funciona de forma independente.
         if(m.tipo==='receita'){
+          // Categoria de receita marcada: considera somente essa categoria.
+          // Sem categoria de receita, não incluir receitas quando só há despesas selecionadas.
           if(temFiltroReceita&&recSel.indexOf(cat)<0)return;
-          // Se somente despesas foram selecionadas, não misturar receitas no resultado.
-          if(temFiltroDespesa&&!temFiltroReceita)return;
+          if(!temFiltroReceita&&temFiltroDespesa)return;
+          // Conta selecionada sem categoria: mostrar apenas o que entrou nessa conta.
           totalReceitas+=Number(m.valor)||0;
         }else{
-          if(temFiltroDespesa&&despSel.indexOf(cat)<0)return;
-          // Se somente receitas foram selecionadas, não misturar despesas no resultado.
-          if(temFiltroReceita&&!temFiltroDespesa)return;
+          // Despesas só entram quando há seleção explícita no filtro de despesas.
+          if(!temFiltroDespesa||despSel.indexOf(cat)<0)return;
           totalDespesas+=Number(m.valor)||0;
         }
       });
     }catch(e){}
-    return totalReceitas-totalDespesas;
+
+    // Somente receitas ou somente conta: entradas brutas.
+    if(temFiltroReceita&&!temFiltroDespesa)return {valor:totalReceitas,tipo:'receita'};
+    if(temFiltroDespesa&&!temFiltroReceita)return {valor:totalDespesas,tipo:'despesa'};
+    // Quando há pelo menos uma categoria de cada tipo, mostrar entradas menos saídas.
+    if(temFiltroReceita&&temFiltroDespesa)return {valor:totalReceitas-totalDespesas,tipo:'saldo'};
+    // Conta selecionada sem categorias: somente o que entrou.
+    return {valor:totalReceitas,tipo:'receita'};
   }
   function atualizarValor(){
     var temConta=selecionados('conta').length>0;
     var temReceita=selecionados('receita').length>0;
     var temDespesa=selecionados('despesa').length>0;
 
-    // Sem seleção nos três filtros: não altera o resumo original do sistema.
-    // Assim permanece exatamente a soma normal, respeitando o período escolhido.
+    // Sem seleção nos três filtros, preservar o resumo original calculado pelo sistema.
     if(!temConta&&!temReceita&&!temDespesa)return;
 
-    var v=saldoFiltrado(),el=document.getElementById('saldoGeral'),st=document.getElementById('saldoStatus');
+    var resultado=saldoFiltrado(),v=resultado.valor,el=document.getElementById('saldoGeral'),st=document.getElementById('saldoStatus');
+    var cor=(resultado.tipo==='despesa')?'red':(resultado.tipo==='receita'?'green':(v<0?'red':'green'));
     if(el){
-      el.innerText=typeof fmt==='function'?fmt(v):v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-      el.className='value '+(v>0?'green':(v<0?'red':'green'));
+      el.innerText=typeof fmt==='function'?fmt(Math.abs(v)):Math.abs(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+      el.className='value '+cor;
     }
     if(st){
-      st.innerText=v<0?'↘ DESPESAS / SALDO NEGATIVO':(v>0?'↗ RECEITAS / SALDO POSITIVO':'— SEM MOVIMENTAÇÃO');
-      st.className=v<0?'red':'green';
+      st.innerText=resultado.tipo==='despesa'?'↘ TOTAL DE DESPESAS':
+        (resultado.tipo==='receita'?'↗ TOTAL DE ENTRADAS':
+        (v<0?'↘ DESPESAS MAIORES QUE RECEITAS':(v>0?'↗ RECEITAS MAIORES QUE DESPESAS':'— SALDO ZERO')));
+      st.className=cor;
     }
   }
   var renderAnterior=window.render;
@@ -13807,6 +13950,8 @@ if(typeof abrirCategoriaBase==='function'){
   var STORAGE_KEY='slPDVLoja_independente_v1';
   var vendas=[];
   var metricaAtual='lucro';
+  var selecionadas=new Set();
+  var vendaEditandoId=null;
 
   function hoje(){
     var d=new Date(),m=String(d.getMonth()+1).padStart(2,'0'),dia=String(d.getDate()).padStart(2,'0');
@@ -13864,8 +14009,16 @@ if(typeof abrirCategoriaBase==='function'){
     var lista=document.getElementById('slPdvLista');
     lista.innerHTML=arr.length?arr.map(function(v){
       var pagamento=v.pagamento==='DINHEIRO'?'💵 DINHEIRO':(v.pagamento==='PIX'?'📲 PIX':'💳 CARTÃO');
-      return '<article class="slPdvSale"><div class="slPdvSaleTop"><div><div class="slPdvSaleTitle">'+esc(v.descricao)+'</div><div class="slPdvSaleDate">'+new Date(v.data+'T12:00:00').toLocaleDateString('pt-BR')+'</div></div><div class="slPdvSaleProfit">'+moeda((Number(v.entrada)||0)-(Number(v.custo)||0))+'</div></div><div class="slPdvSaleDetails"><span>ENTRADA<b>'+moeda(v.entrada)+'</b></span><span>CUSTO<b>'+moeda(v.custo)+'</b></span><span>LUCRO<b>'+moeda((Number(v.entrada)||0)-(Number(v.custo)||0))+'</b></span></div><div class="slPdvSaleFoot"><span class="slPdvPayment">'+pagamento+'</span><button type="button" class="slPdvDelete" onclick="slPdvExcluir(&quot;'+esc(v.id)+'&quot;)">🗑️ EXCLUIR</button></div></article>';
+      var id=String(v.id),marcada=selecionadas.has(id);
+      return '<article class="slPdvSale '+(marcada?'slPdvSaleSelected':'')+'"><div class="slPdvSaleTop"><div><label class="slPdvSaleSelect"><input type="checkbox" data-sl-pdv-select="'+esc(id)+'" onchange="slPdvAlternarSelecao(this)" '+(marcada?'checked':'')+'> SELECIONAR</label><div class="slPdvSaleTitle">'+esc(v.descricao)+'</div><div class="slPdvSaleDate">'+new Date(v.data+'T12:00:00').toLocaleDateString('pt-BR')+'</div></div><div class="slPdvSaleProfit">'+moeda((Number(v.entrada)||0)-(Number(v.custo)||0))+'</div></div><div class="slPdvSaleDetails"><span>ENTRADA<b>'+moeda(v.entrada)+'</b></span><span>CUSTO<b>'+moeda(v.custo)+'</b></span><span>LUCRO<b>'+moeda((Number(v.entrada)||0)-(Number(v.custo)||0))+'</b></span></div><div class="slPdvSaleFoot"><span class="slPdvPayment">'+pagamento+'</span><div class="slPdvSaleTools"><button type="button" class="slPdvEdit" onclick="slPdvEditar(&quot;'+esc(id)+'&quot;)">✏️ EDITAR</button><button type="button" class="slPdvDelete" onclick="slPdvExcluir(&quot;'+esc(id)+'&quot;)">🗑️ EXCLUIR</button></div></div></article>';
     }).join(''):'<div class="slPdvEmpty">NENHUMA VENDA ENCONTRADA NESTE PERÍODO.</div>';
+    var selecionadasArr=vendas.filter(function(v){return selecionadas.has(String(v.id));});
+    var sEntrada=0,sCusto=0;
+    selecionadasArr.forEach(function(v){sEntrada+=Number(v.entrada)||0;sCusto+=Number(v.custo)||0;});
+    var q=document.getElementById('slPdvSelecionadasQtd');if(q)q.textContent=selecionadasArr.length+' SELECIONADA'+(selecionadasArr.length===1?'':'S');
+    var se=document.getElementById('slPdvSelecionadasEntrada');if(se)se.textContent=moeda(sEntrada);
+    var sc=document.getElementById('slPdvSelecionadasCusto');if(sc)sc.textContent=moeda(sCusto);
+    var sl=document.getElementById('slPdvSelecionadasLucro');if(sl)sl.textContent=moeda(sEntrada-sCusto);
   }
   window.abrirPDVLoja=function(){
     document.body.classList.add('slPdvAberto');
@@ -13882,17 +14035,74 @@ if(typeof abrirCategoriaBase==='function'){
     var pagamento=document.getElementById('slPdvPagamento').value;
     var descricao=document.getElementById('slPdvDescricao').value.trim();
     if(!data||entrada<=0||custo<0){alert('INFORME A DATA, UMA ENTRADA MAIOR QUE ZERO E UM CUSTO VÁLIDO.');return;}
-    vendas.push({id:'pdv_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),data:data,entrada:entrada,custo:custo,pagamento:pagamento,descricao:descricao||'VENDA SEM DESCRIÇÃO',criadoEm:Date.now()});
+    if(vendaEditandoId){
+      var alvo=vendas.find(function(v){return String(v.id)===String(vendaEditandoId);});
+      if(alvo){alvo.data=data;alvo.entrada=entrada;alvo.custo=custo;alvo.pagamento=pagamento;alvo.descricao=descricao||'VENDA SEM DESCRIÇÃO';alvo.atualizadoEm=Date.now();}
+      vendaEditandoId=null;
+    }else{
+      vendas.push({id:'pdv_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),data:data,entrada:entrada,custo:custo,pagamento:pagamento,descricao:descricao||'VENDA SEM DESCRIÇÃO',criadoEm:Date.now()});
+    }
     salvar();preencherAnos();
     document.getElementById('slPdvEntrada').value='';
     document.getElementById('slPdvCusto').value='';
     document.getElementById('slPdvDescricao').value='';
-    atualizarLucroPreview();render();
+    document.getElementById('slPdvData').value=hoje();
+    document.getElementById('slPdvPagamento').value='DINHEIRO';
+    atualizarLucroPreview();slPdvAtualizarModoFormulario();render();
+  };
+  window.slPdvAtualizarModoFormulario=function(){
+    var b=document.getElementById('slPdvSubmit'),c=document.getElementById('slPdvCancelEdit'),banner=document.getElementById('slPdvEditingBanner');
+    var edit=!!vendaEditandoId;
+    if(b)b.textContent=edit?'💾 SALVAR ALTERAÇÕES':'➕ LANÇAR VENDA';
+    if(c)c.style.display=edit?'block':'none';
+    if(banner)banner.classList.toggle('active',edit);
+  };
+  window.slPdvEditar=function(id){
+    var v=vendas.find(function(x){return String(x.id)===String(id);});
+    if(!v){alert('ESTA VENDA NÃO FOI ENCONTRADA. ATUALIZE O PDV E TENTE NOVAMENTE.');return;}
+    vendaEditandoId=String(id);
+    document.getElementById('slPdvData').value=v.data||hoje();
+    document.getElementById('slPdvEntrada').value=Number(v.entrada)||0;
+    document.getElementById('slPdvCusto').value=Number(v.custo)||0;
+    document.getElementById('slPdvPagamento').value=v.pagamento||'DINHEIRO';
+    document.getElementById('slPdvDescricao').value=v.descricao||'';
+    atualizarLucroPreview();slPdvAtualizarModoFormulario();
+    document.getElementById('slPdvForm').scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  window.slPdvCancelarEdicao=function(){
+    vendaEditandoId=null;
+    ['slPdvEntrada','slPdvCusto','slPdvDescricao'].forEach(function(id){document.getElementById(id).value='';});
+    document.getElementById('slPdvData').value=hoje();
+    document.getElementById('slPdvPagamento').value='DINHEIRO';
+    atualizarLucroPreview();slPdvAtualizarModoFormulario();
+  };
+  window.slPdvAlternarSelecao=function(campo){
+    if(!campo)return;
+    var id=String(campo.getAttribute('data-sl-pdv-select')||'');
+    if(!id)return;
+    if(campo.checked)selecionadas.add(id);else selecionadas.delete(id);
+    render();
+  };
+  window.slPdvSelecionarTodos=function(){
+    filtradas().forEach(function(v){selecionadas.add(String(v.id));});
+    render();
+  };
+  window.slPdvLimparSelecao=function(){selecionadas.clear();render();};
+  window.slPdvExcluirSelecionadas=function(){
+    var ids=Array.from(selecionadas);
+    if(!ids.length){alert('SELECIONE PELO MENOS UMA VENDA.');return;}
+    if(!confirm('EXCLUIR '+ids.length+' VENDA(S) SELECIONADA(S)? ESTA AÇÃO NÃO PODE SER DESFEITA.'))return;
+    vendas=vendas.filter(function(v){return !selecionadas.has(String(v.id));});
+    selecionadas.clear();
+    if(vendaEditandoId&&!vendas.some(function(v){return String(v.id)===String(vendaEditandoId);}))vendaEditandoId=null;
+    salvar();preencherAnos();slPdvAtualizarModoFormulario();render();
   };
   window.slPdvExcluir=function(id){
     if(!confirm('DESEJA EXCLUIR ESTA VENDA DO PDV?'))return;
     vendas=vendas.filter(function(v){return String(v.id)!==String(id);});
-    salvar();render();
+    selecionadas.delete(String(id));
+    if(String(vendaEditandoId)===String(id)){vendaEditandoId=null;slPdvAtualizarModoFormulario();}
+    salvar();preencherAnos();render();
   };
   window.slPdvFiltrarHoje=function(){
     var d=hoje();document.getElementById('slPdvFiltroInicio').value=d;document.getElementById('slPdvFiltroFim').value=d;document.getElementById('slPdvFiltroMes').value='';document.getElementById('slPdvFiltroAno').value='';render();
@@ -14816,5 +15026,163 @@ if(typeof abrirCategoriaBase==='function'){
     if(campo){campo.addEventListener('input',agendarResumo);campo.addEventListener('change',agendarResumo);}
   });
   atualizarResumo();
+})();
+</script>
+
+
+<script id="sl-anotacoes-js">
+(function(){
+  'use strict';
+  if(window.__slAnotacoesIndependentes)return;
+  window.__slAnotacoesIndependentes=true;
+  var STORAGE='slFinanceiro_anotacoes_independentes_v1';
+  var registros=[];
+  var categoria='TV';
+
+  function hoje(){
+    var d=new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function esc(v){
+    return String(v==null?'':v).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function moeda(v){
+    return (Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  }
+  function ler(){
+    try{
+      var d=JSON.parse(localStorage.getItem(STORAGE)||'[]');
+      registros=Array.isArray(d)?d:[];
+    }catch(e){registros=[];}
+  }
+  function salvar(){
+    try{
+      localStorage.setItem(STORAGE,JSON.stringify(registros));
+    }catch(e){alert('Não foi possível salvar as anotações neste dispositivo.');}
+  }
+  function valorFiltro(id){var e=document.getElementById(id);return e?e.value:'';}
+  function passaData(r){
+    var mes=valorFiltro('slAnotMes'),ano=valorFiltro('slAnotAno');
+    var ini=valorFiltro('slAnotInicio'),fim=valorFiltro('slAnotFim');
+    var data=String(r.data||'');
+    if(mes&&data.slice(5,7)!==mes)return false;
+    if(ano&&data.slice(0,4)!==ano)return false;
+    if(ini&&data<ini)return false;
+    if(fim&&data>fim)return false;
+    return true;
+  }
+  function filtrados(cat){
+    return registros.filter(function(r){return (!cat||r.categoria===cat)&&passaData(r);})
+      .sort(function(a,b){return Number(a.ordem)-Number(b.ordem);});
+  }
+  function atualizarAnos(){
+    var el=document.getElementById('slAnotAno');if(!el)return;
+    var atual=el.value,anos={};
+    registros.forEach(function(r){if(r.data)anos[r.data.slice(0,4)]=1;});
+    anos[hoje().slice(0,4)]=1;
+    var lista=Object.keys(anos).sort().reverse();
+    el.innerHTML='<option value="">TODOS</option>'+lista.map(function(a){return '<option value="'+a+'">'+a+'</option>';}).join('');
+    if(lista.indexOf(atual)>=0)el.value=atual;
+  }
+  function dataBR(v){
+    if(!v)return '';
+    var p=v.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:v;
+  }
+  function render(){
+    var lista=filtrados(categoria),todos=filtrados(null);
+    var totalCat=lista.reduce(function(a,r){return a+(r.categoria==='TV'?(Number(r.valor)||0):0);},0);
+    var totalGeral=todos.reduce(function(a,r){return a+(r.categoria==='TV'?(Number(r.valor)||0):0);},0);
+    var el=document.getElementById('slAnotTotalCategoria');
+    if(el){el.textContent=moeda(totalCat);el.className=totalCat<0?'slAnotNegative':'slAnotPositive';}
+    el=document.getElementById('slAnotTotalGeral');
+    if(el){el.textContent=moeda(totalGeral);el.className=totalGeral<0?'slAnotNegative':'slAnotPositive';}
+    el=document.getElementById('slAnotQuantidade');if(el)el.textContent=lista.length+' REGISTRO'+(lista.length===1?'':'S');
+    var alvo=document.getElementById('slAnotLista');if(!alvo)return;
+    if(!lista.length){alvo.innerHTML='<div class="slAnotEmpty">📖 NENHUMA ANOTAÇÃO NESTE PERÍODO.</div>';return;}
+    alvo.innerHTML=lista.map(function(r){
+      var v=Number(r.valor)||0,cls=v<0?'slAnotNegative':'slAnotPositive';
+      return '<div class="slAnotItem">'+
+        '<div class="slAnotItemNo">'+(r.categoria==='GERAL'?'📝':'📺')+' '+esc(r.ordem)+'.</div>'+
+        '<div><strong>'+esc(r.categoria)+'</strong><small>'+dataBR(r.data)+'</small>'+
+          (r.observacao?'<div class="slAnotTextoGeral">'+esc(r.observacao)+'</div>':'')+
+        '</div>'+
+        '<div style="display:flex;align-items:center;gap:5px">'+(r.categoria==='GERAL'?'':'<strong class="'+cls+'">'+(v>0?'+':'')+moeda(v)+'</strong>')+'<button type="button" class="slAnotDelete" data-sl-anot-delete="'+esc(r.id)+'" title="Excluir anotação">✕</button></div>'+
+      '</div>';
+    }).join('');
+  }
+  function selecionarCategoria(cat){
+    categoria=cat;
+    document.querySelectorAll('[data-sl-anot-cat]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-sl-anot-cat')===cat);});
+    var titulo=document.getElementById('slAnotFormTitulo');
+    var valorWrap=document.getElementById('slAnotValorWrap');
+    var obsLabel=document.getElementById('slAnotObsLabel');
+    var obsCampo=document.getElementById('slAnotObs');
+    var geral=cat==='GERAL';
+    if(titulo)titulo.textContent=geral?'📝 ANOTAÇÃO GERAL':'✍️ NOVA ANOTAÇÃO TV';
+    if(valorWrap)valorWrap.style.display=geral?'none':'block';
+    if(obsLabel)obsLabel.textContent=geral?'ESCREVER':'OBSERVAÇÃO (OPCIONAL)';
+    if(obsCampo){
+      obsCampo.placeholder=geral?'ESCREVA SUA ANOTAÇÃO AQUI...':'Escreva uma observação, se necessário...';
+      obsCampo.rows=geral?6:2;
+    }
+    render();
+  }
+  window.slAnotAbrir=function(){
+    var tela=document.getElementById('anotacoes');
+    if(!tela)return;
+    if(typeof showScreen==='function')showScreen('anotacoes');
+    else{document.querySelectorAll('.screen').forEach(function(x){x.classList.remove('active');});tela.classList.add('active');}
+    var d=document.getElementById('slAnotData');if(d&&!d.value)d.value=hoje();
+    atualizarAnos();render();
+  };
+  window.slAnotAdicionar=function(){
+    var data=valorFiltro('slAnotData');
+    var campo=document.getElementById('slAnotValor');
+    var bruto=campo?String(campo.value).trim():'';
+    var obs=(document.getElementById('slAnotObs')||{}).value||'';
+    var geral=categoria==='GERAL';
+    var valor=geral?0:Number(bruto);
+    if(!data){alert('INFORME A DATA DA ANOTAÇÃO.');return;}
+    if(geral&&!obs.trim()){alert('ESCREVA SUA ANOTAÇÃO NO QUADRO BRANCO.');return;}
+    if(!geral&&(bruto===''||!Number.isFinite(valor)||valor===0)){alert('INFORME UM VALOR POSITIVO OU NEGATIVO DIFERENTE DE ZERO.');return;}
+    var proxima=registros.reduce(function(max,r){return Math.max(max,Number(r.ordem)||0);},0)+1;
+    registros.push({id:'anot_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),ordem:proxima,categoria:categoria,data:data,valor:valor,observacao:obs.trim(),criadoEm:Date.now()});
+    salvar();atualizarAnos();
+    if(campo)campo.value='';
+    var obsEl=document.getElementById('slAnotObs');if(obsEl)obsEl.value='';
+    render();
+  };
+  window.slAnotHoje=function(){
+    var d=hoje();
+    document.getElementById('slAnotInicio').value=d;
+    document.getElementById('slAnotFim').value=d;
+    document.getElementById('slAnotMes').value='';
+    document.getElementById('slAnotAno').value='';
+    render();
+  };
+  window.slAnotLimparFiltros=function(){
+    ['slAnotMes','slAnotAno','slAnotInicio','slAnotFim'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+    render();
+  };
+  document.addEventListener('click',function(e){
+    var cat=e.target.closest&&e.target.closest('[data-sl-anot-cat]');
+    if(cat){selecionarCategoria(cat.getAttribute('data-sl-anot-cat'));return;}
+    var del=e.target.closest&&e.target.closest('[data-sl-anot-delete]');
+    if(del){
+      var id=del.getAttribute('data-sl-anot-delete');
+      if(!confirm('EXCLUIR ESTA ANOTAÇÃO?'))return;
+      registros=registros.filter(function(r){return String(r.id)!==String(id);});
+      salvar();atualizarAnos();render();return;
+    }
+  });
+  ['slAnotMes','slAnotAno','slAnotInicio','slAnotFim'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el){el.addEventListener('input',render);el.addEventListener('change',render);}
+  });
+  ler();atualizarAnos();
+  var data=document.getElementById('slAnotData');if(data)data.value=hoje();
+  selecionarCategoria('TV');
 })();
 </script>
