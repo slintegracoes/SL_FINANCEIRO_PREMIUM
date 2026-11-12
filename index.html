@@ -13482,18 +13482,47 @@ if(typeof abrirCategoriaBase==='function'){
   window.movsFiltradosAtuais=function(){
     var lista=[];
     try{lista=typeof baseMovs==='function'?arr(baseMovs()):movimentos().slice();}catch(e){lista=movimentos().slice();}
-    var contasSel=window.__slMultiConta||[];
-    var catsSel=window.__slMultiCategoria||[];
-    if(contasSel.length){
-      lista=lista.filter(function(m){
-        var id=m&&m.conta?String(m.conta):'__sem_conta__';
-        return contasSel.indexOf(id)>=0;
+
+    // Histórico Geral: os três filtros da tela inicial trabalham de forma
+    // independente e simultânea. O filtro de datas e a busca já vêm de baseMovs.
+    var ehHistoricoGeral=false;
+    try{ehHistoricoGeral=(typeof filtro!=='undefined'&&filtro==='todos'&&!window.filtroPendencia);}catch(e){}
+    if(ehHistoricoGeral){
+      var contasSel=Array.isArray(window.__slMultiConta)?window.__slMultiConta:[];
+      var receitasSel=Array.isArray(window.__slMultiCategoriaReceita)?window.__slMultiCategoriaReceita:[];
+      var despesasSel=Array.isArray(window.__slMultiCategoriaDespesa)?window.__slMultiCategoriaDespesa:[];
+      var temReceita=receitasSel.length>0,temDespesa=despesasSel.length>0;
+      return lista.filter(function(m){
+        if(!m)return false;
+        var conta=m.conta?String(m.conta):'__sem_conta__';
+        var cat=m.cat?String(m.cat):'Sem categoria';
+        if(contasSel.length&&contasSel.indexOf(conta)<0)return false;
+        if(m.tipo==='receita'){
+          if(temReceita&&!temDespesa&&receitasSel.indexOf(cat)<0)return false;
+          if(!temReceita&&temDespesa)return false;
+          if(temReceita&&temDespesa&&receitasSel.indexOf(cat)<0)return false;
+        }else if(m.tipo==='despesa'){
+          if(temDespesa&&!temReceita&&despesasSel.indexOf(cat)<0)return false;
+          if(!temDespesa&&temReceita)return false;
+          if(temReceita&&temDespesa&&despesasSel.indexOf(cat)<0)return false;
+        }
+        return true;
       });
     }
-    if(catsSel.length){
+
+    // Nas demais telas, mantém o filtro múltiplo antigo sem alterar seu comportamento.
+    var contasAntigas=window.__slMultiConta||[];
+    var catsAntigas=window.__slMultiCategoria||[];
+    if(contasAntigas.length){
+      lista=lista.filter(function(m){
+        var id=m&&m.conta?String(m.conta):'__sem_conta__';
+        return contasAntigas.indexOf(id)>=0;
+      });
+    }
+    if(catsAntigas.length){
       lista=lista.filter(function(m){
         var cat=m&&m.cat?String(m.cat):'Sem categoria';
-        return catsSel.indexOf(cat)>=0;
+        return catsAntigas.indexOf(cat)>=0;
       });
     }
     return lista;
