@@ -13578,7 +13578,11 @@ if(typeof abrirCategoriaBase==='function'){
 
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function listaContas(){
-    try{return (db.contas||[]).map(function(c){return {id:String(c.id),nome:(c.icone||'🏦')+' '+(c.nome||'CONTA')};});}catch(e){return [];}
+    try{
+      var lista=(db.contas||[]).map(function(c){return {id:String(c.id),nome:(c.icone||'🏦')+' '+(c.nome||'CONTA')};});
+      if((db.movs||[]).some(function(m){return m&&!m.conta;}))lista.unshift({id:'__sem_conta__',nome:'SEM CONTA'});
+      return lista;
+    }catch(e){return [];}
   }
   function listaCategorias(tipo){
     var base=tipo==='receita'?(db.categoriasReceitas||[]):(db.categoriasDespesas||[]);
@@ -13628,27 +13632,59 @@ if(typeof abrirCategoriaBase==='function'){
     return (!di||String(m.data||'')>=di)&&(!df||String(m.data||'')<=df);
   }
   function saldoFiltrado(){
-    var contasSel=selecionados('conta'),recSel=selecionados('receita'),despSel=selecionados('despesa'),total=0;
+    var contasSel=selecionados('conta').slice();
+    var recSel=selecionados('receita').slice();
+    var despSel=selecionados('despesa').slice();
+    var totalReceitas=0,totalDespesas=0;
+    var temFiltroReceita=recSel.length>0;
+    var temFiltroDespesa=despSel.length>0;
+
     try{
       (db.movs||[]).forEach(function(m){
         if(!m||m.ignorado||m.pago===false||!dentroData(m))return;
         if(m.tipo!=='receita'&&m.tipo!=='despesa')return;
+
         var conta=m.conta?String(m.conta):'__sem_conta__';
         var cat=m.cat?String(m.cat):'Sem categoria';
+
+        // O filtro de contas restringe receitas e despesas igualmente.
         if(contasSel.length&&contasSel.indexOf(conta)<0)return;
-        if(m.tipo==='receita'&&recSel.length&&recSel.indexOf(cat)<0)return;
-        if(m.tipo==='despesa'&&despSel.length&&despSel.indexOf(cat)<0)return;
-        total+=(m.tipo==='receita'?1:-1)*(Number(m.valor)||0);
+
+        // Quando uma categoria de receita está selecionada, somar somente
+        // as receitas marcadas. O filtro de despesas funciona de forma independente.
+        if(m.tipo==='receita'){
+          if(temFiltroReceita&&recSel.indexOf(cat)<0)return;
+          // Se somente despesas foram selecionadas, não misturar receitas no resultado.
+          if(temFiltroDespesa&&!temFiltroReceita)return;
+          totalReceitas+=Number(m.valor)||0;
+        }else{
+          if(temFiltroDespesa&&despSel.indexOf(cat)<0)return;
+          // Se somente receitas foram selecionadas, não misturar despesas no resultado.
+          if(temFiltroReceita&&!temFiltroDespesa)return;
+          totalDespesas+=Number(m.valor)||0;
+        }
       });
     }catch(e){}
-    return total;
+    return totalReceitas-totalDespesas;
   }
   function atualizarValor(){
-    var algum=selecionados('conta').length||selecionados('receita').length||selecionados('despesa').length;
-    if(!algum)return;
+    var temConta=selecionados('conta').length>0;
+    var temReceita=selecionados('receita').length>0;
+    var temDespesa=selecionados('despesa').length>0;
+
+    // Sem seleção nos três filtros: não altera o resumo original do sistema.
+    // Assim permanece exatamente a soma normal, respeitando o período escolhido.
+    if(!temConta&&!temReceita&&!temDespesa)return;
+
     var v=saldoFiltrado(),el=document.getElementById('saldoGeral'),st=document.getElementById('saldoStatus');
-    if(el){el.innerText=typeof fmt==='function'?fmt(v):v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});el.className='value '+(v>=0?'green':'red');}
-    if(st){st.innerText=v>=0?'↗ POSITIVO':'↘ NEGATIVO';st.className=v>=0?'green':'red';}
+    if(el){
+      el.innerText=typeof fmt==='function'?fmt(v):v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+      el.className='value '+(v>0?'green':(v<0?'red':'green'));
+    }
+    if(st){
+      st.innerText=v<0?'↘ DESPESAS / SALDO NEGATIVO':(v>0?'↗ RECEITAS / SALDO POSITIVO':'— SEM MOVIMENTAÇÃO');
+      st.className=v<0?'red':'green';
+    }
   }
   var renderAnterior=window.render;
   window.render=function(){
