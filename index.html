@@ -14194,12 +14194,151 @@ if(typeof abrirCategoriaBase==='function'){
   if(!('serviceWorker' in navigator)) return;
   if(location.protocol!=='https:' && location.hostname!=='localhost') return;
   window.addEventListener('load',function(){
-    navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(function(err){
+    navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(function(reg){return reg.update();}).catch(function(err){
       console.warn('SL Financeiro: não foi possível ativar o modo offline do aplicativo.',err);
     });
   });
 })();
 </script>
+<script id="sl-firebase-backup-fix-v4">
+/* BACKUP FIREBASE V4: envelope serializado para evitar chaves inválidas + atualização efetiva */
+(function(){
+  'use strict';
+  if(window.__SL_FIREBASE_BACKUP_FIX_V4__) return;
+  window.__SL_FIREBASE_BACKUP_FIX_V4__=true;
+
+  var ROOT='https://sl-financeiro-premium-default-rtdb.firebaseio.com';
+  var LAST='backups/ultimo', LIST='backups/lista';
+  var PENDING='slFinanceiroBackupManualPendente';
+  var queue=Promise.resolve();
+  var PREFIX='__SL_SERIALIZED_BACKUP_V1__';
+
+  function status(msg,keep){
+    var el=document.getElementById('slBackupSyncStatus');
+    if(!el){el=document.createElement('div');el.id='slBackupSyncStatus';el.style.cssText='position:fixed;right:12px;bottom:12px;z-index:1000001;padding:11px 14px;border-radius:10px;background:#102033;color:#fff;font:13px Arial,sans-serif;box-shadow:0 2px 14px #0008;max-width:90vw;line-height:1.45;pointer-events:none';document.body.appendChild(el);}
+    el.textContent=msg;
+    if(el.__hideTimer)clearTimeout(el.__hideTimer);
+    if(!keep)el.__hideTimer=setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},10000);
+  }
+  function errorText(e){
+    var m=String(e&&e.message||e||'Erro desconhecido');
+    if(/HTTP 401|HTTP 403|Permission denied|unauthorized|permission/i.test(m))return 'Permissão negada (401/403). Verifique as regras do Realtime Database.';
+    if(/HTTP 400|Invalid data|couldn't parse key|Key value can't be empty/i.test(m))return 'O Firebase rejeitou o formato enviado. Esta versão grava o banco como texto JSON para impedir a interpretação de chaves internas.';
+    if(/HTTP 413|too large|payload/i.test(m))return 'O backup excedeu o limite de tamanho aceito pelo Firebase.';
+    if(/Failed to fetch|NetworkError|Load failed|rede|conexão/i.test(m))return 'Falha de conexão com o Firebase.';
+    return m;
+  }
+  function envelope(pkg){
+    if(!pkg||!pkg.db)throw new Error('Pacote inválido: banco principal ausente.');
+    return {
+      formato:PREFIX,
+      app:String(pkg.app||'SL FINANCEIRO PREMIUM'),
+      versaoBackup:Number(pkg.versaoBackup||4),
+      dataISO:String(pkg.dataISO||new Date().toISOString()),
+      dataBR:String(pkg.dataBR||new Date().toLocaleString('pt-BR')),
+      ocultarValores:!!pkg.ocultarValores,
+      bancoJSON:JSON.stringify(pkg.db),
+      extrasJSON:JSON.stringify(pkg.dadosLocais||{})
+    };
+  }
+  function inflate(value){
+    function one(v){
+      if(!v||typeof v!=='object')return v;
+      if(v.formato===PREFIX){
+        var db=JSON.parse(v.bancoJSON||'null');
+        if(!db)throw new Error('O backup da nuvem está incompleto: banco JSON inválido.');
+        var extras={};try{extras=JSON.parse(v.extrasJSON||'{}')||{};}catch(e){}
+        return {app:v.app||'SL FINANCEIRO PREMIUM',versaoBackup:v.versaoBackup||4,dataISO:v.dataISO||'',dataBR:v.dataBR||'',db:db,ocultarValores:!!v.ocultarValores,dadosLocais:extras};
+      }
+      return v;
+    }
+    if(value&&typeof value==='object'&&!Array.isArray(value)){
+      var out={};Object.keys(value).forEach(function(k){out[k]=one(value[k]);});return out;
+    }
+    return one(value);
+  }
+  async function request(path,method,body){
+    var url=ROOT+'/'+String(path).replace(/^\/+|\/+$/g,'')+'.json';
+    var opt={method:method||'GET',headers:{'Content-Type':'application/json'}};
+    if(body!==undefined&&body!==null)opt.body=JSON.stringify(envelope(body));
+    var response;
+    try{response=await fetch(url,opt);}catch(e){throw new Error('Falha de conexão: '+(e.message||e));}
+    var raw=await response.text(),data=null;
+    if(raw){try{data=JSON.parse(raw);}catch(e){data=raw;}}
+    if(!response.ok){var detail=(data&&typeof data==='object'&&(data.error||data.message))||raw||response.statusText;throw new Error('HTTP '+response.status+' — '+String(detail));}
+    if(method==='GET'||!method||method==='get')return inflate(data);
+    return data;
+  }
+  function newKey(pkg){return String(pkg.dataISO||new Date().toISOString()).replace(/[^0-9A-Za-z_-]/g,'-');}
+  window.firebaseRequest=request;
+
+  window.salvarBackupFirebaseFinal=function(pkg,key){
+    var task=queue.then(async function(){
+      if(!navigator.onLine)throw new Error('Sem internet. Backup local mantido e envio pendente.');
+      var cloud=envelope(pkg),k=String(key||newKey(pkg)).replace(/[^0-9A-Za-z_-]/g,'-');
+      await request(LIST+'/'+k,'PUT',pkg);
+      await request(LAST,'PUT',pkg);
+      var latest=await request(LAST,'GET');
+      var item=await request(LIST+'/'+k,'GET');
+      if(!latest||!latest.db||!item||!item.db||String(latest.dataISO)!==String(pkg.dataISO)||String(item.dataISO)!==String(pkg.dataISO))throw new Error('O Firebase não confirmou a leitura de conferência.');
+      try{
+        var all=await request(LIST,'GET')||{};
+        var keys=Object.keys(all).sort(function(a,b){return String(all[b].dataISO||b).localeCompare(String(all[a].dataISO||a));});
+        for(var i=10;i<keys.length;i++){try{await request(LIST+'/'+keys[i],'DELETE');}catch(cleanErr){console.warn(cleanErr);}}
+      }catch(cleanErr){console.warn('Limpeza de backups antigos ignorada:',cleanErr);}
+      window.__SL_FIREBASE_LAST_BACKUP_ERROR__='';return true;
+    });
+    queue=task.then(function(){},function(){});
+    return task.catch(function(e){window.__SL_FIREBASE_LAST_BACKUP_ERROR__=errorText(e);console.error('Backup Firebase V4:',e);return false;});
+  };
+
+  window.fazerBackupFirebaseManual=async function(){
+    var pkg;
+    try{pkg=criarPacoteBackupFinal();if(!pkg||!pkg.db)throw new Error('Banco principal não encontrado.');}
+    catch(e){status('❌ Não foi possível preparar o backup: '+errorText(e));return false;}
+    var localOk=false;
+    try{salvarBackupLocalFinal(pkg);localOk=true;}catch(e){console.warn('Backup local:',e);}
+    if(!navigator.onLine){try{localStorage.setItem(PENDING,'1');}catch(e){}status(localOk?'📱 Backup local preservado. Sem internet; envio à nuvem pendente.':'📴 Sem internet. Dados permanecem no aparelho; envio pendente.');return false;}
+    status('☁️ Enviando backup em formato seguro e conferindo a nuvem...',true);
+    var ok=await window.salvarBackupFirebaseFinal(pkg,newKey(pkg));
+    if(ok){try{localStorage.removeItem(PENDING);}catch(e){}status(localOk?'✅ Backup confirmado no Firebase e cópia local preservada.':'✅ Backup confirmado no Firebase.');return true;}
+    try{localStorage.setItem(PENDING,'1');}catch(e){}
+    status('⚠️ Backup local preservado, mas a nuvem não confirmou: '+(window.__SL_FIREBASE_LAST_BACKUP_ERROR__||'erro desconhecido')+' Seus dados não foram apagados.');return false;
+  };
+
+  window.restaurarUltimoBackupFirebase=function(){
+    pedirConfirmacao('RESTAURAR BACKUP','DESEJA RESTAURAR O ÚLTIMO BACKUP DA NUVEM?',async function(){
+      try{var pkg=await request(LAST,'GET');if(!restaurarPacoteBackupFinal(pkg))throw new Error('Pacote de backup inválido.');closeModal();status('✅ Último backup da nuvem restaurado.');}
+      catch(e){status('❌ Não foi possível restaurar: '+errorText(e));}
+    });
+  };
+  window.restaurarBackupPorChaveFirebase=function(key,origin){
+    pedirConfirmacao('RESTAURAR BACKUP','DESEJA RESTAURAR ESTE BACKUP?',async function(){
+      try{
+        var pkg=origin==='local'?((JSON.parse(localStorage.getItem('slFinanceiroBackupLista')||'{}')||{})[key]):await request(LIST+'/'+key,'GET');
+        if(!restaurarPacoteBackupFinal(pkg))throw new Error('Pacote de backup inválido.');
+        document.getElementById('selectSheet')?.remove();closeModal();status('✅ Backup restaurado.');
+      }catch(e){status('❌ Não foi possível restaurar: '+errorText(e));}
+    });
+  };
+  window.verDatasBackupsFirebase=async function(){
+    try{
+      var cloud=await request(LIST,'GET')||{},rows=Object.keys(cloud).sort(function(a,b){return String(cloud[b].dataISO||b).localeCompare(String(cloud[a].dataISO||a));}).slice(0,10);
+      var html=rows.map(function(k,i){var b=cloud[k]||{};return '<div class="backupListItem"><div><b>'+(i+1)+'. '+String(b.dataBR||k).replace(/[<>]/g,'')+'</b><small>FIREBASE • '+String(k).replace(/[<>]/g,'')+'</small></div><button onclick="restaurarBackupPorChaveFirebase(\''+k+'\',\'firebase\')">RESTAURAR</button></div>';}).join('')||'<div class="empty">NENHUM BACKUP NA NUVEM.</div>';
+      document.getElementById('selectSheet')?.remove();document.body.insertAdjacentHTML('beforeend','<div id="selectSheet" class="selectSheet show" onclick="if(event.target.id===\'selectSheet\')fecharSeletor()"><div class="selectBox"><h2>📅 ÚLTIMOS 10 BACKUPS</h2>'+html+'</div></div>');
+    }catch(e){status('❌ Erro ao consultar a nuvem: '+errorText(e));}
+  };
+
+  window.addEventListener('online',function(){
+    setTimeout(async function(){
+      var pending=false;try{pending=localStorage.getItem(PENDING)==='1';}catch(e){}
+      if(!pending)return;
+      try{var pkg=criarPacoteBackupFinal();var ok=await window.salvarBackupFirebaseFinal(pkg,newKey(pkg));if(ok){localStorage.removeItem(PENDING);status('✅ Internet voltou: backup pendente confirmado no Firebase.');}else status('⚠️ Internet voltou, mas o Firebase ainda não confirmou: '+(window.__SL_FIREBASE_LAST_BACKUP_ERROR__||'erro desconhecido'));}catch(e){status('⚠️ Sincronização pendente: '+errorText(e));}
+    },1200);
+  });
+})();
+</script>
+
 </body>
 
 </html>
@@ -15423,179 +15562,3 @@ if(typeof abrirCategoriaBase==='function'){
 </script>
 
 
-<script id="sl-firebase-backup-fix-v3">
-/* ===== PATCH DEFINITIVO FIREBASE BACKUP: gravação serializada + verificação real ===== */
-(function(){
-  'use strict';
-  if(window.__SL_FIREBASE_BACKUP_FIX_V3__) return;
-  window.__SL_FIREBASE_BACKUP_FIX_V3__=true;
-
-  var writeQueue=Promise.resolve();
-  var ROOT='https://sl-financeiro-premium-default-rtdb.firebaseio.com';
-  var LAST='backups/ultimo';
-  var LIST='backups/lista';
-  var PENDING_KEY='slFinanceiroBackupManualPendente';
-
-  function showStatus(message,keep){
-    var el=document.getElementById('slBackupSyncStatus');
-    if(!el){
-      el=document.createElement('div');
-      el.id='slBackupSyncStatus';
-      el.style.cssText='position:fixed;right:12px;bottom:12px;z-index:1000000;padding:11px 14px;border-radius:10px;background:#102033;color:#fff;font:13px Arial,sans-serif;box-shadow:0 2px 14px #0008;max-width:90vw;line-height:1.45;white-space:normal;pointer-events:none';
-      document.body.appendChild(el);
-    }
-    el.textContent=message;
-    if(el.__hideTimer)clearTimeout(el.__hideTimer);
-    if(!keep)el.__hideTimer=setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},9000);
-  }
-
-  function explainError(error){
-    var msg=String(error&&error.message||error||'Erro desconhecido');
-    if(/HTTP 401|HTTP 403|Permission denied|unauthorized|permission/i.test(msg)) return 'Permissão negada pelo Firebase (401/403). Verifique as Regras do Realtime Database.';
-    if(/HTTP 413|too large|payload/i.test(msg)) return 'O pacote de backup excedeu o limite aceito pela requisição.';
-    if(/Invalid data|couldn't parse key|Key value can't be empty/i.test(msg)) return 'O Firebase rejeitou uma chave interna dos dados. A codificação segura das chaves está ativa; confira se o arquivo atualizado foi publicado por completo.';
-    if(/HTTP 429|too many/i.test(msg)) return 'O Firebase limitou temporariamente as requisições. Aguarde e tente novamente.';
-    if(/Failed to fetch|NetworkError|Load failed|fetch/i.test(msg)) return 'Falha de comunicação com o Firebase. Confira a conexão, bloqueadores e endereço do banco.';
-    return msg;
-  }
-
-  /* O Realtime Database proíbe . # $ [ ] / e chaves vazias em QUALQUER nível do JSON.
-     Codificamos somente os nomes de propriedades incompatíveis e os revertemos na leitura,
-     preservando os nomes originais dos dados do aplicativo. */
-  var FIREBASE_KEY_PREFIX='__slfb64__';
-  function encodeFirebaseKey(key){
-    key=String(key);
-    if(!key || /[.#$\[\]\/]/.test(key) || key.indexOf(FIREBASE_KEY_PREFIX)===0){
-      var bytes=unescape(encodeURIComponent(key));
-      var encoded=btoa(bytes).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-      return FIREBASE_KEY_PREFIX+encoded;
-    }
-    return key;
-  }
-  function encodeFirebaseValue(value){
-    if(Array.isArray(value)) return value.map(encodeFirebaseValue);
-    if(value && typeof value==='object'){
-      var out={};
-      Object.keys(value).forEach(function(k){out[encodeFirebaseKey(k)]=encodeFirebaseValue(value[k]);});
-      return out;
-    }
-    return value;
-  }
-  function decodeFirebaseKey(key){
-    if(key.indexOf(FIREBASE_KEY_PREFIX)!==0) return key;
-    try{
-      var encoded=key.slice(FIREBASE_KEY_PREFIX.length).replace(/-/g,'+').replace(/_/g,'/');
-      while(encoded.length%4) encoded+='=';
-      return decodeURIComponent(escape(atob(encoded)));
-    }catch(e){return key;}
-  }
-  function decodeFirebaseValue(value){
-    if(Array.isArray(value)) return value.map(decodeFirebaseValue);
-    if(value && typeof value==='object'){
-      var out={};
-      Object.keys(value).forEach(function(k){out[decodeFirebaseKey(k)]=decodeFirebaseValue(value[k]);});
-      return out;
-    }
-    return value;
-  }
-
-  async function request(path,method,body){
-    var options={method:method||'GET',headers:{'Content-Type':'application/json'}};
-    if(body!==undefined && body!==null) options.body=JSON.stringify(encodeFirebaseValue(body));
-    var response;
-    try{response=await fetch(ROOT+'/'+String(path).replace(/^\/+|\/+$/g,'')+'.json',options);}
-    catch(err){throw new Error('Falha de rede: '+(err&&err.message||err));}
-    var raw='';
-    try{raw=await response.text();}catch(e){}
-    var data=null;
-    if(raw){try{data=JSON.parse(raw);data=decodeFirebaseValue(data);}catch(e){data=raw;}}
-    if(!response.ok){
-      var detail=(data&&typeof data==='object'&&(data.error||data.message))?String(data.error||data.message):String(raw||response.statusText||'');
-      throw new Error('HTTP '+response.status+(detail?' — '+detail:''));
-    }
-    return data;
-  }
-
-  /* Todas as gravações (manual e automática) passam pela mesma fila para não se atropelarem. */
-  window.salvarBackupFirebaseFinal=function(packageData,key){
-    var task=writeQueue.then(async function(){
-      if(!navigator.onLine) throw new Error('Sem conexão com a internet.');
-      if(!packageData || !packageData.db) throw new Error('Pacote inválido: os dados principais não foram encontrados.');
-      var safeKey=String(key||'').replace(/[^0-9A-Za-z_-]/g,'-');
-      if(!safeKey) throw new Error('Não foi possível gerar a identificação do backup.');
-
-      /* Primeiro grava o histórico; por último atualiza o ponteiro do backup mais recente. */
-      await request(LIST+'/'+safeKey,'PUT',packageData);
-      await request(LAST,'PUT',packageData);
-
-      /* Confirma por leitura: HTTP 200 sozinho não basta para declarar sucesso. */
-      var checkLast=await request(LAST,'GET');
-      var checkItem=await request(LIST+'/'+safeKey,'GET');
-      var expected=String(packageData.dataISO||'');
-      if(!checkLast || !checkItem || !checkLast.db || !checkItem.db || String(checkLast.dataISO||'')!==expected || String(checkItem.dataISO||'')!==expected){
-        throw new Error('O Firebase recebeu a requisição, mas a conferência da gravação não correspondeu ao backup enviado.');
-      }
-
-      /* A limpeza é secundária: nunca invalida um backup que já foi confirmado. */
-      try{
-        var all=await request(LIST,'GET')||{};
-        var keys=Object.keys(all).sort(function(a,b){
-          return String((all[b]&&all[b].dataISO)||b).localeCompare(String((all[a]&&all[a].dataISO)||a));
-        });
-        for(var i=10;i<keys.length;i++){
-          try{await request(LIST+'/'+keys[i],'DELETE');}catch(cleanError){console.warn('Não foi possível remover backup antigo:',cleanError);}
-        }
-      }catch(cleanError){console.warn('Limpeza de backups antigos não concluída:',cleanError);}
-      window.__SL_FIREBASE_LAST_BACKUP_ERROR__='';
-      return true;
-    });
-    writeQueue=task.then(function(){},function(){});
-    return task.catch(function(error){
-      window.__SL_FIREBASE_LAST_BACKUP_ERROR__=explainError(error);
-      console.error('Falha no backup Firebase:',error);
-      return false;
-    });
-  };
-
-  /* Leitura/restauração/listagem também passam a exibir erros HTTP reais no console. */
-  window.firebaseRequest=async function(path,method,body){
-    return request(path,method,body);
-  };
-
-  window.fazerBackupFirebaseManual=async function(){
-    var pacote;
-    try{
-      pacote=criarPacoteBackupFinal();
-      if(!pacote || !pacote.db) throw new Error('Não foi possível montar o pacote com os dados atuais.');
-    }catch(error){
-      showStatus('❌ Não foi possível preparar o backup: '+explainError(error));
-      return false;
-    }
-
-    var localOk=false;
-    try{salvarBackupLocalFinal(pacote);localOk=true;}
-    catch(error){console.warn('Cópia local não foi concluída:',error);}
-
-    if(!navigator.onLine){
-      try{localStorage.setItem(PENDING_KEY,'1');}catch(e){}
-      showStatus(localOk?'📱 Cópia local preservada. Sem internet: o envio à nuvem ficou pendente.':'📴 Sem internet. Os dados atuais continuam no aparelho; o envio à nuvem ficou pendente.');
-      return false;
-    }
-
-    showStatus('☁️ Enviando backup ao Firebase e conferindo a gravação...',true);
-    var key=(pacote.dataISO||new Date().toISOString()).replace(/[:.]/g,'-');
-    var ok=await window.salvarBackupFirebaseFinal(pacote,key);
-    if(ok){
-      try{localStorage.removeItem(PENDING_KEY);}catch(e){}
-      showStatus(localOk?'✅ Backup confirmado no Firebase e cópia local atualizada.':'✅ Backup confirmado no Firebase. A cópia local adicional não foi gravada.');
-      return true;
-    }
-
-    try{localStorage.setItem(PENDING_KEY,'1');}catch(e){}
-    var detail=window.__SL_FIREBASE_LAST_BACKUP_ERROR__||'O Firebase não confirmou a gravação.';
-    showStatus('⚠️ Backup local preservado, mas a nuvem não confirmou: '+detail+' Seus dados não foram apagados.');
-    return false;
-  };
-})();
-
-</script>
