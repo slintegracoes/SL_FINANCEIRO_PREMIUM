@@ -15453,21 +15453,62 @@ if(typeof abrirCategoriaBase==='function'){
     var msg=String(error&&error.message||error||'Erro desconhecido');
     if(/HTTP 401|HTTP 403|Permission denied|unauthorized|permission/i.test(msg)) return 'Permissão negada pelo Firebase (401/403). Verifique as Regras do Realtime Database.';
     if(/HTTP 413|too large|payload/i.test(msg)) return 'O pacote de backup excedeu o limite aceito pela requisição.';
+    if(/Invalid data|couldn't parse key|Key value can't be empty/i.test(msg)) return 'O Firebase rejeitou uma chave interna dos dados. A codificação segura das chaves está ativa; confira se o arquivo atualizado foi publicado por completo.';
     if(/HTTP 429|too many/i.test(msg)) return 'O Firebase limitou temporariamente as requisições. Aguarde e tente novamente.';
     if(/Failed to fetch|NetworkError|Load failed|fetch/i.test(msg)) return 'Falha de comunicação com o Firebase. Confira a conexão, bloqueadores e endereço do banco.';
     return msg;
   }
 
+  /* O Realtime Database proíbe . # $ [ ] / e chaves vazias em QUALQUER nível do JSON.
+     Codificamos somente os nomes de propriedades incompatíveis e os revertemos na leitura,
+     preservando os nomes originais dos dados do aplicativo. */
+  var FIREBASE_KEY_PREFIX='__slfb64__';
+  function encodeFirebaseKey(key){
+    key=String(key);
+    if(!key || /[.#$\[\]\/]/.test(key) || key.indexOf(FIREBASE_KEY_PREFIX)===0){
+      var bytes=unescape(encodeURIComponent(key));
+      var encoded=btoa(bytes).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+      return FIREBASE_KEY_PREFIX+encoded;
+    }
+    return key;
+  }
+  function encodeFirebaseValue(value){
+    if(Array.isArray(value)) return value.map(encodeFirebaseValue);
+    if(value && typeof value==='object'){
+      var out={};
+      Object.keys(value).forEach(function(k){out[encodeFirebaseKey(k)]=encodeFirebaseValue(value[k]);});
+      return out;
+    }
+    return value;
+  }
+  function decodeFirebaseKey(key){
+    if(key.indexOf(FIREBASE_KEY_PREFIX)!==0) return key;
+    try{
+      var encoded=key.slice(FIREBASE_KEY_PREFIX.length).replace(/-/g,'+').replace(/_/g,'/');
+      while(encoded.length%4) encoded+='=';
+      return decodeURIComponent(escape(atob(encoded)));
+    }catch(e){return key;}
+  }
+  function decodeFirebaseValue(value){
+    if(Array.isArray(value)) return value.map(decodeFirebaseValue);
+    if(value && typeof value==='object'){
+      var out={};
+      Object.keys(value).forEach(function(k){out[decodeFirebaseKey(k)]=decodeFirebaseValue(value[k]);});
+      return out;
+    }
+    return value;
+  }
+
   async function request(path,method,body){
     var options={method:method||'GET',headers:{'Content-Type':'application/json'}};
-    if(body!==undefined && body!==null) options.body=JSON.stringify(body);
+    if(body!==undefined && body!==null) options.body=JSON.stringify(encodeFirebaseValue(body));
     var response;
     try{response=await fetch(ROOT+'/'+String(path).replace(/^\/+|\/+$/g,'')+'.json',options);}
     catch(err){throw new Error('Falha de rede: '+(err&&err.message||err));}
     var raw='';
     try{raw=await response.text();}catch(e){}
     var data=null;
-    if(raw){try{data=JSON.parse(raw);}catch(e){data=raw;}}
+    if(raw){try{data=JSON.parse(raw);data=decodeFirebaseValue(data);}catch(e){data=raw;}}
     if(!response.ok){
       var detail=(data&&typeof data==='object'&&(data.error||data.message))?String(data.error||data.message):String(raw||response.statusText||'');
       throw new Error('HTTP '+response.status+(detail?' — '+detail:''));
