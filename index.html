@@ -2298,13 +2298,7 @@ window.verDatasBackupsFirebase=async function(){
   }
 };
 
-window.addEventListener('beforeunload',function(e){
-  try{fazerBackupFirebase(true)}catch(err){}
-  e.preventDefault();
-  e.returnValue='DESEJA SAIR DO APLICATIVO?';
-  return 'DESEJA SAIR DO APLICATIVO?';
-});
-
+/* Backup ao sair substituído por sincronização automática sem bloquear a navegação. */
 document.addEventListener('visibilitychange',function(){
   if(document.visibilityState==='hidden'){
     try{fazerBackupFirebase(true)}catch(e){}
@@ -2763,13 +2757,7 @@ window.verDatasBackupsFirebase=async function(){
   document.body.insertAdjacentHTML('beforeend',`<div id="selectSheet" class="selectSheet show" onclick="if(event.target.id=='selectSheet')fecharSeletor()"><div class="selectBox"><h2>📅 ÚLTIMOS 10 BACKUPS</h2>${html}</div></div>`);
 };
 
-window.addEventListener('pagehide',function(){
-  try{
-    const pacote=criarPacoteBackupFinal();
-    const key=salvarBackupLocalFinal(pacote);
-    salvarBackupFirebaseFinal(pacote,key);
-  }catch(e){}
-});
+/* pagehide não cria cópias locais extras; a sincronização ocorre durante o uso e ao reconectar. */
 
 
 
@@ -14200,6 +14188,18 @@ if(typeof abrirCategoriaBase==='function'){
   },true);
 })();
 </script>
+
+<script id="sl-offline-app-shell-registration">
+(function(){
+  if(!('serviceWorker' in navigator)) return;
+  if(location.protocol!=='https:' && location.hostname!=='localhost') return;
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(function(err){
+      console.warn('SL Financeiro: não foi possível ativar o modo offline do aplicativo.',err);
+    });
+  });
+})();
+</script>
 </body>
 
 </html>
@@ -15266,5 +15266,158 @@ if(typeof abrirCategoriaBase==='function'){
   ler();atualizarAnos();
   var data=document.getElementById('slAnotData');if(data)data.value=hoje();
   selecionarCategoria('TV');
+})();
+</script>
+
+
+<!-- SINCRONIZAÇÃO OFFLINE + FIREBASE: camada final de segurança -->
+<script id="sl-backup-offline-sync-v2">
+(function(){
+  'use strict';
+  if(window.__SL_BACKUP_OFFLINE_SYNC_V2__) return;
+  window.__SL_BACKUP_OFFLINE_SYNC_V2__=true;
+
+  var KEY_LAST='slFinanceiroBackupUltimo';
+  var KEY_HASH='slFinanceiroUltimoHashNuvem';
+  var KEY_MANUAL_PENDING='slFinanceiroBackupManualPendente';
+  var EXTRA_KEYS=['slFinanceiro_anotacoes_independentes_v1','slPDVLoja_independente_v1'];
+  var WATCH_KEYS=['financeiroPremium','ocultarValoresFinanceiro','slFinanceiroDB','slFinanceiroPremium'].concat(EXTRA_KEYS);
+  var nativeSet=Storage.prototype.setItem;
+  var nativeRemove=Storage.prototype.removeItem;
+  var timer=null, inFlight=false, pending=false, restoring=false;
+  var lastFingerprint='';
+
+  function status(msg,keep){
+    var el=document.getElementById('slBackupSyncStatus');
+    if(!el){el=document.createElement('div');el.id='slBackupSyncStatus';el.style.cssText='position:fixed;right:12px;bottom:12px;z-index:999999;padding:9px 12px;border-radius:10px;background:#102033;color:#fff;font:12px Arial,sans-serif;box-shadow:0 2px 12px #0006;max-width:88vw;line-height:1.4;pointer-events:none';document.body.appendChild(el);}
+    el.textContent=msg;
+    if(el.__hideTimer)clearTimeout(el.__hideTimer);
+    if(!keep)el.__hideTimer=setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},5000);
+  }
+  function hashText(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16)+'-'+s.length;}
+  function readHash(){try{return localStorage.getItem(KEY_HASH)||'';}catch(e){return '';}}
+  function writeHash(v){try{nativeSet.call(localStorage,KEY_HASH,v);}catch(e){}}
+  function makePackage(){
+    var extras={};
+    EXTRA_KEYS.forEach(function(k){try{var v=localStorage.getItem(k);if(v!==null)extras[k]=v;}catch(e){}});
+    return {app:'SL FINANCEIRO PREMIUM',versaoBackup:4,dataISO:new Date().toISOString(),dataBR:new Date().toLocaleString('pt-BR'),db:JSON.parse(JSON.stringify(db||{})),ocultarValores:!!ocultarValores,dadosLocais:extras};
+  }
+  function newKey(){var d=new Date(),p=function(n){return String(n).padStart(2,'0');};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'_'+p(d.getHours())+'-'+p(d.getMinutes())+'-'+p(d.getSeconds())+'-'+String(d.getMilliseconds()).padStart(3,'0');}
+  function saveLocalLast(pkg){try{nativeSet.call(localStorage,KEY_LAST,JSON.stringify(pkg));return true;}catch(e){return false;}}
+  function pruneLocalBackupCopies(){
+    /* Remove somente cópias redundantes de backup; nunca apaga o banco principal. */
+    [ 'slFinanceiroBackupsLocais', KEY_LAST ].forEach(function(k){try{nativeRemove.call(localStorage,k);}catch(e){}});
+  }
+  function fingerprint(pkg){return hashText(JSON.stringify({db:pkg.db,ocultarValores:pkg.ocultarValores,dadosLocais:pkg.dadosLocais}));}
+  async function pushCloud(pkg,force){
+    if(!navigator.onLine){pending=true;return false;}
+    var fp=fingerprint(pkg);
+    if(!force && (fp===lastFingerprint || fp===readHash())){lastFingerprint=fp;pending=false;return true;}
+    if(inFlight){pending=true;return false;}
+    inFlight=true;
+    try{
+      var key=newKey();
+      var ok=await salvarBackupFirebaseFinal(pkg,key);
+      if(!ok)throw new Error('Firebase não confirmou a gravação');
+      lastFingerprint=fp;writeHash(fp);pending=false;
+      return true;
+    }catch(e){pending=true;return false;}
+    finally{inFlight=false;}
+  }
+  async function syncNow(silent){
+    if(!navigator.onLine){pending=true;if(!silent)status('📴 Sem internet. Seus dados continuam disponíveis neste aparelho.');return false;}
+    var pkg;
+    try{pkg=makePackage();}catch(e){pending=true;if(!silent)status('⚠️ Não foi possível preparar a sincronização.');return false;}
+    var manualPending=false;try{manualPending=localStorage.getItem(KEY_MANUAL_PENDING)==='1';}catch(e){}
+    var ok=await pushCloud(pkg,manualPending);
+    if(ok){
+      if(manualPending){try{nativeRemove.call(localStorage,KEY_MANUAL_PENDING);}catch(e){} if(!silent)status('✅ Backup manual pendente enviado ao Firebase.');}
+      else if(!silent)status('☁️ Dados sincronizados com o Firebase.');
+      return true;
+    }
+    if(!silent)status('⚠️ Não foi possível sincronizar agora. Uma nova tentativa será feita quando a conexão estiver disponível.');
+    return false;
+  }
+  function schedule(ms){if(timer)clearTimeout(timer);timer=setTimeout(function(){timer=null;syncNow(true);},ms==null?1600:ms);}
+
+  /* Se o armazenamento estiver cheio, descarta apenas backups locais redundantes e tenta novamente. */
+  try{
+    Storage.prototype.setItem=function(key,value){
+      var result;
+      try{result=nativeSet.call(this,key,value);}
+      catch(err){
+        var quota=err&&(err.name==='QuotaExceededError'||err.name==='NS_ERROR_DOM_QUOTA_REACHED'||err.code===22||err.code===1014);
+        if(!quota)throw err;
+        pruneLocalBackupCopies();
+        result=nativeSet.call(this,key,value);
+      }
+      if(this===localStorage && !restoring && WATCH_KEYS.indexOf(String(key))!==-1){pending=true;schedule(1800);}
+      return result;
+    };
+  }catch(e){}
+
+  /* Mantém o save principal funcionando mesmo quando uma cópia local antiga ocupa espaço. */
+  try{
+    var originalSave=window.save;
+    if(typeof originalSave==='function')window.save=function(){
+      try{return originalSave.apply(this,arguments);}
+      catch(e){
+        try{applyTheme();}catch(x){}
+        try{render();}catch(x){}
+        status('⚠️ O navegador está sem espaço para gravar localmente. Backups locais antigos foram limpos; libere espaço e tente novamente.');
+        return false;
+      }
+    };
+  }catch(e){}
+
+  /* Backup manual: mantém o botão e envia para a nuvem mesmo se a cópia extra local falhar. */
+  window.fazerBackupFirebaseManual=async function(){
+    var pkg;
+    try{pkg=makePackage();}catch(e){status('❌ Não foi possível preparar o backup. Seus dados atuais não foram apagados.');return;}
+    var localOk=saveLocalLast(pkg);
+    if(!navigator.onLine){
+      try{nativeSet.call(localStorage,KEY_MANUAL_PENDING,'1');}catch(e){}
+      pending=true;
+      status(localOk?'📱 Cópia local salva. O backup manual será enviado à nuvem quando a internet voltar.':'📴 Sem internet. Dados principais continuam no aparelho; backup manual ficará pendente para a nuvem.');
+      return;
+    }
+    var ok=await pushCloud(pkg,true);
+    if(ok){try{nativeRemove.call(localStorage,KEY_MANUAL_PENDING);}catch(e){}status(localOk?'✅ Backup manual salvo no Firebase e cópia local atualizada.':'✅ Backup manual salvo no Firebase. A cópia extra local não coube, mas os dados principais foram preservados.');}
+    else{try{nativeSet.call(localStorage,KEY_MANUAL_PENDING,'1');}catch(e){}pending=true;status(localOk?'⚠️ Cópia local salva; envio manual à nuvem será repetido.':'⚠️ Firebase indisponível. Os dados principais continuam no aparelho e o envio ficará pendente.');}
+  };
+
+  /* Restauração: grava o banco local e só depois agenda a sincronização da versão restaurada. */
+  try{
+    var restoreBase=window.restaurarPacoteBackupFinal;
+    if(typeof restoreBase==='function')window.restaurarPacoteBackupFinal=function(pkg){
+      restoring=true;
+      try{return restoreBase(pkg);}
+      finally{restoring=false;pending=true;schedule(2200);}
+    };
+  }catch(e){}
+
+  /* Lista backups da nuvem e mostra também a última cópia local, se existir. */
+  window.verDatasBackupsFirebase=async function(){
+    var list={};
+    try{var cloud=await firebaseRequest(FIREBASE_LISTA_PATH,'GET');if(cloud)Object.keys(cloud).forEach(function(k){list['firebase|'+k]=cloud[k];});}catch(e){}
+    try{var local=JSON.parse(localStorage.getItem(KEY_LAST)||'null');if(local&&local.db)list['local|ultimo']=local;}catch(e){}
+    var keys=Object.keys(list).sort(function(a,b){return String((list[b]||{}).dataISO||b).localeCompare(String((list[a]||{}).dataISO||a));}).slice(0,10);
+    var html=keys.map(function(full,i){var b=list[full]||{},parts=full.split('|'),origin=parts[0],key=parts.slice(1).join('|');var safeKey=String(key).replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');return '<div class="backupListItem"><div><b>'+(i+1)+'. '+String(b.dataBR||key).replace(/</g,'&lt;')+'</b><small>'+(origin==='firebase'?'FIREBASE':'LOCAL')+' • '+safeKey+'</small></div><button onclick="restaurarBackupPorChaveFirebase(\''+safeKey+'\',\''+origin+'\')">RESTAURAR</button></div>';}).join('')||'<div class="empty">NENHUM BACKUP ENCONTRADO.</div>';
+    document.getElementById('selectSheet')?.remove();
+    document.body.insertAdjacentHTML('beforeend','<div id="selectSheet" class="selectSheet show" onclick="if(event.target.id===\'selectSheet\')fecharSeletor()"><div class="selectBox"><h2>📅 ÚLTIMOS 10 BACKUPS</h2>'+html+'</div></div>');
+  };
+  var restoreByKeyBase=window.restaurarBackupPorChaveFirebase;
+  window.restaurarBackupPorChaveFirebase=function(key,origin){
+    if(origin==='local'&&key==='ultimo'){
+      pedirConfirmacao('RESTAURAR BACKUP','DESEJA RESTAURAR A ÚLTIMA CÓPIA LOCAL?',function(){var pkg=null;try{pkg=JSON.parse(localStorage.getItem(KEY_LAST)||'null');}catch(e){}if(!restaurarPacoteBackupFinal(pkg)){status('❌ Não foi possível restaurar a cópia local.');return;}document.getElementById('selectSheet')?.remove();closeModal();status('✅ Cópia local restaurada.');});
+      return;
+    }
+    return restoreByKeyBase(key,origin);
+  };
+
+  window.addEventListener('online',function(){pending=true;status('🌐 Internet voltou. Sincronizando seus dados...');schedule(500);});
+  window.addEventListener('offline',function(){pending=true;status('📴 Offline: você pode continuar usando o aplicativo.');});
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&navigator.onLine)schedule(700);});
+  if(navigator.onLine)schedule(2600);else pending=true;
 })();
 </script>
