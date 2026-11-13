@@ -911,6 +911,12 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
 
   <button id="btnAbrirPDVLoja" class="slPdvLaunch" type="button" onclick="abrirPDVLoja()">🛍️ VENDAS LOJA</button>
 
+  <input id="logoInput" type="file" accept="image/*" style="display:none" onchange="selecionarLogo(event)">
+  <div id="logoBox" style="display:none"></div>
+  <div id="logoControls" style="display:none"></div>
+  <span id="today" style="display:none"></span>
+
+  <section id="inicio" class="screen active">
   <div class="slAnotLaunchRow">
     <button id="slAnotLaunch" class="slAnotLaunch" type="button" onclick="slAnotAbrir()"><span>📓</span> ANOTAÇÕES</button>
   </div>
@@ -938,12 +944,6 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
       <button class="smallBtn" onclick="limparDatasHistorico()" style="width:100%;margin-bottom:10px">Limpar datas</button>
     </div>
   </div>
-  <input id="logoInput" type="file" accept="image/*" style="display:none" onchange="selecionarLogo(event)">
-  <div id="logoBox" style="display:none"></div>
-  <div id="logoControls" style="display:none"></div>
-  <span id="today" style="display:none"></span>
-
-  <section id="inicio" class="screen active">
     <div class="card balance"><div class="balanceTop"><div class="label">RESUMO DE SALDO</div><div class="balanceControls"><button id="eyeBtn" class="eyeInside" onclick="toggleValores()">👁️</button><button class="gearInside" onclick="openModal('config')">⚙️</button></div></div><div id="saldoGeral" class="value">R$ 0,00</div><div id="saldoStatus" class="green">↗ Positivo</div><div class="histAlertRow"><button id="btnHistorico" class="btn histBtn" onclick="abrirHistoricoTodos()">📜 HISTÓRICO</button><button class="btn alertBtn" onclick="abrirAlertas()">⚠️ ALERTAS</button><button id="btnFaturasFechadas" class="btn invoiceBtn" onclick="abrirFaturas()">💳 FATURAS</button></div></div>
     <div class="grid">
       <div class="mini click" onclick="abrirCategoria('receita',true)"><b>⏳ Receitas Pendentes</b><span id="receitasPendentes" class="gold">R$ 0,00</span></div>
@@ -1130,7 +1130,8 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
         </div>
         <label id="slAnotObsLabel" for="slAnotObs">OBSERVAÇÃO <span>(OPCIONAL)</span></label>
         <textarea id="slAnotObs" rows="2" maxlength="300" placeholder="Escreva uma observação, se necessário..."></textarea>
-        <button type="button" class="slAnotAdd" onclick="slAnotAdicionar()">＋ ADICIONAR ANOTAÇÃO</button>
+        <button type="button" class="slAnotAdd" id="slAnotSalvarBtn" onclick="slAnotAdicionar()">＋ ADICIONAR ANOTAÇÃO</button>
+        <button type="button" class="slAnotCancelEdit" id="slAnotCancelarEdicao" style="display:none" onclick="slAnotCancelarEdicao()">CANCELAR EDIÇÃO</button>
       </div>
 
       <div class="slAnotFilterPanel">
@@ -1149,9 +1150,8 @@ button.invoiceEdit{display:none!important;visibility:hidden!important;width:0!im
         </div>
       </div>
 
-      <div class="slAnotSummary">
-        <div><small>TOTAL DA CATEGORIA</small><strong id="slAnotTotalCategoria">R$ 0,00</strong></div>
-        <div><small>SOMA FINAL (3 CATEGORIAS)</small><strong id="slAnotTotalGeral">R$ 0,00</strong></div>
+      <div class="slAnotSummary" id="slAnotResumoTV">
+        <div><small>SOMA DOS LANÇAMENTOS TV</small><strong id="slAnotTotalCategoria">R$ 0,00</strong></div>
       </div>
       <div class="slAnotListHead"><h3>📖 CADERNO DE ANOTAÇÕES</h3><span id="slAnotQuantidade">0 REGISTROS</span></div>
       <div id="slAnotLista" class="slAnotList"></div>
@@ -2626,12 +2626,22 @@ const LOCAL_BACKUP_LIST_KEY='slFinanceiroBackupsLocais';
 const LOCAL_BACKUP_LAST_KEY='slFinanceiroBackupUltimo';
 
 function criarPacoteBackupFinal(){
+  const chaves=[
+    'financeiroPremium','ocultarValoresFinanceiro','slFinanceiroDB','slFinanceiroPremium',
+    'slFinanceiro_anotacoes_independentes_v1','slPDVLoja_independente_v1'
+  ];
+  const dadosLocais={};
+  chaves.forEach(k=>{
+    try{const v=localStorage.getItem(k);if(v!==null)dadosLocais[k]=v;}catch(e){}
+  });
   return {
     app:'SL FINANCEIRO PREMIUM',
+    versaoBackup:2,
     dataISO:new Date().toISOString(),
     dataBR:new Date().toLocaleString('pt-BR'),
     db:JSON.parse(JSON.stringify(db||{})),
-    ocultarValores:!!ocultarValores
+    ocultarValores:!!ocultarValores,
+    dadosLocais:dadosLocais
   };
 }
 
@@ -2649,15 +2659,24 @@ function salvarBackupLocalFinal(pacote){
 
 function restaurarPacoteBackupFinal(pacote){
   if(!pacote || !pacote.db)return false;
-  db=pacote.db;
-  ocultarValores=!!pacote.ocultarValores;
-  localStorage.setItem('financeiroPremium',JSON.stringify(db));
-  localStorage.setItem('ocultarValoresFinanceiro',JSON.stringify(ocultarValores));
-  if(document.getElementById('eyeBtn'))document.getElementById('eyeBtn').innerText=ocultarValores?'🙈':'👁️';
-  applyTheme();
-  renderLogo();
-  render();
-  return true;
+  try{
+    db=pacote.db;
+    ocultarValores=!!pacote.ocultarValores;
+    localStorage.setItem('financeiroPremium',JSON.stringify(db));
+    localStorage.setItem('ocultarValoresFinanceiro',JSON.stringify(ocultarValores));
+    if(pacote.dadosLocais && typeof pacote.dadosLocais==='object'){
+      Object.keys(pacote.dadosLocais).forEach(k=>{try{localStorage.setItem(k,pacote.dadosLocais[k]);}catch(e){}});
+    }
+    if(document.getElementById('eyeBtn'))document.getElementById('eyeBtn').innerText=ocultarValores?'🙈':'👁️';
+    applyTheme();
+    renderLogo();
+    render();
+    if(typeof window.slAnotRecarregarBackup==='function')window.slAnotRecarregarBackup();
+    return true;
+  }catch(e){
+    console.error('Falha ao restaurar backup:',e);
+    return false;
+  }
 }
 
 async function salvarBackupFirebaseFinal(pacote,key){
@@ -2672,10 +2691,19 @@ async function salvarBackupFirebaseFinal(pacote,key){
 }
 
 window.fazerBackupFirebaseManual=async function(){
-  const pacote=criarPacoteBackupFinal();
-  const key=salvarBackupLocalFinal(pacote);
-  await salvarBackupFirebaseFinal(pacote,key);
-  mostrarMsgBackup('✅ BACKUP REALIZADO COM SUCESSO');
+  try{
+    const pacote=criarPacoteBackupFinal();
+    const key=salvarBackupLocalFinal(pacote);
+    const nuvem=await salvarBackupFirebaseFinal(pacote,key);
+    if(nuvem){
+      mostrarMsgBackup('✅ BACKUP SALVO NO DISPOSITIVO E NO FIREBASE. CONFIGURAÇÕES, ANOTAÇÕES E DADOS INCLUÍDOS.');
+    }else{
+      mostrarMsgBackup('⚠️ BACKUP LOCAL SALVO, MAS O FIREBASE NÃO CONFIRMOU O ENVIO. VERIFIQUE A CONEXÃO E TENTE NOVAMENTE. SEUS DADOS LOCAIS FORAM PRESERVADOS.');
+    }
+  }catch(e){
+    console.error('Erro ao criar backup:',e);
+    mostrarMsgBackup('❌ NÃO FOI POSSÍVEL CONCLUIR O BACKUP. VERIFIQUE O ESPAÇO DISPONÍVEL NO DISPOSITIVO.');
+  }
 };
 
 window.restaurarUltimoBackupFirebase=function(){
@@ -13822,19 +13850,25 @@ if(typeof abrirCategoriaBase==='function'){
           // Conta selecionada sem categoria: mostrar apenas o que entrou nessa conta.
           totalReceitas+=Number(m.valor)||0;
         }else{
-          // Despesas só entram quando há seleção explícita no filtro de despesas.
-          if(!temFiltroDespesa||despSel.indexOf(cat)<0)return;
+          // Com apenas o filtro CONTAS ativo, as despesas das contas selecionadas
+          // também entram no cálculo e são subtraídas das receitas.
+          if(temFiltroDespesa){
+            if(despSel.indexOf(cat)<0)return;
+          }else if(!contasSel.length){
+            return;
+          }
           totalDespesas+=Number(m.valor)||0;
         }
       });
     }catch(e){}
 
-    // Somente receitas ou somente conta: entradas brutas.
+    // Filtros exclusivos por categoria mantêm seus totais individuais.
     if(temFiltroReceita&&!temFiltroDespesa)return {valor:totalReceitas,tipo:'receita'};
     if(temFiltroDespesa&&!temFiltroReceita)return {valor:totalDespesas,tipo:'despesa'};
-    // Quando há pelo menos uma categoria de cada tipo, mostrar entradas menos saídas.
+    // Com categorias de receita e despesa, calcular entradas menos saídas.
     if(temFiltroReceita&&temFiltroDespesa)return {valor:totalReceitas-totalDespesas,tipo:'saldo'};
-    // Conta selecionada sem categorias: somente o que entrou.
+    // Ao selecionar uma ou mais contas sem categorias, somar entradas e subtrair despesas.
+    if(contasSel.length)return {valor:totalReceitas-totalDespesas,tipo:'saldo'};
     return {valor:totalReceitas,tipo:'receita'};
   }
   function atualizarValor(){
@@ -15030,6 +15064,11 @@ if(typeof abrirCategoriaBase==='function'){
 </script>
 
 
+<style id="sl-anotacoes-edicao-css">
+  .slAnotEdit{border:1px solid #315b87;border-radius:7px;padding:6px 8px;background:#142c46;color:#a9d3ff;font-size:12px;font-weight:950}
+  .slAnotCancelEdit{width:100%;margin-top:8px;padding:10px;border:1px solid #8d302c;border-radius:9px;background:#351313;color:#ffaaa5;font-weight:950}
+  #slAnotResumoTV{grid-template-columns:1fr}
+</style>
 <script id="sl-anotacoes-js">
 (function(){
   'use strict';
@@ -15038,6 +15077,7 @@ if(typeof abrirCategoriaBase==='function'){
   var STORAGE='slFinanceiro_anotacoes_independentes_v1';
   var registros=[];
   var categoria='TV';
+  var editandoId=null;
 
   function hoje(){
     var d=new Date();
@@ -15091,13 +15131,12 @@ if(typeof abrirCategoriaBase==='function'){
     var p=v.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:v;
   }
   function render(){
-    var lista=filtrados(categoria),todos=filtrados(null);
-    var totalCat=lista.reduce(function(a,r){return a+(r.categoria==='TV'?(Number(r.valor)||0):0);},0);
-    var totalGeral=todos.reduce(function(a,r){return a+(r.categoria==='TV'?(Number(r.valor)||0):0);},0);
+    var lista=filtrados(categoria);
+    var totalTV=lista.reduce(function(a,r){return a+(r.categoria==='TV'?(Number(r.valor)||0):0);},0);
+    var resumo=document.getElementById('slAnotResumoTV');
+    if(resumo)resumo.style.display=categoria==='TV'?'grid':'none';
     var el=document.getElementById('slAnotTotalCategoria');
-    if(el){el.textContent=moeda(totalCat);el.className=totalCat<0?'slAnotNegative':'slAnotPositive';}
-    el=document.getElementById('slAnotTotalGeral');
-    if(el){el.textContent=moeda(totalGeral);el.className=totalGeral<0?'slAnotNegative':'slAnotPositive';}
+    if(el){el.textContent=moeda(totalTV);el.className=totalTV<0?'slAnotNegative':'slAnotPositive';}
     el=document.getElementById('slAnotQuantidade');if(el)el.textContent=lista.length+' REGISTRO'+(lista.length===1?'':'S');
     var alvo=document.getElementById('slAnotLista');if(!alvo)return;
     if(!lista.length){alvo.innerHTML='<div class="slAnotEmpty">📖 NENHUMA ANOTAÇÃO NESTE PERÍODO.</div>';return;}
@@ -15108,7 +15147,7 @@ if(typeof abrirCategoriaBase==='function'){
         '<div><strong>'+esc(r.categoria)+'</strong><small>'+dataBR(r.data)+'</small>'+
           (r.observacao?'<div class="slAnotTextoGeral">'+esc(r.observacao)+'</div>':'')+
         '</div>'+
-        '<div style="display:flex;align-items:center;gap:5px">'+(r.categoria==='GERAL'?'':'<strong class="'+cls+'">'+(v>0?'+':'')+moeda(v)+'</strong>')+'<button type="button" class="slAnotDelete" data-sl-anot-delete="'+esc(r.id)+'" title="Excluir anotação">✕</button></div>'+
+        '<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">'+(r.categoria==='GERAL'?'':'<strong class="'+cls+'">'+(v>0?'+':'')+moeda(v)+'</strong>')+'<button type="button" class="slAnotEdit" data-sl-anot-edit="'+esc(r.id)+'" title="Editar lançamento">✎</button><button type="button" class="slAnotDelete" data-sl-anot-delete="'+esc(r.id)+'" title="Excluir anotação">✕</button></div>'+
       '</div>';
     }).join('');
   }
@@ -15120,7 +15159,7 @@ if(typeof abrirCategoriaBase==='function'){
     var obsLabel=document.getElementById('slAnotObsLabel');
     var obsCampo=document.getElementById('slAnotObs');
     var geral=cat==='GERAL';
-    if(titulo)titulo.textContent=geral?'📝 ANOTAÇÃO GERAL':'✍️ NOVA ANOTAÇÃO TV';
+    if(titulo)titulo.textContent=(editandoId?'✏️ EDITAR ':'')+(geral?'📝 ANOTAÇÃO GERAL':'✍️ ANOTAÇÃO TV');
     if(valorWrap)valorWrap.style.display=geral?'none':'block';
     if(obsLabel)obsLabel.textContent=geral?'ESCREVER':'OBSERVAÇÃO (OPCIONAL)';
     if(obsCampo){
@@ -15147,12 +15186,48 @@ if(typeof abrirCategoriaBase==='function'){
     if(!data){alert('INFORME A DATA DA ANOTAÇÃO.');return;}
     if(geral&&!obs.trim()){alert('ESCREVA SUA ANOTAÇÃO NO QUADRO BRANCO.');return;}
     if(!geral&&(bruto===''||!Number.isFinite(valor)||valor===0)){alert('INFORME UM VALOR POSITIVO OU NEGATIVO DIFERENTE DE ZERO.');return;}
-    var proxima=registros.reduce(function(max,r){return Math.max(max,Number(r.ordem)||0);},0)+1;
-    registros.push({id:'anot_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),ordem:proxima,categoria:categoria,data:data,valor:valor,observacao:obs.trim(),criadoEm:Date.now()});
+
+    if(editandoId){
+      var existente=registros.find(function(r){return String(r.id)===String(editandoId);});
+      if(!existente){alert('ESTE LANÇAMENTO NÃO FOI ENCONTRADO.');window.slAnotCancelarEdicao();return;}
+      existente.data=data;
+      existente.categoria=categoria;
+      existente.valor=valor;
+      existente.observacao=obs.trim();
+      existente.editadoEm=Date.now();
+    }else{
+      var proxima=registros.reduce(function(max,r){return Math.max(max,Number(r.ordem)||0);},0)+1;
+      registros.push({id:'anot_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),ordem:proxima,categoria:categoria,data:data,valor:valor,observacao:obs.trim(),criadoEm:Date.now()});
+    }
     salvar();atualizarAnos();
     if(campo)campo.value='';
     var obsEl=document.getElementById('slAnotObs');if(obsEl)obsEl.value='';
+    editandoId=null;
+    var btn=document.getElementById('slAnotSalvarBtn');if(btn)btn.textContent='＋ ADICIONAR ANOTAÇÃO';
+    var cancelar=document.getElementById('slAnotCancelarEdicao');if(cancelar)cancelar.style.display='none';
+    selecionarCategoria(categoria);
     render();
+  };
+  window.slAnotEditar=function(id){
+    var r=registros.find(function(x){return String(x.id)===String(id);});
+    if(!r)return;
+    editandoId=String(r.id);
+    selecionarCategoria(r.categoria==='GERAL'?'GERAL':'TV');
+    var data=document.getElementById('slAnotData');if(data)data.value=r.data||hoje();
+    var valor=document.getElementById('slAnotValor');if(valor)valor.value=r.categoria==='GERAL'?'':(Number(r.valor)||0);
+    var obs=document.getElementById('slAnotObs');if(obs)obs.value=r.observacao||'';
+    var btn=document.getElementById('slAnotSalvarBtn');if(btn)btn.textContent='💾 SALVAR ALTERAÇÕES';
+    var cancelar=document.getElementById('slAnotCancelarEdicao');if(cancelar)cancelar.style.display='block';
+    var form=document.querySelector('#anotacoes .slAnotForm');if(form)form.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  window.slAnotCancelarEdicao=function(){
+    editandoId=null;
+    var campo=document.getElementById('slAnotValor');if(campo)campo.value='';
+    var obs=document.getElementById('slAnotObs');if(obs)obs.value='';
+    var data=document.getElementById('slAnotData');if(data)data.value=hoje();
+    var btn=document.getElementById('slAnotSalvarBtn');if(btn)btn.textContent='＋ ADICIONAR ANOTAÇÃO';
+    var cancelar=document.getElementById('slAnotCancelarEdicao');if(cancelar)cancelar.style.display='none';
+    selecionarCategoria('TV');
   };
   window.slAnotHoje=function(){
     var d=hoje();
@@ -15169,6 +15244,8 @@ if(typeof abrirCategoriaBase==='function'){
   document.addEventListener('click',function(e){
     var cat=e.target.closest&&e.target.closest('[data-sl-anot-cat]');
     if(cat){selecionarCategoria(cat.getAttribute('data-sl-anot-cat'));return;}
+    var edit=e.target.closest&&e.target.closest('[data-sl-anot-edit]');
+    if(edit){window.slAnotEditar(edit.getAttribute('data-sl-anot-edit'));return;}
     var del=e.target.closest&&e.target.closest('[data-sl-anot-delete]');
     if(del){
       var id=del.getAttribute('data-sl-anot-delete');
@@ -15181,6 +15258,11 @@ if(typeof abrirCategoriaBase==='function'){
     var el=document.getElementById(id);
     if(el){el.addEventListener('input',render);el.addEventListener('change',render);}
   });
+  window.slAnotRecarregarBackup=function(){
+    ler();atualizarAnos();
+    var data=document.getElementById('slAnotData');if(data)data.value=hoje();
+    render();
+  };
   ler();atualizarAnos();
   var data=document.getElementById('slAnotData');if(data)data.value=hoje();
   selecionarCategoria('TV');
